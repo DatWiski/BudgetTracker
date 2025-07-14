@@ -1,0 +1,32 @@
+/* SubTracker Custom Styles */
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.navbar-brand {
+    font-weight: 600;
+    color: #2563eb !important;
+}
+
+.subscription-card {
+    transition: transform 0.2s;
+}
+
+.subscription-card:hover {
+    transform: translateY(-2px);
+}
+
+.empty-state {
+    opacity: 0.8;
+}
+
+.btn-primary {
+    background-color: #2563eb;
+    border-color: #2563eb;
+}
+
+.btn-primary:hover {
+    background-color: #1d4ed8;
+    border-color: #1d4ed8;
+} 
