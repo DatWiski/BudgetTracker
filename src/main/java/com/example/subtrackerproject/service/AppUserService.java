@@ -32,10 +32,16 @@ public class AppUserService {
                         )
                 ));
     }
+
     public Optional<AppUser> findByOidcUser(OidcUser oidcUser) {
         if (oidcUser == null) {
             return Optional.empty();
         }
         return appUserRepository.findByGoogleSub(oidcUser.getSubject());
     }
+
+    public Optional<AppUser> findByGoogleSub(String googleSub) {
+        return appUserRepository.findByGoogleSub(googleSub);
+    }
+
 }

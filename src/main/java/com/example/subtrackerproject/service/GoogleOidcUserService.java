@@ -17,9 +17,11 @@ public class GoogleOidcUserService implements OAuth2UserService<OidcUserRequest,
         this.appUserService = appUserService;
     }
 
+
     @Override
     public OidcUser loadUser(OidcUserRequest req) {
         OidcUser googleUser = delegate.loadUser(req);
+
         try {
             appUserService.processUserLogin(googleUser);
         } catch (Exception ex) {

@@ -1,0 +1,118 @@
+package com.example.subtrackerproject.controller;
+
+import com.example.subtrackerproject.dto.SubscriptionRequest;
+import com.example.subtrackerproject.model.*;
+import com.example.subtrackerproject.service.AppUserService;
+import com.example.subtrackerproject.service.SubscriptionService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.jwt.Jwt;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Optional;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@WebMvcTest(SubscriptionController.class)
+class SubscriptionControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @MockitoBean
+    private SubscriptionService subscriptionService;
+
+    @MockitoBean
+    private AppUserService appUserService;
+
+    @MockitoBean
+    private com.example.subtrackerproject.service.GoogleOidcUserService googleOidcUserService; // Required by SecurityConfig
+
+    private Jwt mockJwt;
+    private AppUser mockAppUser;
+    private SubscriptionRequest validRequest;
+
+    @BeforeEach
+    void setUp() {
+        mockJwt = Jwt.withTokenValue("token")
+                .header("alg", "none")
+                .claim("sub", "google-123")
+                .build();
+
+        mockAppUser = new AppUser("google-123", "Test User", "test@user.com", "pic.url");
+        mockAppUser.setId(1L);
+
+        validRequest = new SubscriptionRequest();
+        validRequest.setName("Netflix");
+        validRequest.setPrice(new BigDecimal("15.99"));
+        validRequest.setBillingPeriod(BillingPeriod.MONTHLY);
+        validRequest.setNextBillingDate(LocalDate.now().plusMonths(1));
+        validRequest.setCategoryName("Entertainment");
+    }
+
+    @Test
+    void addSubscription_whenAuthenticatedAndValidData_shouldReturnCreated() throws Exception {
+        when(appUserService.findByGoogleSub("google-123")).thenReturn(Optional.of(mockAppUser));
+
+        Subscription savedSubscription = new Subscription();
+        savedSubscription.setId(1L);
+        savedSubscription.setName(validRequest.getName());
+        savedSubscription.setPrice(validRequest.getPrice());
+        savedSubscription.setAppUser(mockAppUser);
+        Category category = new Category();
+        category.setName("Entertainment");
+        savedSubscription.setCategory(category);
+
+
+        when(subscriptionService.saveSubscriptionForUser(any(SubscriptionRequest.class), eq(mockAppUser)))
+                .thenReturn(savedSubscription);
+
+        mockMvc.perform(post("/api/subscriptions")
+                        .with(jwt().jwt(mockJwt))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validRequest)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.name").value("Netflix"))
+                .andExpect(jsonPath("$.price").value(15.99))
+                .andExpect(jsonPath("$.categoryName").value("Entertainment"));
+    }
+
+    @Test
+    void addSubscription_whenUnauthenticated_shouldReturnUnauthorized() throws Exception {
+        mockMvc.perform(post("/api/subscriptions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validRequest))
+                        .accept(MediaType.APPLICATION_JSON)
+                        .with(csrf())) // CSRF must be included if not authenticated via token
+                .andExpect(status().is3xxRedirection());
+    }
+
+    @Test
+    void addSubscription_whenInvalidData_shouldReturnBadRequest() throws Exception {
+        validRequest.setName(""); // Invalid name
+
+        mockMvc.perform(post("/api/subscriptions")
+                        .with(jwt().jwt(mockJwt))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validRequest)))
+                .andExpect(status().isBadRequest());
+    }
+}
