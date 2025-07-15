@@ -37,11 +37,15 @@ public class AppUserService {
         if (oidcUser == null) {
             return Optional.empty();
         }
-        return appUserRepository.findByGoogleSub(oidcUser.getSubject());
+        // Use optimized query to fetch user with subscriptions
+        return appUserRepository.findByGoogleSubWithSubscriptions(oidcUser.getSubject());
     }
 
     public Optional<AppUser> findByGoogleSub(String googleSub) {
         return appUserRepository.findByGoogleSub(googleSub);
     }
 
+    public Optional<AppUser> findByGoogleSubWithSubscriptions(String googleSub) {
+        return appUserRepository.findByGoogleSubWithSubscriptions(googleSub);
+    }
 }

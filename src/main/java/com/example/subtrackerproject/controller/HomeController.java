@@ -17,10 +17,11 @@ public class HomeController {
 
     @GetMapping("/")
     public String home(@AuthenticationPrincipal OidcUser principal, Model model) {
+        model.addAttribute("subscriptions", java.util.Collections.emptyList());
+
         if (principal != null) {
-            appUserService.findByOidcUser(principal).ifPresent(user -> {
-                model.addAttribute("subscriptions", user.getSubscriptions());
-            });
+            appUserService.findByOidcUser(principal)
+                    .ifPresent(u -> model.addAttribute("subscriptions", u.getSubscriptions()));
         }
         return "home";
     }
