@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head></head>
+<body>
+    <!-- Subscription table row fragment (param: sub) -->
+    <th:block th:fragment="subscriptionRow(sub)">
+        <tr th:if="${sub != null}">
+            <td>
+                <h6 class="mb-0" th:text="${sub.name}">Name</h6>
+                <small class="text-muted"
+                       th:text="${sub.category != null ? sub.category.name : 'Uncategorised'}">Cat</small>
+            </td>
+            <td class="text-end">
+                <span class="fw-bold"
+                      th:text="${sub.price != null ? #numbers.formatDecimal(sub.price,1,2) : '–'} + ' / ' +
+                               (${sub.billingPeriod != null ? #strings.toLowerCase(sub.billingPeriod) : 'n/a'})">
+                    €0.00 / monthly
+                </span>
+            </td>
+            <td class="text-end">
+                <button class="btn btn-sm btn-outline-secondary me-2 edit-sub-btn"
+                        th:data-id="${sub.id}"
+                        th:data-name="${sub.name}"
+                        th:data-price="${sub.price}"
+                        th:data-billing="${sub.billingPeriod}"
+                        th:data-category="${sub.category != null ? sub.category.name : ''}"
+                        th:data-nextdate="${sub.nextBillingDate != null ? #temporals.format(sub.nextBillingDate,'yyyy-MM-dd') : ''}"
+                        data-bs-toggle="modal" data-bs-target="#addSubModal">Edit</button>
+                <button class="btn btn-sm btn-outline-danger delete-sub-btn"
+                        th:data-id="${sub.id}" th:data-name="${sub.name}">&#128465;</button>
+            </td>
+        </tr>
+    </th:block>
+
+    <!-- Add / Edit Subscription modal fragment -->
+    <div th:fragment="subscriptionModal" class="modal fade" id="addSubModal" tabindex="-1"
+         data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="addSubModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="addSubForm" autocomplete="off">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addSubModalLabel">Add Subscription</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="subName" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="subName" name="name" required>
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-7">
+                                <label for="subPrice" class="form-label">Price</label>
+                                <input type="number" class="form-control" id="subPrice" name="price" step="0.01" required>
+                            </div>
+                            <div class="col-5">
+                                <label for="subCurrency" class="form-label">Currency</label>
+                                <select class="form-select" id="subCurrency" name="currency" required>
+                                    <option value="EUR">EUR</option>
+                                    <option value="USD">USD</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="subBillingPeriod" class="form-label">Billing Period</label>
+                            <select class="form-select" id="subBillingPeriod" name="billingPeriod" required>
+                                <option value="DAILY">Daily</option>
+                                <option value="WEEKLY">Weekly</option>
+                                <option value="MONTHLY">Monthly</option>
+                                <option value="YEARLY">Yearly</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="subCategory" class="form-label">Category</label>
+                            <input type="text" class="form-control" id="subCategory" name="categoryName">
+                        </div>
+                        <input type="hidden" id="subNextDate" name="nextBillingDate">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="saveSubBtn">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm delete modal fragment -->
+    <div th:fragment="confirmDeleteModal" class="modal fade" id="confirmDeleteModal" tabindex="-1"
+         data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="confirmDeleteLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmDeleteLabel">Confirm delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">Are you sure you want to delete <span id="deleteSubName"></span>?</div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Yes, delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

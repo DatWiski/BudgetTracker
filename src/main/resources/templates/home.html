@@ -1,37 +1,25 @@
 <!DOCTYPE html>
-<html lang="en"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8"/>
     <title>SubTracker · Dashboard</title>
 
-    <!-- Bootstrap CSS from CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-          rel="stylesheet"
-          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
-          crossorigin="anonymous">
-
-    <!-- Custom CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link th:href="@{/css/app.css}" rel="stylesheet"/>
-</head>
 
+    <!-- expose JWT for JS -->
+    <meta name="google-id-token" sec:authorize="isAuthenticated()"
+          th:content="${#authentication.principal.idToken.tokenValue}"/>
+</head>
 <body class="d-flex flex-column min-vh-100 bg-light">
 
-<!-- ================================= NAVBAR ================================== -->
 <nav class="navbar navbar-expand-lg bg-white border-bottom shadow-sm px-3">
     <div class="container-fluid">
         <a class="navbar-brand fw-semibold" th:href="@{/}">SubTracker</a>
-
-        <!-- Right-hand side of Navbar (for logged-in users) -->
         <div class="d-flex align-items-center gap-3" sec:authorize="isAuthenticated()">
-
-            <!-- Mini avatar & name -->
-            <img th:src="${#authentication.principal.picture}"
-                 width="32" height="32" class="rounded-circle border" alt="User avatar"/>
-            <span class="d-none d-md-inline" sec:authentication="principal.fullName">User Name</span>
-
-            <!-- Logout button -->
+            <img th:src="${#authentication.principal.picture}" width="32" height="32" class="rounded-circle border" alt="User avatar"/>
+            <span class="d-none d-md-inline" sec:authentication="principal.fullName">User</span>
             <form th:action="@{/logout}" method="post" class="m-0">
                 <button class="btn btn-sm btn-outline-secondary">Logout</button>
             </form>
@@ -39,74 +27,49 @@
     </div>
 </nav>
 
-<!-- =============================== MAIN CONTENT ============================== -->
-<main class="container my-5 flex-grow-1">
-
-    <!-- BLOCK 1: FOR AUTHENTICATED (LOGGED-IN) USERS -->
-    <div sec:authorize="isAuthenticated()">
-
-        <h1 class="mb-4">Welcome back,
-            <span sec:authentication="principal.givenName">User</span>!</h1>
-        <p class="lead">Manage all your subscriptions in one place.</p>
-
-        <!-- A. Display this block IF the user has subscriptions -->
-        <div th:if="${!subscriptions.isEmpty()}" class="mt-5">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h4 class="m-0">Your Subscriptions</h4>
-                <a th:href="@{/subscriptions/new}" class="btn btn-primary">Add Subscription</a>
-            </div>
-            <ul class="list-group shadow-sm">
-                <!-- Loop over each subscription -->
-                <li th:each="sub : ${subscriptions}" class="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5 class="mb-1" th:text="${sub.name}">Netflix</h5>
-                        <small class="text-muted" th:text="${sub.category?.name ?: 'Uncategorized'}">Entertainment</small>
-                    </div>
-                    <div class="d-flex align-items-center">
-                        <span class="fw-bold me-3"
-                              th:text="|${#numbers.formatDecimal(sub.price, 1, 2)} / ${#strings.toLowerCase(sub.billingPeriod)}|">
-                            €12.99 / monthly
-                        </span>
-                        <a href="#" class="btn btn-sm btn-outline-secondary">Edit</a>
-                    </div>
-                </li>
-            </ul>
-        </div>
-
-        <!-- B. Display this "empty state" block IF the user has NO subscriptions -->
-        <div th:if="${subscriptions.isEmpty()}" class="card shadow-sm mt-5">
-            <div class="card-body text-center py-5">
-                <div class="display-6 mb-3">📦</div>
-                <h5 class="card-title">No subscriptions yet!</h5>
-                <p class="text-muted">Ready to get organized?</p>
-                <a th:href="@{/subscriptions/new}" class="btn btn-primary mt-2">Add your first subscription</a>
-            </div>
-        </div>
+<main class="container my-5 flex-grow-1" sec:authorize="isAuthenticated()">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h4 m-0">Subscriptions</h1>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSubModal">➕ Add subscription</button>
     </div>
 
-    <!-- BLOCK 2: FOR ANONYMOUS (LOGGED-OUT) USERS -->
-    <div sec:authorize="isAnonymous()" class="text-center">
+    <table class="table table-hover" th:if="${!subscriptions.isEmpty()}">
+        <thead>
+        <tr><th>Name</th><th class="text-end">Price / Period</th><th></th></tr>
+        </thead>
+        <tbody>
+         <th:block th:each="sub : ${subscriptions}">
+             <th:block th:replace="fragments :: subscriptionRow(sub=${sub})"></th:block>
+         </th:block>
+        </tbody>
+    </table>
 
-        <h1 class="mb-4">Welcome to SubTracker</h1>
-        <p class="lead">Sign in to start keeping tabs on your paid plans.</p>
-
-        <a class="btn btn-primary btn-lg"
-           th:href="@{/oauth2/authorization/google(prompt='select_account')}">
-            <img src="https://developers.google.com/identity/images/g-logo.png"
-                 class="me-2" width="20" height="20" alt="Google logo"> Login with Google
-        </a>
-
+    <div class="card shadow-sm" th:if="${subscriptions.isEmpty()}">
+        <div class="card-body text-center py-5">
+            <div class="display-6 mb-3">📦</div>
+            <h5 class="card-title">No subscriptions yet!</h5>
+            <p class="text-muted">Ready to get organized?</p>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSubModal">Add your first subscription</button>
+        </div>
     </div>
 </main>
 
-<!-- ================================== FOOTER ================================= -->
-<footer class="text-center small py-3 mt-auto bg-white border-top">
-    © 2025 SubTracker
-</footer>
+<!-- anonymous splash -->
+<div class="container my-5 text-center" sec:authorize="isAnonymous()">
+    <h1 class="mb-4">Welcome to SubTracker</h1>
+    <p class="lead">Sign in to start keeping tabs on your paid plans.</p>
+    <a class="btn btn-primary btn-lg" th:href="@{/oauth2/authorization/google(prompt='select_account')}">
+        <img src="https://developers.google.com/identity/images/g-logo.png" class="me-2" width="20" height="20" alt="logo">Login with Google
+    </a>
+</div>
 
-<!-- Bootstrap JS Bundle (includes Popper) -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-        crossorigin="anonymous"></script>
+<!-- modal fragments -->
+<div th:insert="fragments :: subscriptionModal"></div>
+<div th:insert="fragments :: confirmDeleteModal"></div>
+
+<footer class="text-center small py-3 mt-auto bg-white border-top">© 2025 SubTracker</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script th:src="@{/js/subscriptions.js}" defer></script>
 </body>
 </html>

@@ -9,14 +9,20 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
+@Table(name = "subscription", indexes = {
+    @Index(name = "idx_subscription_user", columnList = "app_user_id"),
+    @Index(name = "idx_subscription_next_billing", columnList = "nextBillingDate"),
+    @Index(name = "idx_subscription_active", columnList = "isActive")
+})
 @Getter
 @Setter
 @NoArgsConstructor
 public class Subscription {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String name;
 
     @Column(scale = 2, precision = 10)
@@ -29,7 +35,8 @@ public class Subscription {
 
     private boolean isActive = true;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
     private Category category;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

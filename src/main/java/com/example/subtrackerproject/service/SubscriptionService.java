@@ -7,4 +7,8 @@ import com.example.subtrackerproject.model.Subscription;
 public interface SubscriptionService {
 
     Subscription saveSubscriptionForUser(SubscriptionRequest subscriptionRequest, AppUser user);
+
+    Subscription updateSubscriptionForUser(Long subscriptionId, SubscriptionRequest subscriptionRequest, AppUser user);
+
+    void deleteSubscriptionForUser(Long subscriptionId, AppUser user);
 }

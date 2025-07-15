@@ -24,6 +24,8 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -114,5 +116,34 @@ class SubscriptionControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validRequest)))
                 .andExpect(status().isBadRequest());
+
+    }
+
+    @Test
+    void updateSubscription_whenAuthenticatedAndValidData_shouldReturnOk() throws Exception {
+        when(appUserService.findByGoogleSub("google-123")).thenReturn(Optional.of(mockAppUser));
+
+        Subscription updatedSubscription = new Subscription();
+        updatedSubscription.setId(1L);
+        updatedSubscription.setName("Updated");
+        updatedSubscription.setPrice(validRequest.getPrice());
+        when(subscriptionService.updateSubscriptionForUser(eq(1L), any(SubscriptionRequest.class), eq(mockAppUser)))
+                .thenReturn(updatedSubscription);
+
+        mockMvc.perform(put("/api/subscriptions/1")
+                        .with(jwt().jwt(mockJwt))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1L));
+    }
+
+    @Test
+    void deleteSubscription_whenAuthenticated_shouldReturnNoContent() throws Exception {
+        when(appUserService.findByGoogleSub("google-123")).thenReturn(Optional.of(mockAppUser));
+
+        mockMvc.perform(delete("/api/subscriptions/1")
+                        .with(jwt().jwt(mockJwt)))
+                .andExpect(status().isNoContent());
     }
 }
