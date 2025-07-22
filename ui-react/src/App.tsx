@@ -1,35 +1,52 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from 'react';
 
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+interface Category {
+  id: number;
+  name: string;
+  color: string;
+  activeSubscriptionCount?: number;
 }
 
-export default App
+function App() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/categories')
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error(`API error ${res.status}`);
+        }
+        return res.json();
+      })
+      .then(setCategories)
+      .catch((e) => setError(e.message));
+  }, []);
+
+  return (
+    <main style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
+      <h1>Categories</h1>
+      {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+      {!error && categories.length === 0 && <p>No categories yet.</p>}
+      <ul style={{ listStyle: 'none', padding: 0 }}>
+        {categories.map((c) => (
+          <li key={c.id} style={{ marginBottom: '0.5rem' }}>
+            <span
+              style={{
+                display: 'inline-block',
+                width: 12,
+                height: 12,
+                borderRadius: '50%',
+                background: c.color,
+                marginRight: 8,
+              }}
+            />
+            {c.name} ({c.activeSubscriptionCount ?? 0})
+          </li>
+        ))}
+      </ul>
+    </main>
+  );
+}
+
+export default App;
