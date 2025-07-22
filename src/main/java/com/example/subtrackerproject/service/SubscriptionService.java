@@ -11,4 +11,9 @@ public interface SubscriptionService {
     Subscription updateSubscriptionForUser(Long subscriptionId, SubscriptionRequest subscriptionRequest, AppUser user);
 
     void deleteSubscriptionForUser(Long subscriptionId, AppUser user);
+
+    /**
+     * Returns all subscriptions that belong to the given user.
+     */
+    java.util.List<Subscription> getSubscriptionsForUser(AppUser user);
 }

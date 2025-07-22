@@ -80,4 +80,11 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         // maintain bidirectional relationship
         user.getSubscriptions().remove(subscription);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public java.util.List<Subscription> getSubscriptionsForUser(AppUser user) {
+        // Fetch all subscriptions (active or not) that belong to the given user
+        return subscriptionRepository.findByAppUserAndIsActive(user, true);
+    }
 }

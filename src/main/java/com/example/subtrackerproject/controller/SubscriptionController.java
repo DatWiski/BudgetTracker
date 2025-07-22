@@ -10,10 +10,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,9 +31,9 @@ public class SubscriptionController {
     @PostMapping
     public ResponseEntity<SubscriptionResponse> addSubscription(
             @Valid @RequestBody SubscriptionRequest subscriptionRequest,
-            @AuthenticationPrincipal Jwt jwt) {
+            @AuthenticationPrincipal(expression = "subject") String sub) {
 
-        var appUser = appUserService.findByGoogleSub(jwt.getSubject())   // <-- new helper
+        var appUser = appUserService.findByGoogleSub(sub)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.UNAUTHORIZED, "User not found"));
 
@@ -46,9 +46,9 @@ public class SubscriptionController {
     public ResponseEntity<SubscriptionResponse> updateSubscription(
             @PathVariable Long id,
             @Valid @RequestBody SubscriptionRequest subscriptionRequest,
-            @AuthenticationPrincipal Jwt jwt) {
+            @AuthenticationPrincipal(expression = "subject") String sub) {
 
-        var appUser = appUserService.findByGoogleSub(jwt.getSubject())
+        var appUser = appUserService.findByGoogleSub(sub)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
 
         Subscription updated = subscriptionService.updateSubscriptionForUser(id, subscriptionRequest, appUser);
@@ -57,13 +57,24 @@ public class SubscriptionController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteSubscription(@PathVariable Long id,
-                                                   @AuthenticationPrincipal Jwt jwt) {
+                                                   @AuthenticationPrincipal(expression = "subject") String sub) {
 
-        var appUser = appUserService.findByGoogleSub(jwt.getSubject())
+        var appUser = appUserService.findByGoogleSub(sub)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
 
         subscriptionService.deleteSubscriptionForUser(id, appUser);
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping
+    public ResponseEntity<java.util.List<SubscriptionResponse>> listSubscriptions(@AuthenticationPrincipal(expression = "subject") String sub) {
+        var appUser = appUserService.findByGoogleSub(sub)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
+
+        java.util.List<SubscriptionResponse> response = subscriptionService.getSubscriptionsForUser(appUser)
+                .stream()
+                .map(SubscriptionResponse::fromEntity)
+                .toList();
+        return ResponseEntity.ok(response);
+    }
 }

@@ -10,6 +10,14 @@ interface Category {
 function App() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState<string | null>(null);
+  interface Subscription {
+    id: number;
+    name: string;
+    price: number;
+    billingPeriod: string;
+  }
+
+  const [subs, setSubs] = useState<Subscription[]>([]);
 
   useEffect(() => {
     fetch('/api/categories')
@@ -21,6 +29,18 @@ function App() {
       })
       .then(setCategories)
       .catch((e) => setError(e.message));
+  }, []);
+
+  useEffect(() => {
+    fetch('/api/subscriptions')
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error(`API error ${res.status}`);
+        }
+        return res.json();
+      })
+      .then(setSubs)
+      .catch(() => {/* ignore for now */});
   }, []);
 
   return (
@@ -42,6 +62,14 @@ function App() {
               }}
             />
             {c.name} ({c.activeSubscriptionCount ?? 0})
+          </li>
+        ))}
+      </ul>
+      <h2>Subscriptions</h2>
+      <ul style={{ listStyle: 'none', padding: 0 }}>
+        {subs.map((s) => (
+          <li key={s.id} style={{ marginBottom: '0.25rem' }}>
+            {s.name} — ${s.price} / {s.billingPeriod?.toLowerCase()}
           </li>
         ))}
       </ul>

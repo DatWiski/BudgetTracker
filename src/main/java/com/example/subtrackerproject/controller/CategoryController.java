@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -27,8 +26,12 @@ public class CategoryController {
     private final AppUserService appUserService;
     
     @GetMapping
-    public ResponseEntity<List<CategoryResponse>> getAllCategories(@AuthenticationPrincipal Jwt jwt) {
-        var appUser = appUserService.findByGoogleSub(jwt.getSubject())
+    public ResponseEntity<List<CategoryResponse>> getAllCategories(@AuthenticationPrincipal(expression = "subject") String sub) {
+        if (sub == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
+        }
+
+        var appUser = appUserService.findByGoogleSub(sub)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
         
         List<Category> categories = categoryService.getCategoriesForUser(appUser);
@@ -43,8 +46,8 @@ public class CategoryController {
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<CategoryResponse> getCategoryById(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {
-        var appUser = appUserService.findByGoogleSub(jwt.getSubject())
+    public ResponseEntity<CategoryResponse> getCategoryById(@PathVariable Long id, @AuthenticationPrincipal(expression = "subject") String sub) {
+        var appUser = appUserService.findByGoogleSub(sub)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
         
         Category category = categoryService.getCategoryByIdForUser(id, appUser)
@@ -59,8 +62,8 @@ public class CategoryController {
     }
     
     @PostMapping
-    public ResponseEntity<CategoryResponse> createCategory(@Valid @RequestBody CategoryRequest request, @AuthenticationPrincipal Jwt jwt) {
-        var appUser = appUserService.findByGoogleSub(jwt.getSubject())
+    public ResponseEntity<CategoryResponse> createCategory(@Valid @RequestBody CategoryRequest request, @AuthenticationPrincipal(expression = "subject") String sub) {
+        var appUser = appUserService.findByGoogleSub(sub)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
         
         try {
@@ -73,8 +76,8 @@ public class CategoryController {
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<CategoryResponse> updateCategory(@PathVariable Long id, @Valid @RequestBody CategoryRequest request, @AuthenticationPrincipal Jwt jwt) {
-        var appUser = appUserService.findByGoogleSub(jwt.getSubject())
+    public ResponseEntity<CategoryResponse> updateCategory(@PathVariable Long id, @Valid @RequestBody CategoryRequest request, @AuthenticationPrincipal(expression = "subject") String sub) {
+        var appUser = appUserService.findByGoogleSub(sub)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
 
         categoryService.getCategoryByIdForUser(id, appUser)
@@ -93,8 +96,8 @@ public class CategoryController {
     }
     
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable Long id, @RequestParam(required = false) Long newCategoryId, @AuthenticationPrincipal Jwt jwt) {
-        var appUser = appUserService.findByGoogleSub(jwt.getSubject())
+    public ResponseEntity<Void> deleteCategory(@PathVariable Long id, @RequestParam(required = false) Long newCategoryId, @AuthenticationPrincipal(expression = "subject") String sub) {
+        var appUser = appUserService.findByGoogleSub(sub)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
         
         try {
@@ -106,8 +109,8 @@ public class CategoryController {
     }
     
     @PostMapping("/{sourceId}/merge/{targetId}")
-    public ResponseEntity<CategoryResponse> mergeCategories(@PathVariable Long sourceId, @PathVariable Long targetId, @AuthenticationPrincipal Jwt jwt) {
-        var appUser = appUserService.findByGoogleSub(jwt.getSubject())
+    public ResponseEntity<CategoryResponse> mergeCategories(@PathVariable Long sourceId, @PathVariable Long targetId, @AuthenticationPrincipal(expression = "subject") String sub) {
+        var appUser = appUserService.findByGoogleSub(sub)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
         
         try {
@@ -123,8 +126,8 @@ public class CategoryController {
     }
     
     @GetMapping("/pie-chart-data")
-    public ResponseEntity<Map<String, Object>> getPieChartData(@AuthenticationPrincipal Jwt jwt) {
-        var appUser = appUserService.findByGoogleSub(jwt.getSubject())
+    public ResponseEntity<Map<String, Object>> getPieChartData(@AuthenticationPrincipal(expression = "subject") String sub) {
+        var appUser = appUserService.findByGoogleSub(sub)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
         
         Map<String, Object> pieChartData = categoryService.getPieChartData(appUser);
@@ -132,8 +135,8 @@ public class CategoryController {
     }
     
     @GetMapping("/spend-data")
-    public ResponseEntity<Map<String, Object>> getSpendData(@AuthenticationPrincipal Jwt jwt) {
-        var appUser = appUserService.findByGoogleSub(jwt.getSubject())
+    public ResponseEntity<Map<String, Object>> getSpendData(@AuthenticationPrincipal(expression = "subject") String sub) {
+        var appUser = appUserService.findByGoogleSub(sub)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
         
         Map<String, Object> spendData = Map.of(
