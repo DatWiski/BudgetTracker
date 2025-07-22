@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <title>SubTracker · Category Manager</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link th:href="@{/css/app.css}" rel="stylesheet"/>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+    <!-- expose JWT for JS -->
+    <meta name="google-id-token" sec:authorize="isAuthenticated()"
+          th:content="${#authentication.principal.idToken.tokenValue}"/>
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+<nav class="navbar navbar-expand-lg border-bottom shadow-sm px-3">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-semibold" th:href="@{/}">SubTracker</a>
+        <div class="d-flex align-items-center gap-3" sec:authorize="isAuthenticated()">
+            <button class="theme-toggle" id="themeToggle" title="Toggle theme">
+                <i data-lucide="sun" class="light-icon"></i>
+                <i data-lucide="moon" class="dark-icon" style="display: none;"></i>
+            </button>
+            <img th:src="${#authentication.principal.picture}" width="32" height="32" class="rounded-circle border" alt="User avatar"/>
+            <span class="d-none d-md-inline" sec:authentication="principal.fullName">User</span>
+            <form th:action="@{/logout}" method="post" class="m-0">
+                <button class="btn btn-sm btn-outline-secondary">
+                    <i data-lucide="log-out" class="me-1"></i>
+                    Logout
+                </button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<main class="container my-5 flex-grow-1" sec:authorize="isAuthenticated()">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Category Manager</h1>
+            <p class="text-muted">Organize your subscriptions with custom categories</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/" class="btn btn-outline-secondary">
+                <i data-lucide="arrow-left" class="me-1"></i>
+                Back to Dashboard
+            </a>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+                <i data-lucide="plus" class="me-1"></i>
+                Add Category
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Your Categories</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Color</th>
+                                    <th>Subscriptions</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="category : ${categories}">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="category-color-dot me-2" 
+                                                 th:style="'background-color: ' + ${category.color}"></div>
+                                            <span th:text="${category.name}">Category Name</span>
+                                            <span class="badge bg-secondary ms-2" th:if="${category.reserved}">Reserved</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="color-swatch me-2" 
+                                                 th:style="'background-color: ' + ${category.color}"></div>
+                                            <code th:text="${category.color}">Hex Color</code>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info" th:text="${category.subscriptionCount}">0</span>
+                                        <span class="text-muted"> subscriptions</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary edit-category-btn" 
+                                                    th:unless="${category.reserved}"
+                                                    th:data-id="${category.id}"
+                                                    th:data-name="${category.name}"
+                                                    th:data-color="${category.color}"
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#editCategoryModal">
+                                                Edit
+                                            </button>
+                                            <button class="btn btn-outline-danger delete-category-btn" 
+                                                    th:unless="${category.reserved}"
+                                                    th:data-id="${category.id}"
+                                                    th:data-name="${category.name}"
+                                                    th:data-count="${category.subscriptionCount}">
+                                                Delete
+                                            </button>
+                                        </div>
+                                        <span class="text-muted small" th:if="${category.reserved}">
+                                            Cannot be modified
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+
+    </div>
+</main>
+
+<!-- Add Category Modal -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="addCategoryForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addCategoryModalLabel">Add Category</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="categoryName" class="form-label">Category Name</label>
+                        <input type="text" class="form-control" id="categoryName" name="name" required maxlength="50">
+                    </div>
+                    <div class="mb-3">
+                        <label for="categoryColor" class="form-label">Color</label>
+                        <div class="input-group">
+                            <input type="color" class="form-control form-control-color" id="categoryColor" name="color" value="#FF6B6B" required>
+                            <input type="text" class="form-control" id="categoryColorText" value="#FF6B6B" readonly>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Category</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Category Modal -->
+<div class="modal fade" id="editCategoryModal" tabindex="-1" aria-labelledby="editCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="editCategoryForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editCategoryModalLabel">Edit Category</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="editCategoryName" class="form-label">Category Name</label>
+                        <input type="text" class="form-control" id="editCategoryName" name="name" required maxlength="50">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editCategoryColor" class="form-label">Color</label>
+                        <div class="input-group">
+                            <input type="color" class="form-control form-control-color" id="editCategoryColor" name="color" required>
+                            <input type="text" class="form-control" id="editCategoryColorText" readonly>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Category Modal -->
+<div class="modal fade" id="deleteCategoryModal" tabindex="-1" aria-labelledby="deleteCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteCategoryModalLabel">Delete Category</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the category <strong id="deleteCategoryName"></strong>?</p>
+                <div id="subscriptionReassignSection" style="display: none;">
+                    <p><span id="subscriptionCount">0</span> subscriptions will be reassigned to:</p>
+                    <select class="form-select" id="reassignCategorySelect">
+                        <option value="">No category (Uncategorized)</option>
+                        <!-- Options will be populated by JavaScript -->
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete Category</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="text-center small py-3 mt-auto border-top">© 2025 SubTracker</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" 
+        crossorigin="anonymous"></script>
+<script th:src="@{/js/category-manager.js}" defer></script>
+
+<script>
+// Theme Toggle Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Lucide icons
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+    
+    const themeToggle = document.getElementById('themeToggle');
+    const lightIcon = document.querySelector('.light-icon');
+    const darkIcon = document.querySelector('.dark-icon');
+    
+    // Get saved theme or default to light
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    
+    // Apply theme
+    function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        
+        if (theme === 'dark') {
+            lightIcon.style.display = 'none';
+            darkIcon.style.display = 'block';
+        } else {
+            lightIcon.style.display = 'block';
+            darkIcon.style.display = 'none';
+        }
+        
+        localStorage.setItem('theme', theme);
+    }
+    
+    // Apply saved theme on load
+    applyTheme(savedTheme);
+    
+    // Theme toggle click handler
+    if (themeToggle) {
+        themeToggle.addEventListener('click', function() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            applyTheme(newTheme);
+        });
+    }
+    
+    // Add fade-in animation to main content
+    const mainContent = document.querySelector('main');
+    if (mainContent) {
+        mainContent.classList.add('fade-in');
+    }
+});
+</script>
+
+<style>
+.category-color-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: inline-block;
+    border: 1px solid #dee2e6;
+}
+
+.color-swatch {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    display: inline-block;
+    border: 1px solid #dee2e6;
+}
+
+.form-control-color {
+    width: 60px;
+    height: 38px;
+    border-radius: 0.375rem 0 0 0.375rem;
+}
+</style>
+
+</body>
+</html> 

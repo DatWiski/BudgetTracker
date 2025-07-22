@@ -57,7 +57,7 @@ public class SubscriptionIntegrationTest {
         testUser = appUserRepository.save(testUser);
 
         // Create test category
-        testCategory = new Category("Entertainment");
+        testCategory = new Category("Entertainment", "#FF6B6B", testUser);
         testCategory = categoryRepository.save(testCategory);
     }
 
@@ -99,7 +99,7 @@ public class SubscriptionIntegrationTest {
                 .andExpect(jsonPath("$.categoryName").value("Music"));
 
         // Verify category was created
-        assert categoryRepository.findByNameIgnoreCase("Music").isPresent();
+        assert categoryRepository.findByNameIgnoreCaseAndAppUser("Music", testUser).isPresent();
     }
 
     @Test

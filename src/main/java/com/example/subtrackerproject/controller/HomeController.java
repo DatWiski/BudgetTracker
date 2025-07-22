@@ -18,10 +18,14 @@ public class HomeController {
     @GetMapping("/")
     public String home(@AuthenticationPrincipal OidcUser principal, Model model) {
         model.addAttribute("subscriptions", java.util.Collections.emptyList());
+        model.addAttribute("userCurrency", "USD"); // Default currency
 
         if (principal != null) {
             appUserService.findByOidcUser(principal)
-                    .ifPresent(u -> model.addAttribute("subscriptions", u.getSubscriptions()));
+                    .ifPresent(u -> {
+                        model.addAttribute("subscriptions", u.getSubscriptions());
+                        model.addAttribute("userCurrency", u.getCurrency());
+                    });
         }
         return "home";
     }

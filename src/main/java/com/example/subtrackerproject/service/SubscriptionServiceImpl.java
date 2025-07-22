@@ -6,10 +6,8 @@ import com.example.subtrackerproject.exception.UnauthorizedAccessException;
 import com.example.subtrackerproject.model.AppUser;
 import com.example.subtrackerproject.model.Category;
 import com.example.subtrackerproject.model.Subscription;
-import com.example.subtrackerproject.repository.CategoryRepository;
 import com.example.subtrackerproject.repository.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -19,7 +17,7 @@ import org.springframework.util.StringUtils;
 public class SubscriptionServiceImpl implements SubscriptionService {
 
     private final SubscriptionRepository subscriptionRepository;
-    private final CategoryRepository categoryRepository;
+    private final CategoryService categoryService;
 
     @Override
     @Transactional
@@ -35,7 +33,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         user.getSubscriptions().add(subscription);
 
         if (StringUtils.hasText(request.getCategoryName())) {
-            Category category = findOrCreateCategory(request.getCategoryName());
+            Category category = categoryService.findOrCreateCategory(request.getCategoryName(), user);
             subscription.setCategory(category);
         }
 
@@ -58,7 +56,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         subscription.setNextBillingDate(request.getNextBillingDate());
 
         if (StringUtils.hasText(request.getCategoryName())) {
-            Category category = findOrCreateCategory(request.getCategoryName());
+            Category category = categoryService.findOrCreateCategory(request.getCategoryName(), user);
             subscription.setCategory(category);
         } else {
             subscription.setCategory(null);
@@ -81,11 +79,5 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
         // maintain bidirectional relationship
         user.getSubscriptions().remove(subscription);
-    }
-
-    @Cacheable(value = "categories", key = "#categoryName.toLowerCase()")
-    private Category findOrCreateCategory(String categoryName) {
-        return categoryRepository.findByNameIgnoreCase(categoryName)
-                .orElseGet(() -> categoryRepository.save(new Category(categoryName)));
     }
 }

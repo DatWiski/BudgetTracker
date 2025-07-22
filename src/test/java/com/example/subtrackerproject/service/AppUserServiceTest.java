@@ -22,6 +22,9 @@ class AppUserServiceTest {
     @Mock
     private AppUserRepository mockUserRepo;
 
+    @Mock
+    private CategoryService categoryService;
+
     @InjectMocks
     private AppUserService appUserService;
 
@@ -38,23 +41,33 @@ class AppUserServiceTest {
     @Test
     void processUserLogin_shouldCreateNewUser_whenUserNotFound() {
         when(mockUserRepo.findByGoogleSub("google123")).thenReturn(Optional.empty());
-
-        appUserService.processUserLogin(oidcUser);
-
+        
         ArgumentCaptor<AppUser> userCaptor = ArgumentCaptor.forClass(AppUser.class);
-        verify(mockUserRepo).save(userCaptor.capture());
-
-        assertEquals("Test User", userCaptor.getValue().getFullName());
+        AppUser savedUser = new AppUser("google123", "Test User", "test@example.com", null);
+        when(mockUserRepo.save(userCaptor.capture())).thenReturn(savedUser);
+        
+        appUserService.processUserLogin(oidcUser);
+        
+        verify(mockUserRepo).save(any(AppUser.class));
+        verify(categoryService).ensureDefaultCategoriesExist(any(AppUser.class));
+        
+        AppUser capturedUser = userCaptor.getValue();
+        assertEquals("google123", capturedUser.getGoogleSub());
+        assertEquals("Test User", capturedUser.getFullName());
+        assertEquals("test@example.com", capturedUser.getEmail());
     }
 
     @Test
     void processUserLogin_shouldUpdateExistingUser_whenUserFound() {
-        AppUser existingUser = new AppUser("google123", "Old Name", "old@email.com", "old.pic");
+        AppUser existingUser = new AppUser("google123", "Old Name", "old@example.com", null);
         when(mockUserRepo.findByGoogleSub("google123")).thenReturn(Optional.of(existingUser));
-
+        
         appUserService.processUserLogin(oidcUser);
-
-        verify(mockUserRepo, never()).save(any());
+        
+        verify(mockUserRepo, never()).save(any(AppUser.class));
+        verify(categoryService).ensureDefaultCategoriesExist(existingUser);
+        
         assertEquals("Test User", existingUser.getFullName());
+        assertEquals("test@example.com", existingUser.getEmail());
     }
 }

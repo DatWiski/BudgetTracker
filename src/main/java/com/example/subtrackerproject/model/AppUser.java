@@ -24,6 +24,10 @@ public class AppUser {
     private String email;
     private String fullName;
     private String pictureUrl;
+    
+    @Column(nullable = false)
+    private String currency = "USD";
+    
     @OneToMany(mappedBy = "appUser", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Subscription> subscriptions = new ArrayList<>();
 
@@ -32,7 +36,9 @@ public class AppUser {
         this.fullName = name;
         this.email = email;
         this.pictureUrl = pic;
+        this.currency = "USD"; // Default currency
     }
+    
     public AppUser updateFromGoogle(String name, String email, String pic) {
         this.fullName = name;
         this.email = email;

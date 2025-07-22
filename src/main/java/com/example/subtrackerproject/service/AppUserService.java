@@ -14,23 +14,28 @@ import java.util.Optional;
 public class AppUserService {
 
     private final AppUserRepository appUserRepository;
+    private final CategoryService categoryService;
 
     @Transactional
     public void processUserLogin(OidcUser googleUser) {
-        appUserRepository.findByGoogleSub(googleUser.getSubject())
-                .map(user -> user.updateFromGoogle(
+        AppUser user = appUserRepository.findByGoogleSub(googleUser.getSubject())
+                .map(u -> u.updateFromGoogle(
                         googleUser.getFullName(),
                         googleUser.getEmail(),
                         googleUser.getPicture()
                 ))
-                .orElseGet(() -> appUserRepository.save(
-                        new AppUser(
-                                googleUser.getSubject(),
-                                googleUser.getFullName(),
-                                googleUser.getEmail(),
-                                googleUser.getPicture()
-                        )
-                ));
+                .orElseGet(() -> {
+                    AppUser newUser = new AppUser(
+                            googleUser.getSubject(),
+                            googleUser.getFullName(),
+                            googleUser.getEmail(),
+                            googleUser.getPicture()
+                    );
+                    return appUserRepository.save(newUser);
+                });
+
+        // Ensure default categories exist for the user
+        categoryService.ensureDefaultCategoriesExist(user);
     }
 
     public Optional<AppUser> findByOidcUser(OidcUser oidcUser) {

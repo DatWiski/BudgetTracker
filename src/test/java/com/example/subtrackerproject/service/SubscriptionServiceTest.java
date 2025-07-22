@@ -7,7 +7,6 @@ import com.example.subtrackerproject.model.AppUser;
 import com.example.subtrackerproject.model.BillingPeriod;
 import com.example.subtrackerproject.model.Category;
 import com.example.subtrackerproject.model.Subscription;
-import com.example.subtrackerproject.repository.CategoryRepository;
 import com.example.subtrackerproject.repository.SubscriptionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,7 +31,7 @@ class SubscriptionServiceTest {
     private SubscriptionRepository subscriptionRepository;
 
     @Mock
-    private CategoryRepository categoryRepository;
+    private CategoryService categoryService;
 
     @InjectMocks
     private SubscriptionServiceImpl subscriptionService;
@@ -46,7 +45,7 @@ class SubscriptionServiceTest {
         testUser = new AppUser("test-sub", "Test User", "test@example.com", "pic.jpg");
         testUser.setId(1L);
 
-        testCategory = new Category("Entertainment");
+        testCategory = new Category("Entertainment", "#FF6B6B", testUser);
         testCategory.setId(1L);
 
         validRequest = new SubscriptionRequest();
@@ -60,8 +59,8 @@ class SubscriptionServiceTest {
     @Test
     void saveSubscriptionForUser_WithExistingCategory_ShouldSaveSuccessfully() {
         // Arrange
-        when(categoryRepository.findByNameIgnoreCase("Entertainment"))
-                .thenReturn(Optional.of(testCategory));
+        when(categoryService.findOrCreateCategory("Entertainment", testUser))
+                .thenReturn(testCategory);
         
         Subscription savedSubscription = new Subscription();
         savedSubscription.setId(1L);
@@ -85,20 +84,17 @@ class SubscriptionServiceTest {
         assertEquals(testUser, result.getAppUser());
         assertEquals(testCategory, result.getCategory());
         
-        verify(categoryRepository).findByNameIgnoreCase("Entertainment");
+        verify(categoryService).findOrCreateCategory("Entertainment", testUser);
         verify(subscriptionRepository).save(any(Subscription.class));
-        verify(categoryRepository, never()).save(any(Category.class));
     }
 
     @Test
     void saveSubscriptionForUser_WithNewCategory_ShouldCreateCategoryAndSave() {
         // Arrange
-        when(categoryRepository.findByNameIgnoreCase("Music"))
-                .thenReturn(Optional.empty());
-        
-        Category newCategory = new Category("Music");
+        Category newCategory = new Category("Music", "#4ECDC4", testUser);
         newCategory.setId(2L);
-        when(categoryRepository.save(any(Category.class)))
+        
+        when(categoryService.findOrCreateCategory("Music", testUser))
                 .thenReturn(newCategory);
 
         validRequest.setCategoryName("Music");
@@ -118,8 +114,7 @@ class SubscriptionServiceTest {
         assertNotNull(result);
         assertEquals(newCategory, result.getCategory());
         
-        verify(categoryRepository).findByNameIgnoreCase("Music");
-        verify(categoryRepository).save(any(Category.class));
+        verify(categoryService).findOrCreateCategory("Music", testUser);
         verify(subscriptionRepository).save(any(Subscription.class));
     }
 
@@ -142,7 +137,7 @@ class SubscriptionServiceTest {
         assertNotNull(result);
         assertNull(result.getCategory());
         
-        verify(categoryRepository, never()).findByNameIgnoreCase(anyString());
+        verify(categoryService, never()).findOrCreateCategory(anyString(), any(AppUser.class));
         verify(subscriptionRepository).save(any(Subscription.class));
     }
 
@@ -157,8 +152,8 @@ class SubscriptionServiceTest {
         when(subscriptionRepository.findById(1L))
                 .thenReturn(Optional.of(existingSubscription));
         
-        when(categoryRepository.findByNameIgnoreCase("Productivity"))
-                .thenReturn(Optional.of(testCategory));
+        when(categoryService.findOrCreateCategory("Productivity", testUser))
+                .thenReturn(testCategory);
         
         validRequest.setName("Updated Name");
         validRequest.setCategoryName("Productivity");

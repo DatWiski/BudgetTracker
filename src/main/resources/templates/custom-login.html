@@ -8,6 +8,9 @@
           rel="stylesheet"
           integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
           crossorigin="anonymous">
+    <link th:href="@{/css/app.css}" rel="stylesheet"/>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 </head>
 <body>
 
@@ -29,6 +32,13 @@
                 Login failed. Please try again.
             </div>
 
+            <div class="d-flex justify-content-end mb-3">
+                <button class="theme-toggle" id="themeToggle" title="Toggle theme">
+                    <i data-lucide="sun" class="light-icon"></i>
+                    <i data-lucide="moon" class="dark-icon" style="display: none;"></i>
+                </button>
+            </div>
+            
             <div class="d-grid gap-2">
                 <a class="btn btn-primary btn-lg"
                    th:href="@{/oauth2/authorization/google(prompt='select_account')}">
@@ -43,6 +53,56 @@
         </div>
     </div>
 </main>
+
+<script>
+// Theme Toggle Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Lucide icons
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+    
+    const themeToggle = document.getElementById('themeToggle');
+    const lightIcon = document.querySelector('.light-icon');
+    const darkIcon = document.querySelector('.dark-icon');
+    
+    // Get saved theme or default to light
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    
+    // Apply theme
+    function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        
+        if (theme === 'dark') {
+            lightIcon.style.display = 'none';
+            darkIcon.style.display = 'block';
+        } else {
+            lightIcon.style.display = 'block';
+            darkIcon.style.display = 'none';
+        }
+        
+        localStorage.setItem('theme', theme);
+    }
+    
+    // Apply saved theme on load
+    applyTheme(savedTheme);
+    
+    // Theme toggle click handler
+    if (themeToggle) {
+        themeToggle.addEventListener('click', function() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            applyTheme(newTheme);
+        });
+    }
+    
+    // Add fade-in animation to main content
+    const mainContent = document.querySelector('main');
+    if (mainContent) {
+        mainContent.classList.add('fade-in');
+    }
+});
+</script>
 
 </body>
 </html>
