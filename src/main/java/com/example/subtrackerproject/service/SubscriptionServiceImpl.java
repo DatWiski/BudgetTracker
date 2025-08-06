@@ -18,6 +18,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     private final SubscriptionRepository subscriptionRepository;
     private final CategoryService categoryService;
+    private final com.example.subtrackerproject.repository.CategoryRepository categoryRepository;
 
     @Override
     @Transactional
@@ -35,6 +36,10 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         if (StringUtils.hasText(request.getCategoryName())) {
             Category category = categoryService.findOrCreateCategory(request.getCategoryName(), user);
             subscription.setCategory(category);
+        } else {
+            Category sysCat = categoryRepository.findByNameIgnoreCaseAndAppUser("Subscriptions", user)
+                    .orElseGet(() -> categoryService.findOrCreateCategory("Subscriptions", user));
+            subscription.setCategory(sysCat);
         }
 
         return subscriptionRepository.save(subscription);

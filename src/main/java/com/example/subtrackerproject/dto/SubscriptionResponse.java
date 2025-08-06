@@ -4,9 +4,9 @@ import com.example.subtrackerproject.model.BillingPeriod;
 import com.example.subtrackerproject.model.Subscription;
 import lombok.Data;
 
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
+
 @Data
 public class SubscriptionResponse {
 
@@ -16,7 +16,9 @@ public class SubscriptionResponse {
     private BillingPeriod billingPeriod;
     private LocalDate nextBillingDate;
     private boolean isActive;
+    private Long categoryId;
     private String categoryName;
+    private String categoryColor;
 
     public static SubscriptionResponse fromEntity(Subscription subscription) {
         SubscriptionResponse dto = new SubscriptionResponse();
@@ -27,7 +29,9 @@ public class SubscriptionResponse {
         dto.setNextBillingDate(subscription.getNextBillingDate());
         dto.setActive(subscription.isActive());
         if (subscription.getCategory() != null) {
+            dto.setCategoryId(subscription.getCategory().getId());
             dto.setCategoryName(subscription.getCategory().getName());
+            dto.setCategoryColor(subscription.getCategory().getColor());
         }
         return dto;
     }

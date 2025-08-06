@@ -15,7 +15,8 @@ public class HomeController {
 
     private final AppUserService appUserService;
 
-    @GetMapping("/")
+    // Legacy Thymeleaf home (kept for reference). React SPA now handles root path.
+    @GetMapping("/legacy")
     public String home(@AuthenticationPrincipal OidcUser principal, Model model) {
         model.addAttribute("subscriptions", java.util.Collections.emptyList());
         model.addAttribute("userCurrency", "USD"); // Default currency

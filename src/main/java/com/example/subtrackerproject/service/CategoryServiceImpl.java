@@ -102,6 +102,7 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = getCategoryByIdForUser(categoryId, user)
             .orElseThrow(() -> new IllegalArgumentException("Category not found"));
         
+        category.assertMutable();
         if (isReservedCategoryName(category.getName())) {
             throw new IllegalArgumentException("Cannot modify reserved category");
         }
@@ -125,6 +126,7 @@ public class CategoryServiceImpl implements CategoryService {
         Category categoryToDelete = getCategoryByIdForUser(categoryId, user)
             .orElseThrow(() -> new IllegalArgumentException("Category not found"));
         
+        categoryToDelete.assertMutable();
         if (isReservedCategoryName(categoryToDelete.getName())) {
             throw new IllegalArgumentException("Cannot delete reserved category");
         }
@@ -156,6 +158,8 @@ public class CategoryServiceImpl implements CategoryService {
         Category targetCategory = getCategoryByIdForUser(targetCategoryId, user)
             .orElseThrow(() -> new IllegalArgumentException("Target category not found"));
         
+        sourceCategory.assertMutable();
+        targetCategory.assertMutable();
         if (isReservedCategoryName(sourceCategory.getName()) || isReservedCategoryName(targetCategory.getName())) {
             throw new IllegalArgumentException("Cannot merge reserved categories");
         }

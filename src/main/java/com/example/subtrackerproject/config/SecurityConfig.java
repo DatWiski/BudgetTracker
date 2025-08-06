@@ -23,10 +23,12 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http, GoogleOidcUserService googleUserService) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**", "/h2-console/**"))
+                .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable())) // For H2 console
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login", "/css/**", "/js/**").permitAll()
-                        .anyRequest().authenticated()
+                        .requestMatchers("/api/auth/status").permitAll()
+                        .requestMatchers("/api/**").authenticated()
+                        .anyRequest().permitAll()
                 )
                 .exceptionHandling(ex -> ex
                         .defaultAuthenticationEntryPointFor(
@@ -37,14 +39,16 @@ public class SecurityConfig {
                 .oauth2Login(o -> o
                         .loginPage("/login")
                         .defaultSuccessUrl("/", true)
+                        .failureUrl("/login?error=oauth_failed")
                         .userInfoEndpoint(u -> u.oidcUserService(googleUserService))
                 )
+                .formLogin(form -> form.disable())
                 .oauth2ResourceServer(rs ->
                         rs.jwt(Customizer.withDefaults())
                 )
                 .logout(l -> l
                         .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout")
+                        .logoutSuccessUrl("/")
                 );
 
         return http.build();

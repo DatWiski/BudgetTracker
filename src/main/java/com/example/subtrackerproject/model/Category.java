@@ -29,6 +29,15 @@ public class Category {
     
     @Column(nullable = false, length = 7)
     private String color;
+
+    @Column(nullable = false)
+    private boolean locked = false;
+
+    public void assertMutable() {
+        if (locked) {
+            throw new IllegalStateException("System category cannot be modified");
+        }
+    }
     
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "app_user_id", nullable = false)

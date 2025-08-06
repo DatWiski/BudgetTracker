@@ -11,6 +11,7 @@ public class CategoryResponse {
     private Long id;
     private String name;
     private String color;
+    private boolean locked;
     private boolean reserved;
     private long subscriptionCount;
     
@@ -22,6 +23,7 @@ public class CategoryResponse {
         dto.setId(category.getId());
         dto.setName(category.getName());
         dto.setColor(category.getColor());
+        dto.setLocked(category.isLocked());
         dto.setReserved(isReservedCategory(category.getName()));
         dto.setSubscriptionCount(subscriptionCount);
         return dto;
