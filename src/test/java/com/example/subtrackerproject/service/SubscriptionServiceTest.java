@@ -119,13 +119,20 @@ class SubscriptionServiceTest {
     }
 
     @Test
-    void saveSubscriptionForUser_WithoutCategory_ShouldSaveWithoutCategory() {
+    void saveSubscriptionForUser_WithoutCategory_ShouldSaveWithDefaultCategory() {
         // Arrange
         validRequest.setCategoryName(null);
+        
+        Category defaultCategory = new Category("Subscriptions", "#808080", testUser);
+        defaultCategory.setId(1L);
+        
+        when(categoryService.findOrCreateCategory("Subscriptions", testUser))
+                .thenReturn(defaultCategory);
         
         Subscription savedSubscription = new Subscription();
         savedSubscription.setId(1L);
         savedSubscription.setName("Netflix");
+        savedSubscription.setCategory(defaultCategory);
         
         when(subscriptionRepository.save(any(Subscription.class)))
                 .thenReturn(savedSubscription);
@@ -135,9 +142,10 @@ class SubscriptionServiceTest {
 
         // Assert
         assertNotNull(result);
-        assertNull(result.getCategory());
+        assertNotNull(result.getCategory());
+        assertEquals("Subscriptions", result.getCategory().getName());
         
-        verify(categoryService, never()).findOrCreateCategory(anyString(), any(AppUser.class));
+        verify(categoryService).findOrCreateCategory("Subscriptions", testUser);
         verify(subscriptionRepository).save(any(Subscription.class));
     }
 
