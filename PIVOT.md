@@ -2,7 +2,7 @@
 
 **Vision**
 
-BudgetTracker aims to become an all-in-one personal finance companion. Building on SubTracker’s solid subscription tracking foundation, it will expand to cover every facet of budgeting – from day-to-day expenses to long-term financial goals – while retaining the elegant UI and privacy-first philosophy users love.
+BudgetTracker aims to become an all-in-one personal finance companion. Building on a solid subscription tracking foundation, it will expand to cover every facet of budgeting – from day-to-day expenses to long-term financial goals – while retaining an elegant UI and privacy-first philosophy.
 
 **Planned Module Layout**
 
@@ -15,4 +15,4 @@ infra/            Terraform + GitHub Actions for cloud deployment & CI
 
 **Historical Reference**
 
-This pivot begins from tag `v1.0-subtracker`, marking the last stable SubTracker release before the transition. 
+This project evolved from a subscription tracking application into a comprehensive budget management tool. 

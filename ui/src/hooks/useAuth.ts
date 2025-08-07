@@ -1,15 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
-
-interface AuthStatus {
-  authenticated: boolean;
-  username?: string;
-}
+import type { AuthStatus } from '../types';
 
 export const useAuth = () => {
-  const navigate = useNavigate();
-  
   const { data: authStatus, isLoading, error } = useQuery<AuthStatus>({
     queryKey: ['auth-status'],
     queryFn: async () => {
@@ -21,16 +13,14 @@ export const useAuth = () => {
       }
       return response.json();
     },
-    retry: 1
+    retry: 1,
+    staleTime: 0, // Always recheck auth status
+    gcTime: 0, // Don't cache auth queries
+    refetchOnWindowFocus: true, // Recheck when window gets focus
+    refetchOnMount: true // Always refetch when component mounts
   });
 
   const isAuthenticated = authStatus?.authenticated || false;
-
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated && !error) {
-      navigate('/login');
-    }
-  }, [isLoading, isAuthenticated, error, navigate]);
 
   return {
     isAuthenticated,

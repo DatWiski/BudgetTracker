@@ -1,4 +1,8 @@
+import { useQueryClient } from '@tanstack/react-query';
+
 const Login = () => {
+  const queryClient = useQueryClient();
+  
   // Check for OAuth error in URL
   const urlParams = new URLSearchParams(window.location.search);
   const hasOAuthError = urlParams.get('error') === 'oauth_failed';
@@ -14,6 +18,8 @@ const Login = () => {
     // Listen for success message from popup
     const handleMessage = (event: MessageEvent) => {
       if (event.origin === window.location.origin && event.data.type === 'OAUTH_SUCCESS') {
+        // Clear auth cache to trigger re-check
+        queryClient.clear();
         // Success! Redirect to dashboard
         window.location.href = '/';
       }

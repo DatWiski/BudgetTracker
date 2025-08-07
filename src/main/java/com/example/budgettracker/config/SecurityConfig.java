@@ -1,0 +1,109 @@
+package com.example.budgettracker.config;
+
+import com.example.budgettracker.service.GoogleOidcUserService;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.beans.factory.annotation.Value;
+import java.util.Arrays;
+import java.util.List;
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Value("${app.cors.allowed-origins}")
+    private String allowedOrigins;
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http, GoogleOidcUserService googleUserService) throws Exception {
+        CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
+        requestHandler.setCsrfRequestAttributeName("_csrf");
+        
+        http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .csrfTokenRequestHandler(requestHandler)
+                        .ignoringRequestMatchers("/h2-console/**", "/api/auth/status", "/api/csrf-token")
+                )
+                .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable())) // For H2 console
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/status", "/api/csrf-token").permitAll()
+                        .requestMatchers("/login", "/oauth-complete", "/oauth2/**", "/static/**", "/*.js", "/*.css", "/*.ico", "/*.png", "/*.svg", "/assets/**").permitAll()
+                        .requestMatchers("/api/**").authenticated()
+                        .anyRequest().authenticated()
+                )
+                .exceptionHandling(ex -> ex
+                        .defaultAuthenticationEntryPointFor(
+                                new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
+                                PathPatternRequestMatcher.withDefaults().matcher("/api/**")
+                        )
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            // For non-API requests, redirect to login
+                            if (!request.getRequestURI().startsWith("/api/")) {
+                                response.sendRedirect("/login");
+                            } else {
+                                response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                            }
+                        })
+                )
+                .oauth2Login(o -> o
+                        .loginPage("/login")
+                        .defaultSuccessUrl("/oauth-complete", true)
+                        .failureUrl("/login?error=oauth_failed")
+                        .userInfoEndpoint(u -> u.oidcUserService(googleUserService))
+                        .successHandler((request, response, authentication) -> {
+                            // Always redirect to oauth-complete regardless of context
+                            response.sendRedirect("/oauth-complete");
+                        })
+                )
+                .formLogin(form -> form.disable())
+                .oauth2ResourceServer(rs ->
+                        rs.jwt(Customizer.withDefaults())
+                )
+                .logout(l -> l
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
+                );
+
+        return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration cfg = new CorsConfiguration();
+        cfg.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
+        cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        cfg.setAllowedHeaders(List.of(
+            "Authorization", 
+            "Content-Type", 
+            "Accept", 
+            "X-Requested-With", 
+            "X-CSRF-TOKEN",
+            "Cache-Control"
+        ));
+        cfg.setExposedHeaders(List.of("X-CSRF-TOKEN"));
+        cfg.setAllowCredentials(true);
+        cfg.setMaxAge(3600L); // Cache preflight responses for 1 hour
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", cfg);
+        return source;
+    }
+
+
+}

@@ -9,22 +9,29 @@
         <relativePath/>
     </parent>
     <groupId>com.example</groupId>
-    <artifactId>SubTrackerProject</artifactId>
+    <artifactId>BudgetTracker</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>SubTrackerProject</name>
-    <description>SubTrackerProject</description>
-    <url/>
+    <name>BudgetTracker</name>
+    <description>BudgetTracker - Personal Budget and Subscription Management</description>
+    <url>https://github.com/marcel/budget-tracker</url>
     <licenses>
-        <license/>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+        </license>
     </licenses>
     <developers>
-        <developer/>
+        <developer>
+            <id>marcel</id>
+            <name>Marcel</name>
+            <email>marcel@example.com</email>
+        </developer>
     </developers>
     <scm>
-        <connection/>
-        <developerConnection/>
-        <tag/>
-        <url/>
+        <connection>scm:git:git://github.com/marcel/budget-tracker.git</connection>
+        <developerConnection>scm:git:ssh://github.com:marcel/budget-tracker.git</developerConnection>
+        <tag>HEAD</tag>
+        <url>https://github.com/marcel/budget-tracker</url>
     </scm>
     <properties>
         <java.version>17</java.version>
@@ -66,17 +73,7 @@
             <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
         </dependency>
 
-        <!-- For Thymeleaf templates -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-thymeleaf</artifactId>
-        </dependency>
 
-        <!-- For Thymeleaf Spring Security integration (sec:authorize, etc.) -->
-        <dependency>
-            <groupId>org.thymeleaf.extras</groupId>
-            <artifactId>thymeleaf-extras-springsecurity6</artifactId>
-        </dependency>
 
         <!-- PostgreSQL Database Driver -->
         <dependency>
@@ -99,6 +96,13 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
+        </dependency>
+
+        <!-- For loading .env files -->
+        <dependency>
+            <groupId>me.paulschwarz</groupId>
+            <artifactId>spring-dotenv</artifactId>
+            <version>4.0.0</version>
         </dependency>
 
         <!-- For all testing -->
@@ -138,7 +142,7 @@
                     <user>${env.DB_USERNAME}</user>
                     <password>${env.DB_PASSWORD}</password>
                     <baselineOnMigrate>true</baselineOnMigrate>
-                    <baselineVersion>6</baselineVersion>
+                    <baselineVersion>1</baselineVersion>
                 </configuration>
                 <dependencies>
                     <dependency>
@@ -177,7 +181,7 @@
                             <goal>install-node-and-npm</goal>
                         </goals>
                         <configuration>
-                            <nodeVersion>v20.17.0</nodeVersion>
+                            <nodeVersion>v20.19.0</nodeVersion>
                             <npmVersion>10.8.2</npmVersion>
                         </configuration>
                     </execution>

@@ -1,114 +1,39 @@
 import type { FC } from 'react';
-import { useQuery } from '@tanstack/react-query';
-
-interface Subscription {
-  id: number;
-  name: string;
-  price: number;
-  billingPeriod: 'MONTHLY' | 'YEARLY' | 'WEEKLY';
-  nextBillingDate: string;
-  isActive: boolean;
-  categoryId: number;
-  categoryName?: string;
-  categoryColor?: string;
-}
+import { formatCurrency } from '../utils/currency';
+import { formatRelativeTime, daysUntilBilling } from '../utils/dateCalculations';
+import Icon from '../components/Icon';
+import { StatCard, Card, LoadingSpinner } from '../components/ui';
+import { useSubscriptions } from '../hooks/useSubscriptions';
+import { useSubscriptionMetrics } from '../hooks/useSubscriptionMetrics';
+import { theme } from '../styles/theme';
+import type { RecentActivity } from '../types';
 
 const Dashboard: FC = () => {
-  // Fetch subscriptions
-  const { data: subscriptions = [], isLoading } = useQuery({
-    queryKey: ['subscriptions'],
-    queryFn: async () => {
-      const response = await fetch('/api/subscriptions', {
-        credentials: 'include'
-      });
-      if (!response.ok) {
-        throw new Error('Failed to fetch subscriptions');
-      }
-      return response.json();
-    }
-  });
+  const { subscriptions, isLoading } = useSubscriptions();
+  const { metrics, upcomingBills, recentActivity } = useSubscriptionMetrics(subscriptions);
 
-  // Calculate metrics
-  const activeSubscriptions = subscriptions.filter((sub: Subscription) => sub.isActive);
-  const totalMonthlySpend = activeSubscriptions.reduce((total: number, sub: Subscription) => {
-    const monthlyAmount = sub.billingPeriod === 'YEARLY' ? sub.price / 12 : 
-                         sub.billingPeriod === 'WEEKLY' ? sub.price * 4.33 : sub.price;
-    return total + monthlyAmount;
-  }, 0);
-
-  // Get upcoming bills (next 7 days)
-  const upcomingBills = activeSubscriptions.filter((sub: Subscription) => {
-    const daysUntilBilling = Math.ceil(
-      (new Date(sub.nextBillingDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
-    );
-    return daysUntilBilling >= 0 && daysUntilBilling <= 7;
-  }).sort((a: Subscription, b: Subscription) => 
-    new Date(a.nextBillingDate).getTime() - new Date(b.nextBillingDate).getTime()
-  );
-
-  // Get recent activity (subscriptions billed in the last 30 days)
-  const recentActivity = activeSubscriptions
-    .map((sub: Subscription) => {
-      const nextBilling = new Date(sub.nextBillingDate);
-      const lastBilling = new Date(nextBilling);
-      
-      // Calculate last billing date based on billing period
-      switch (sub.billingPeriod) {
-        case 'MONTHLY':
-          lastBilling.setMonth(lastBilling.getMonth() - 1);
-          break;
-        case 'YEARLY':
-          lastBilling.setFullYear(lastBilling.getFullYear() - 1);
-          break;
-        case 'WEEKLY':
-          lastBilling.setDate(lastBilling.getDate() - 7);
-          break;
-      }
-
-      const daysSinceLastBilling = Math.ceil(
-        (new Date().getTime() - lastBilling.getTime()) / (1000 * 60 * 60 * 24)
-      );
-
-      return {
-        ...sub,
-        lastBillingDate: lastBilling,
-        daysSinceLastBilling
-      };
-    })
-    .filter((sub: Subscription & { daysSinceLastBilling: number }) => sub.daysSinceLastBilling <= 30 && sub.daysSinceLastBilling >= 0)
-    .sort((a: Subscription & { daysSinceLastBilling: number }, b: Subscription & { daysSinceLastBilling: number }) => a.daysSinceLastBilling - b.daysSinceLastBilling)
-    .slice(0, 5);
-
-  const formatDaysAgo = (days: number) => {
-    if (days === 0) return 'Today';
-    if (days === 1) return '1 day ago';
-    if (days < 7) return `${days} days ago`;
-    if (days < 14) return '1 week ago';
-    if (days < 30) return `${Math.floor(days / 7)} weeks ago`;
-    return '1 month ago';
-  };
 
   return (
     <div style={{
-      padding: '2rem',
+      padding: theme.spacing.xl,
       minHeight: '100vh',
-      color: 'white'
+      color: theme.colors.white
     }}>
       {/* Header */}
-      <div style={{ marginBottom: '2.5rem' }}>
+      <div style={{ marginBottom: theme.spacing['2xl'] }}>
         <h1 style={{
-          fontSize: '2.5rem',
-          fontWeight: '800',
-          background: 'linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)',
+          fontSize: theme.typography.fontSize['4xl'],
+          fontWeight: theme.typography.fontWeight.extrabold,
+          background: theme.gradients.primary,
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
-          marginBottom: '0.5rem'
+          marginBottom: theme.spacing.sm
         }}>
           Dashboard
         </h1>
         <p style={{
-          color: '#94a3b8',
-          fontSize: '1.1rem'
+          color: theme.colors.gray[400],
+          fontSize: theme.typography.fontSize.lg
         }}>
           Welcome back! Here's your financial overview
         </p>
@@ -118,198 +43,130 @@ const Dashboard: FC = () => {
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-        gap: '1.5rem',
-        marginBottom: '2.5rem'
+        gap: theme.spacing.lg,
+        marginBottom: theme.spacing['2xl']
       }}>
+        <StatCard
+          title="Total Spending"
+          value={formatCurrency(metrics.totalMonthlySpend)}
+          subtitle="Monthly"
+          description={`From ${metrics.activeSubscriptions} active subscriptions`}
+          iconName="money"
+          gradientColors={[theme.colors.secondary[500], theme.colors.primary[500]]}
+          isLoading={isLoading}
+        />
         
-        {/* Total Spending Card */}
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.05)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '20px',
-          padding: '2rem',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-          transition: 'all 0.3s ease',
-          cursor: 'pointer'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-            <div style={{
-              width: '60px',
-              height: '60px',
-              background: 'linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)',
-              borderRadius: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '1.5rem'
-            }}>
-              💰
-            </div>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '0.875rem', color: '#94a3b8', marginBottom: '0.25rem' }}>Monthly</div>
-              <div style={{ fontSize: '2rem', fontWeight: '700', color: 'white' }}>
-                {isLoading ? '...' : `$${totalMonthlySpend.toFixed(2)}`}
-              </div>
-            </div>
-          </div>
-          <h3 style={{ fontSize: '1.25rem', fontWeight: '600', color: 'white', margin: 0 }}>Total Spending</h3>
-          <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem', gap: '0.5rem' }}>
-            <span style={{ color: '#94a3b8', fontSize: '0.875rem' }}>
-              From {activeSubscriptions.length} active subscriptions
-            </span>
-          </div>
-        </div>
-
-        {/* Active Subscriptions Card */}
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.05)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '20px',
-          padding: '2rem',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-          transition: 'all 0.3s ease',
-          cursor: 'pointer'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-            <div style={{
-              width: '60px',
-              height: '60px',
-              background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-              borderRadius: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '1.5rem'
-            }}>
-              📱
-            </div>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '0.875rem', color: '#94a3b8', marginBottom: '0.25rem' }}>Active</div>
-              <div style={{ fontSize: '2rem', fontWeight: '700', color: 'white' }}>
-                {isLoading ? '...' : activeSubscriptions.length}
-              </div>
-            </div>
-          </div>
-          <h3 style={{ fontSize: '1.25rem', fontWeight: '600', color: 'white', margin: 0 }}>Subscriptions</h3>
-          <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem', gap: '0.5rem' }}>
-            <span style={{ color: '#3b82f6', fontSize: '0.875rem' }}>
-              {isLoading ? 'Loading...' : `$${totalMonthlySpend.toFixed(2)}/month total`}
-            </span>
-          </div>
-        </div>
-
-        {/* Upcoming Bills Card */}
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.05)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '20px',
-          padding: '2rem',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-          transition: 'all 0.3s ease',
-          cursor: 'pointer'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-            <div style={{
-              width: '60px',
-              height: '60px',
-              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-              borderRadius: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '1.5rem'
-            }}>
-              📋
-            </div>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '0.875rem', color: '#94a3b8', marginBottom: '0.25rem' }}>Due Soon</div>
-              <div style={{ fontSize: '2rem', fontWeight: '700', color: 'white' }}>
-                {isLoading ? '...' : upcomingBills.length}
-              </div>
-            </div>
-          </div>
-          <h3 style={{ fontSize: '1.25rem', fontWeight: '600', color: 'white', margin: 0 }}>Upcoming Bills</h3>
-          <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem', gap: '0.5rem' }}>
-            {upcomingBills.length > 0 ? (
-              <span style={{ color: '#f59e0b', fontSize: '0.875rem' }}>
-                ⚠️ {upcomingBills[0].name} due {
-                  Math.ceil((new Date(upcomingBills[0].nextBillingDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) === 0 
-                    ? 'today' 
-                    : `in ${Math.ceil((new Date(upcomingBills[0].nextBillingDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days`
-                }
-              </span>
+        <StatCard
+          title="Subscriptions"
+          value={metrics.activeSubscriptions}
+          subtitle="Active"
+          description={isLoading ? 'Loading...' : `${formatCurrency(metrics.totalMonthlySpend)}/month total`}
+          iconName="subscriptions"
+          gradientColors={[theme.colors.primary[500], theme.colors.primary[700]]}
+          isLoading={isLoading}
+        />
+        
+        <StatCard
+          title="Upcoming Bills"
+          value={metrics.upcomingBills}
+          subtitle="Due Soon"
+          description={
+            upcomingBills.length > 0 ? (
+              `⚠️ ${upcomingBills[0].name} due ${
+                daysUntilBilling(upcomingBills[0].nextBillingDate) === 0 
+                  ? 'today' 
+                  : `in ${daysUntilBilling(upcomingBills[0].nextBillingDate)} days`
+              }`
             ) : (
-              <span style={{ color: '#10b981', fontSize: '0.875rem' }}>✅ No bills due this week</span>
-            )}
-          </div>
-        </div>
+              '✅ No bills due this week'
+            )
+          }
+          iconName="calendar"
+          gradientColors={[theme.colors.success[500], theme.colors.success[600]]}
+          isLoading={isLoading}
+        />
       </div>
 
       {/* Recent Activity */}
-      <div style={{
-        background: 'rgba(255, 255, 255, 0.05)',
-        backdropFilter: 'blur(10px)',
-        borderRadius: '20px',
-        padding: '2rem',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)'
-      }}>
-        <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'white', marginBottom: '2rem' }}>Recent Activity</h3>
+      <Card>
+        <h3 style={{ 
+          fontSize: theme.typography.fontSize['2xl'], 
+          fontWeight: theme.typography.fontWeight.bold, 
+          color: theme.colors.white, 
+          marginBottom: theme.spacing.xl 
+        }}>
+          Recent Activity
+        </h3>
         
         {isLoading ? (
-          <div style={{ textAlign: 'center', color: '#94a3b8', padding: '2rem' }}>
-            Loading recent activity...
-          </div>
+          <LoadingSpinner message="Loading recent activity..." />
         ) : recentActivity.length === 0 ? (
-          <div style={{ textAlign: 'center', color: '#94a3b8', padding: '2rem' }}>
-            <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>📊</div>
+          <div style={{ 
+            textAlign: 'center', 
+            color: theme.colors.gray[400], 
+            padding: theme.spacing.xl 
+          }}>
+            <div style={{ marginBottom: theme.spacing.md }}>
+              <Icon name="activity" size={48} color={theme.colors.gray[400]} />
+            </div>
             <p>No recent subscription activity to show.</p>
-            <p style={{ fontSize: '0.875rem' }}>Your subscription charges will appear here once they occur.</p>
+            <p style={{ fontSize: theme.typography.fontSize.sm }}>
+              Your subscription charges will appear here once they occur.
+            </p>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {recentActivity.map((activity: Subscription & { daysSinceLastBilling: number }) => (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.md }}>
+            {recentActivity.map((activity: RecentActivity) => (
               <div key={activity.id} style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                padding: '1rem',
+                padding: theme.spacing.md,
                 background: 'rgba(255, 255, 255, 0.03)',
-                borderRadius: '12px',
+                borderRadius: theme.borderRadius.md,
                 border: '1px solid rgba(255, 255, 255, 0.05)'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.md }}>
                   <div style={{
                     width: '48px',
                     height: '48px',
                     background: activity.categoryColor || 'rgba(255, 255, 255, 0.1)',
-                    borderRadius: '12px',
+                    borderRadius: theme.borderRadius.md,
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '1.2rem'
+                    justifyContent: 'center'
                   }}>
-                    📱
+                    <Icon name="subscriptions" size={24} color={theme.colors.white} />
                   </div>
                   <div>
-                    <div style={{ color: 'white', fontWeight: '600', fontSize: '1rem' }}>{activity.name}</div>
-                    <div style={{ color: '#94a3b8', fontSize: '0.875rem' }}>
-                      {formatDaysAgo(activity.daysSinceLastBilling)}
+                    <div style={{ 
+                      color: theme.colors.white, 
+                      fontWeight: theme.typography.fontWeight.semibold, 
+                      fontSize: theme.typography.fontSize.md 
+                    }}>
+                      {activity.name}
+                    </div>
+                    <div style={{ 
+                      color: theme.colors.gray[400], 
+                      fontSize: theme.typography.fontSize.sm 
+                    }}>
+                      {formatRelativeTime(activity.daysSinceLastBilling)}
                     </div>
                   </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ color: 'white', fontWeight: '700', fontSize: '1.1rem' }}>
-                    ${activity.price.toFixed(2)}
+                  <div style={{ 
+                    color: theme.colors.white, 
+                    fontWeight: theme.typography.fontWeight.bold, 
+                    fontSize: theme.typography.fontSize.lg 
+                  }}>
+                    {formatCurrency(activity.price)}
                   </div>
                   <div style={{
-                    color: '#3b82f6',
-                    fontSize: '0.75rem',
+                    color: theme.colors.primary[500],
+                    fontSize: theme.typography.fontSize.xs,
                     textTransform: 'uppercase',
-                    fontWeight: '600'
+                    fontWeight: theme.typography.fontWeight.semibold
                   }}>
                     {activity.billingPeriod.toLowerCase()}
                   </div>
@@ -318,7 +175,7 @@ const Dashboard: FC = () => {
             ))}
           </div>
         )}
-      </div>
+      </Card>
     </div>
   );
 };

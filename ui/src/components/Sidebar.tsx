@@ -1,16 +1,26 @@
 
 import { NavLink } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import { clearCsrfToken } from '../utils/csrf';
+import Icon from './Icon';
 
 const Sidebar = () => {
+  const queryClient = useQueryClient();
+  
   const navItems = [
-    { path: '/', name: 'Dashboard', icon: '📊' },
-    { path: '/subscriptions', name: 'Subscriptions', icon: '📱' },
-    { path: '/bills', name: 'Bills', icon: '📋' },
-    { path: '/income', name: 'Income', icon: '💰' },
-    { path: '/settings', name: 'Settings', icon: '⚙️' },
+    { path: '/', name: 'Dashboard', icon: 'dashboard' },
+    { path: '/subscriptions', name: 'Subscriptions', icon: 'subscriptions' },
+    { path: '/bills', name: 'Bills', icon: 'bills' },
+    { path: '/income', name: 'Income', icon: 'income' },
+    { path: '/settings', name: 'Settings', icon: 'settings' },
   ];
 
   const handleLogout = () => {
+    // First clear all cached queries, especially auth status
+    queryClient.clear();
+    // Clear CSRF token cache
+    clearCsrfToken();
+    
     // Call logout endpoint and redirect to login
     fetch('/logout', {
       method: 'POST',
@@ -19,9 +29,12 @@ const Sidebar = () => {
         'Content-Type': 'application/x-www-form-urlencoded',
       }
     }).then(() => {
+      // Ensure cache is cleared again after logout
+      queryClient.clear();
       window.location.href = '/login';
     }).catch(() => {
-      // Even if logout fails, redirect to login
+      // Even if logout fails, clear cache and redirect to login
+      queryClient.clear();
       window.location.href = '/login';
     });
   };
@@ -105,8 +118,12 @@ const Sidebar = () => {
                 }
               }}
             >
-              <span style={{ fontSize: '1.25rem' }}>{item.icon}</span>
-              {item.name}
+              {({ isActive }) => (
+                <>
+                  <Icon name={item.icon} size={20} color={isActive ? 'white' : '#e2e8f0'} />
+                  {item.name}
+                </>
+              )}
             </NavLink>
           ))}
         </nav>
@@ -146,7 +163,7 @@ const Sidebar = () => {
               e.currentTarget.style.boxShadow = 'none';
             }}
           >
-            <span style={{ fontSize: '1.25rem' }}>🚪</span>
+            <Icon name="logout" size={20} color="#f87171" />
             Logout
           </button>
         </div>

@@ -1,24 +1,9 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '../hooks/useAuth';
-
-interface Category {
-  id: number;
-  name: string;
-  color: string;
-}
-
-interface Subscription {
-  id?: number;
-  name: string;
-  price: number;
-  billingPeriod: 'MONTHLY' | 'YEARLY' | 'WEEKLY';
-  nextBillingDate: string;
-  isActive: boolean;
-  categoryId: number;
-  categoryName?: string;
-  categoryColor?: string;
-}
+import { convertToMonthly } from '../utils/currency';
+import { apiRequest } from '../utils/api';
+import { Loading, ErrorDisplay } from '../components/ApiStatus';
+import type { Category, Subscription, PaginatedResponse } from '../types';
 
 interface SubscriptionFormData {
   name: string;
@@ -26,11 +11,10 @@ interface SubscriptionFormData {
   billingPeriod: 'MONTHLY' | 'YEARLY' | 'WEEKLY';
   nextBillingDate: string;
   categoryId: string;
-  isActive: boolean;
+  active: boolean;
 }
 
 const Subscriptions = () => {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [showForm, setShowForm] = useState(false);
   const [editingSubscription, setEditingSubscription] = useState<Subscription | null>(null);
   const [sortBy, setSortBy] = useState<'name' | 'price' | 'nextBillingDate'>('name');
@@ -42,100 +26,86 @@ const Subscriptions = () => {
     billingPeriod: 'MONTHLY',
     nextBillingDate: '',
     categoryId: '',
-    isActive: true
+    active: true
   });
 
   const queryClient = useQueryClient();
 
   // Fetch subscriptions only if authenticated
-  const { data: subscriptions = [], isLoading: subscriptionsLoading, error: subscriptionsError } = useQuery({
+  const { data: subscriptionsPage, isLoading: subscriptionsLoading, error: subscriptionsError, refetch: refetchSubscriptions } = useQuery<PaginatedResponse<Subscription>>({
     queryKey: ['subscriptions'],
-    queryFn: async () => {
-      const response = await fetch('/api/subscriptions', {
-        credentials: 'include'
-      });
-      if (!response.ok) {
-        throw new Error('Failed to fetch subscriptions');
-      }
-      return response.json();
-    },
-    enabled: isAuthenticated // Only run this query if authenticated
+    queryFn: () => apiRequest<PaginatedResponse<Subscription>>('/api/subscriptions'),
+    // Query will run automatically since route is protected
   });
 
   // Fetch categories only if authenticated
-  const { data: categories = [], isLoading: categoriesLoading } = useQuery({
+  const { data: categories, isLoading: categoriesLoading, error: categoriesError } = useQuery<Category[]>({
     queryKey: ['categories'],
-    queryFn: async () => {
-      const response = await fetch('/api/categories', {
-        credentials: 'include'
-      });
-      if (!response.ok) {
-        throw new Error('Failed to fetch categories');
-      }
-      return response.json();
-    },
-    enabled: isAuthenticated // Only run this query if authenticated
+    queryFn: () => apiRequest<Category[]>('/api/categories'),
+    // Query will run automatically since route is protected
   });
+
+  // Extract data from paginated responses
+  const safeSubscriptions = Array.isArray(subscriptionsPage?.content) ? subscriptionsPage.content : [];
+  const safeCategories = Array.isArray(categories) ? categories : [];
 
   // Create subscription mutation
   const createMutation = useMutation({
-    mutationFn: async (subscription: Omit<Subscription, 'id'>) => {
-      const response = await fetch('/api/subscriptions', {
+    mutationFn: (subscription: Omit<Subscription, 'id'>) => 
+      apiRequest('/api/subscriptions', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
         body: JSON.stringify(subscription)
-      });
-      if (!response.ok) {
-        throw new Error('Failed to create subscription');
-      }
-      return response.json();
-    },
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
       setShowForm(false);
       resetForm();
+    },
+    onError: (error) => {
+      console.error('Create subscription error:', error);
     }
   });
 
   // Update subscription mutation
   const updateMutation = useMutation({
-    mutationFn: async ({ id, ...subscription }: Subscription) => {
-      const response = await fetch(`/api/subscriptions/${id}`, {
+    mutationFn: ({ id, ...subscription }: Subscription) =>
+      apiRequest(`/api/subscriptions/${id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
         body: JSON.stringify(subscription)
-      });
-      if (!response.ok) {
-        throw new Error('Failed to update subscription');
-      }
-      return response.json();
-    },
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
       setShowForm(false);
       setEditingSubscription(null);
       resetForm();
+    },
+    onError: (error) => {
+      console.error('Update subscription error:', error);
     }
   });
 
   // Delete subscription mutation
   const deleteMutation = useMutation({
-    mutationFn: async (id: number) => {
-      const response = await fetch(`/api/subscriptions/${id}`, {
-        method: 'DELETE',
-        credentials: 'include'
+    mutationFn: (id: number) => 
+      apiRequest(`/api/subscriptions/${id}`, {
+        method: 'DELETE'
+      }),
+    onSuccess: (_, deletedId) => {
+      // Optimistically remove the deleted subscription from cache
+      queryClient.setQueryData(['subscriptions'], (oldData: PaginatedResponse<Subscription> | undefined) => {
+        if (!oldData?.content) return oldData;
+        return {
+          ...oldData,
+          content: oldData.content.filter(sub => sub.id !== deletedId),
+          totalElements: (oldData.totalElements || 0) - 1
+        };
       });
-      if (!response.ok) {
-        throw new Error('Failed to delete subscription');
-      }
+      // Also invalidate to ensure fresh data on next refetch
+      queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
     },
-    onSuccess: () => {
+    onError: (error) => {
+      console.error('Delete subscription error:', error);
+      // On error, invalidate to refetch correct data
       queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
     }
   });
@@ -147,20 +117,44 @@ const Subscriptions = () => {
       billingPeriod: 'MONTHLY',
       nextBillingDate: '',
       categoryId: '',
-      isActive: true
+      active: true
     });
+    // Clear any previous errors
+    createMutation.reset();
+    updateMutation.reset();
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Basic validation
+    if (!formData.name.trim()) {
+      alert('Please enter a subscription name');
+      return;
+    }
+    
+    if (!formData.price || parseFloat(formData.price) <= 0) {
+      alert('Please enter a valid price greater than 0');
+      return;
+    }
+    
+    if (!formData.nextBillingDate) {
+      alert('Please select a next billing date');
+      return;
+    }
+    
+    if (!formData.categoryId) {
+      alert('Please select a category');
+      return;
+    }
+    
     const subscriptionData: Omit<Subscription, 'id'> = {
-      name: formData.name,
+      name: formData.name.trim(),
       price: parseFloat(formData.price),
       billingPeriod: formData.billingPeriod,
       nextBillingDate: formData.nextBillingDate,
       categoryId: parseInt(formData.categoryId),
-      isActive: formData.isActive
+      active: formData.active
     };
 
     if (editingSubscription) {
@@ -178,7 +172,7 @@ const Subscriptions = () => {
       billingPeriod: subscription.billingPeriod,
       nextBillingDate: subscription.nextBillingDate,
       categoryId: subscription.categoryId.toString(),
-      isActive: subscription.isActive
+      active: subscription.active
     });
     setShowForm(true);
   };
@@ -190,14 +184,14 @@ const Subscriptions = () => {
   };
 
   // Filter and sort subscriptions
-  const filteredAndSortedSubscriptions = subscriptions
+  const filteredAndSortedSubscriptions = safeSubscriptions
     .filter((sub: Subscription) => {
       if (filterCategory !== 'all' && sub.categoryId !== parseInt(filterCategory)) {
         return false;
       }
       if (filterStatus !== 'all') {
-        if (filterStatus === 'active' && !sub.isActive) return false;
-        if (filterStatus === 'inactive' && sub.isActive) return false;
+        if (filterStatus === 'active' && !sub.active) return false;
+        if (filterStatus === 'inactive' && sub.active) return false;
       }
       return true;
     })
@@ -212,306 +206,47 @@ const Subscriptions = () => {
       }
     });
 
-  const totalMonthlySpend = subscriptions
-    .filter((sub: Subscription) => sub.isActive)
+  const totalMonthlySpend = safeSubscriptions
+    .filter((sub: Subscription) => sub.active)
     .reduce((total: number, sub: Subscription) => {
-      const monthlyAmount = sub.billingPeriod === 'YEARLY' ? sub.price / 12 : 
-                           sub.billingPeriod === 'WEEKLY' ? sub.price * 4.33 : sub.price;
-      return total + monthlyAmount;
+      return total + convertToMonthly(sub.price, sub.billingPeriod);
     }, 0);
 
-  // Show loading state while checking authentication
-  if (authLoading) {
-    return (
-      <div style={{ padding: '2rem', color: 'white', textAlign: 'center' }}>
-        <div>Loading...</div>
-      </div>
-    );
-  }
-
-  // Don't render anything if not authenticated (useAuth will redirect)
-  if (!isAuthenticated) {
-    return null;
-  }
 
   if (subscriptionsLoading || categoriesLoading) {
     return (
-      <div style={{ padding: '2rem', color: 'white', textAlign: 'center' }}>
-        <div>Loading subscriptions...</div>
+      <div style={{ padding: '2rem', color: 'white', minHeight: '100vh' }}>
+        <Loading 
+          message={subscriptionsLoading ? "Loading subscriptions..." : "Loading categories..."} 
+          size="lg" 
+        />
       </div>
     );
   }
 
-  // Show error only for actual API errors, not authentication issues
-  if (subscriptionsError && isAuthenticated) {
+  // Show error for API errors
+  if (subscriptionsError || categoriesError) {
     return (
       <div style={{ padding: '2rem', color: 'white', minHeight: '100vh' }}>
-        {/* Header with Add Button - show even on error */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-          <div>
-            <h1 style={{
-              fontSize: '2.5rem',
-              fontWeight: '800',
-              background: 'linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              marginBottom: '0.5rem'
-            }}>
-              Subscriptions
-            </h1>
-            <p style={{ color: '#94a3b8', fontSize: '1.1rem' }}>
-              Manage your recurring subscriptions
-            </p>
-          </div>
-          <button
-            onClick={() => {
-              setEditingSubscription(null);
-              resetForm();
-              setShowForm(true);
-            }}
-            style={{
-              background: 'linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '12px',
-              padding: '0.75rem 1.5rem',
-              fontSize: '1rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              boxShadow: '0 4px 15px rgba(139, 92, 246, 0.3)'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 8px 25px rgba(139, 92, 246, 0.4)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 15px rgba(139, 92, 246, 0.3)';
-            }}
-          >
-            + Add Subscription
-          </button>
-        </div>
-
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.05)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '20px',
-          padding: '3rem',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          textAlign: 'center'
+        <h1 style={{
+          fontSize: '2.5rem',
+          fontWeight: '800',
+          background: 'linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          marginBottom: '2rem'
         }}>
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⚠️</div>
-          <h3 style={{ color: 'white', fontSize: '1.5rem', marginBottom: '0.5rem' }}>Unable to load subscriptions</h3>
-          <p style={{ color: '#94a3b8' }}>There was an error loading your subscriptions. You can still add new ones using the button above.</p>
-        </div>
-
-        {/* Subscription Form Modal - same as below */}
-        {showForm && (
-          <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0, 0, 0, 0.8)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000
-          }}>
-            <div style={{
-              background: 'rgba(255, 255, 255, 0.1)',
-              backdropFilter: 'blur(20px)',
-              borderRadius: '20px',
-              padding: '2rem',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              width: '90%',
-              maxWidth: '500px',
-              maxHeight: '90vh',
-              overflow: 'auto'
-            }}>
-              <h2 style={{ color: 'white', marginBottom: '1.5rem', fontSize: '1.5rem', fontWeight: '700' }}>
-                {editingSubscription ? 'Edit Subscription' : 'Add New Subscription'}
-              </h2>
-              
-              <form onSubmit={handleSubmit}>
-                <div style={{ marginBottom: '1rem' }}>
-                  <label style={{ color: '#94a3b8', fontSize: '0.875rem', display: 'block', marginBottom: '0.5rem' }}>
-                    Subscription Name
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    required
-                    style={{
-                      width: '100%',
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      color: 'white',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                      borderRadius: '8px',
-                      padding: '0.75rem',
-                      fontSize: '1rem'
-                    }}
-                    placeholder="e.g., Netflix, Spotify"
-                  />
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-                  <div>
-                    <label style={{ color: '#94a3b8', fontSize: '0.875rem', display: 'block', marginBottom: '0.5rem' }}>
-                      Price
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={formData.price}
-                      onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                      required
-                      style={{
-                        width: '100%',
-                        background: 'rgba(255, 255, 255, 0.1)',
-                        color: 'white',
-                        border: '1px solid rgba(255, 255, 255, 0.2)',
-                        borderRadius: '8px',
-                        padding: '0.75rem',
-                        fontSize: '1rem'
-                      }}
-                      placeholder="0.00"
-                    />
-                  </div>
-
-                  <div>
-                    <label style={{ color: '#94a3b8', fontSize: '0.875rem', display: 'block', marginBottom: '0.5rem' }}>
-                      Billing Period
-                    </label>
-                    <select
-                      value={formData.billingPeriod}
-                      onChange={(e) => setFormData({ ...formData, billingPeriod: e.target.value as 'MONTHLY' | 'YEARLY' | 'WEEKLY' })}
-                      style={{
-                        width: '100%',
-                        background: 'rgba(255, 255, 255, 0.1)',
-                        color: 'white',
-                        border: '1px solid rgba(255, 255, 255, 0.2)',
-                        borderRadius: '8px',
-                        padding: '0.75rem',
-                        fontSize: '1rem'
-                      }}
-                    >
-                      <option value="WEEKLY">Weekly</option>
-                      <option value="MONTHLY">Monthly</option>
-                      <option value="YEARLY">Yearly</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-                  <div>
-                    <label style={{ color: '#94a3b8', fontSize: '0.875rem', display: 'block', marginBottom: '0.5rem' }}>
-                      Next Billing Date
-                    </label>
-                    <input
-                      type="date"
-                      value={formData.nextBillingDate}
-                      onChange={(e) => setFormData({ ...formData, nextBillingDate: e.target.value })}
-                      required
-                      style={{
-                        width: '100%',
-                        background: 'rgba(255, 255, 255, 0.1)',
-                        color: 'white',
-                        border: '1px solid rgba(255, 255, 255, 0.2)',
-                        borderRadius: '8px',
-                        padding: '0.75rem',
-                        fontSize: '1rem'
-                      }}
-                    />
-                  </div>
-
-                  <div>
-                    <label style={{ color: '#94a3b8', fontSize: '0.875rem', display: 'block', marginBottom: '0.5rem' }}>
-                      Category
-                    </label>
-                    <select
-                      value={formData.categoryId}
-                      onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                      required
-                      style={{
-                        width: '100%',
-                        background: 'rgba(255, 255, 255, 0.1)',
-                        color: 'white',
-                        border: '1px solid rgba(255, 255, 255, 0.2)',
-                        borderRadius: '8px',
-                        padding: '0.75rem',
-                        fontSize: '1rem'
-                      }}
-                    >
-                      <option value="">Select Category</option>
-                      {categories.map((category: Category) => (
-                        <option key={category.id} value={category.id}>{category.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div style={{ marginBottom: '2rem' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', color: 'white', cursor: 'pointer' }}>
-                    <input
-                      type="checkbox"
-                      checked={formData.isActive}
-                      onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                      style={{ marginRight: '0.5rem' }}
-                    />
-                    Active subscription
-                  </label>
-                </div>
-
-                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowForm(false);
-                      setEditingSubscription(null);
-                      resetForm();
-                    }}
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      color: 'white',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                      borderRadius: '8px',
-                      padding: '0.75rem 1.5rem',
-                      fontSize: '1rem',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={createMutation.isPending || updateMutation.isPending}
-                    style={{
-                      background: 'linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '8px',
-                      padding: '0.75rem 1.5rem',
-                      fontSize: '1rem',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      opacity: (createMutation.isPending || updateMutation.isPending) ? 0.7 : 1
-                    }}
-                  >
-                    {createMutation.isPending || updateMutation.isPending 
-                      ? 'Saving...' 
-                      : editingSubscription ? 'Update' : 'Create'
-                    }
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
+          Subscriptions
+        </h1>
+        
+        <ErrorDisplay
+          error={subscriptionsError || categoriesError!}
+          onRetry={() => {
+            refetchSubscriptions();
+            // Add categories refetch when available
+          }}
+          title="Unable to load data"
+        />
       </div>
     );
   }
@@ -566,8 +301,8 @@ const Subscriptions = () => {
         </button>
       </div>
 
-      {/* Filters - only show if we have subscriptions */}
-      {filteredAndSortedSubscriptions.length > 0 && (
+      {/* Filters - only show if we have any subscriptions */}
+      {safeSubscriptions.length > 0 && (
         <div style={{
           background: 'rgba(255, 255, 255, 0.05)',
           backdropFilter: 'blur(10px)',
@@ -615,7 +350,7 @@ const Subscriptions = () => {
               }}
             >
               <option value="all">All Categories</option>
-              {categories.map((category: Category) => (
+              {safeCategories.map((category: Category) => (
                 <option key={category.id} value={category.id}>{category.name}</option>
               ))}
             </select>
@@ -671,6 +406,20 @@ const Subscriptions = () => {
             <h2 style={{ color: 'white', marginBottom: '1.5rem', fontSize: '1.5rem', fontWeight: '700' }}>
               {editingSubscription ? 'Edit Subscription' : 'Add New Subscription'}
             </h2>
+            
+            {/* Error Display */}
+            {(createMutation.error || updateMutation.error) && (
+              <div style={{
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                borderRadius: '8px',
+                padding: '1rem',
+                marginBottom: '1.5rem',
+                color: '#fca5a5'
+              }}>
+                <strong>Error:</strong> {(createMutation.error || updateMutation.error)?.message}
+              </div>
+            )}
             
             <form onSubmit={handleSubmit}>
               <div style={{ marginBottom: '1rem' }}>
@@ -784,7 +533,7 @@ const Subscriptions = () => {
                     }}
                   >
                     <option value="">Select Category</option>
-                    {categories.map((category: Category) => (
+                    {safeCategories.map((category: Category) => (
                       <option key={category.id} value={category.id}>{category.name}</option>
                     ))}
                   </select>
@@ -795,8 +544,8 @@ const Subscriptions = () => {
                 <label style={{ display: 'flex', alignItems: 'center', color: 'white', cursor: 'pointer' }}>
                   <input
                     type="checkbox"
-                    checked={formData.isActive}
-                    onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                    checked={formData.active}
+                    onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
                     style={{ marginRight: '0.5rem' }}
                   />
                   Active subscription
@@ -928,7 +677,7 @@ const Subscriptions = () => {
                       <h3 style={{ color: 'white', fontSize: '1.1rem', fontWeight: '600', margin: 0 }}>
                         {subscription.name}
                       </h3>
-                      {!subscription.isActive && (
+                      {!subscription.active && (
                         <span style={{
                           background: 'rgba(239, 68, 68, 0.2)',
                           color: '#fca5a5',

@@ -1,7 +1,5 @@
--- Add locked column default false
-ALTER TABLE category ADD COLUMN IF NOT EXISTS locked BOOLEAN NOT NULL DEFAULT FALSE;
-
 -- Inserts a locked "Subscriptions" category for each user if absent
+-- Note: locked column was added in V4
 INSERT INTO category (app_user_id, name, color, locked)
 SELECT au.id, 'Subscriptions', '#9ca3af', TRUE
 FROM app_user au

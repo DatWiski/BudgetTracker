@@ -1,0 +1,99 @@
+package com.example.budgettracker.service;
+
+import com.example.budgettracker.config.CategoryConfig;
+import com.example.budgettracker.dto.CategoryResponse;
+import com.example.budgettracker.model.AppUser;
+import com.example.budgettracker.model.Category;
+import com.example.budgettracker.repository.CategoryRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class CategoryServiceImpl implements CategoryService {
+
+    private final CategoryRepository categoryRepository;
+    private final CategoryConfig categoryConfig;
+    
+    @Override
+    @Transactional
+    public void ensureDefaultCategoriesExist(AppUser user) {
+        log.debug("Ensuring default categories exist for user: {}", user.getId());
+        
+        List<Category> existingCategories = categoryRepository.findByAppUserOrderByNameAsc(user);
+        Set<String> existingNames = existingCategories.stream()
+            .map(Category::getName)
+            .collect(Collectors.toSet());
+        
+        List<Category> categoriesToCreate = new ArrayList<>();
+        
+        categoryConfig.getDefaults().forEach((name, color) -> {
+            if (!existingNames.contains(name)) {
+                categoriesToCreate.add(new Category(name, color, user));
+            }
+        });
+        
+        if (!categoriesToCreate.isEmpty()) {
+            categoryRepository.saveAll(categoriesToCreate);
+            log.info("Created {} default categories for user {}", categoriesToCreate.size(), user.getId());
+        }
+    }
+    
+    @Override
+    @Transactional
+    public Category findOrCreateCategory(String name, AppUser user) {
+        return categoryRepository.findByNameIgnoreCaseAndAppUser(name, user)
+            .orElseGet(() -> {
+                String color = categoryConfig.getDefaults().getOrDefault(name, generateRandomColor());
+                return categoryRepository.save(new Category(name, color, user));
+            });
+    }
+    
+    @Override
+    public List<Category> getCategoriesForUser(AppUser user) {
+        return categoryRepository.findByAppUserOrderByNameAsc(user);
+    }
+    
+    @Override
+    public List<CategoryResponse> getCategoriesWithCountsForUser(AppUser user) {
+        List<Category> categories = categoryRepository.findByAppUserOrderByNameAsc(user);
+        return categories.stream()
+                .map(category -> CategoryResponse.fromEntity(
+                        category,
+                        getActiveSubscriptionCount(category)
+                ))
+                .collect(Collectors.toList());
+    }
+    
+    @Override
+    public long getActiveSubscriptionCount(Category category) {
+        return categoryRepository.countActiveSubscriptionsByCategory(category);
+    }
+    
+    @Override
+    public Category findByIdAndUser(Long categoryId, AppUser user) {
+        return categoryRepository.findByIdAndUserId(categoryId, user.getId())
+            .orElseThrow(() -> new RuntimeException("Category not found or not owned by user"));
+    }
+    
+    // Available colors for category generation
+    private static final String[] AVAILABLE_COLORS = {
+        "#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7", 
+        "#DDA0DD", "#F39C12", "#E74C3C", "#9B59B6", "#3498DB"
+    };
+    
+    private static final Random RANDOM = new Random();
+    
+    private String generateRandomColor() {
+        return AVAILABLE_COLORS[RANDOM.nextInt(AVAILABLE_COLORS.length)];
+    }
+} 
