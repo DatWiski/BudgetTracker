@@ -1,5 +1,14 @@
 import { getRequestHeaders, clearCsrfToken } from './csrf';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL as string | undefined;
+
+const withBaseUrl = (url: string): string => {
+  if (API_BASE_URL && url.startsWith('/')) {
+    return `${API_BASE_URL}${url}`;
+  }
+  return url;
+};
+
 export class ApiError extends Error {
   public status: number;
   public statusText: string;
@@ -25,7 +34,7 @@ export const apiRequest = async <T>(
       headers = { ...headers, ...csrfHeaders };
     }
 
-    const response = await fetch(url, {
+    const response = await fetch(withBaseUrl(url), {
       ...options,
       headers,
       credentials: 'include'
@@ -42,7 +51,7 @@ export const apiRequest = async <T>(
       clearCsrfToken();
       // Retry once with new token
       const csrfHeaders = await getRequestHeaders();
-      const retryResponse = await fetch(url, {
+      const retryResponse = await fetch(withBaseUrl(url), {
         ...options,
         headers: { ...headers, ...csrfHeaders },
         credentials: 'include'
@@ -62,6 +71,12 @@ export const apiRequest = async <T>(
       }
 
       return retryResponse.json();
+    }
+
+    if (response.status === 401) {
+      // Unauthenticated: redirect to login
+      window.location.href = '/login';
+      throw new ApiError(401, 'Unauthorized', 'Authentication required');
     }
 
     if (!response.ok) {
