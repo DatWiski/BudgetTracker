@@ -66,10 +66,18 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public List<CategoryResponse> getCategoriesWithCountsForUser(AppUser user) {
         List<Category> categories = categoryRepository.findByAppUserOrderByNameAsc(user);
+        // Build a map of categoryId -> active subscription count using a single grouped query
+        List<Object[]> groupedCounts = categoryRepository.countActiveSubscriptionsByUserGrouped(user);
+        java.util.Map<Long, Long> categoryIdToCount = groupedCounts.stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (Long) row[1]
+                ));
+
         return categories.stream()
                 .map(category -> CategoryResponse.fromEntity(
                         category,
-                        getActiveSubscriptionCount(category)
+                        categoryIdToCount.getOrDefault(category.getId(), 0L)
                 ))
                 .collect(Collectors.toList());
     }

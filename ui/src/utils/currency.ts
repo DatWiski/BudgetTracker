@@ -10,8 +10,14 @@ export const roundToCurrency = (amount: number): number => {
 /**
  * Formats a number as currency with proper rounding
  */
-export const formatCurrency = (amount: number, currency = '$'): string => {
-  return `${currency}${roundToCurrency(amount).toFixed(2)}`;
+export const formatCurrency = (amount: number, currencyCode: 'USD' | 'EUR' = 'USD'): string => {
+  try {
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency: currencyCode }).format(roundToCurrency(amount));
+  } catch {
+    // Fallback
+    const symbol = currencyCode === 'EUR' ? '€' : '$';
+    return `${symbol}${roundToCurrency(amount).toFixed(2)}`;
+  }
 };
 
 /**

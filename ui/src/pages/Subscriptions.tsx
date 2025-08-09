@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { convertToMonthly } from '../utils/currency';
+import { convertToMonthly, formatCurrency } from '../utils/currency';
 import { apiRequest } from '../utils/api';
 import { Loading, ErrorDisplay } from '../components/ApiStatus';
-import type { Category, Subscription, PaginatedResponse } from '../types';
+import type { Category, Subscription, PaginatedResponse, SubscriptionRequest } from '../types';
 
 interface SubscriptionFormData {
   name: string;
@@ -30,6 +30,17 @@ const Subscriptions = () => {
   });
 
   const queryClient = useQueryClient();
+  const [userCurrency, setUserCurrency] = useState<'USD' | 'EUR'>('USD');
+
+  useEffect(() => {
+    fetch('/api/user/currency', { credentials: 'include' })
+      .then(res => res.ok ? res.json() : Promise.reject(new Error('Failed to fetch currency')))
+      .then(data => {
+        const code = data?.currency;
+        if (code === 'EUR' || code === 'USD') setUserCurrency(code);
+      })
+      .catch(() => {});
+  }, []);
 
   // Fetch subscriptions only if authenticated
   const { data: subscriptionsPage, isLoading: subscriptionsLoading, error: subscriptionsError, refetch: refetchSubscriptions } = useQuery<PaginatedResponse<Subscription>>({
@@ -51,7 +62,7 @@ const Subscriptions = () => {
 
   // Create subscription mutation
   const createMutation = useMutation({
-    mutationFn: (subscription: Omit<Subscription, 'id'>) => 
+    mutationFn: (subscription: SubscriptionRequest) => 
       apiRequest('/api/subscriptions', {
         method: 'POST',
         body: JSON.stringify(subscription)
@@ -68,10 +79,10 @@ const Subscriptions = () => {
 
   // Update subscription mutation
   const updateMutation = useMutation({
-    mutationFn: ({ id, ...subscription }: Subscription) =>
-      apiRequest(`/api/subscriptions/${id}`, {
+    mutationFn: (payload: { id: number } & SubscriptionRequest) =>
+      apiRequest(`/api/subscriptions/${payload.id}`, {
         method: 'PUT',
-        body: JSON.stringify(subscription)
+        body: JSON.stringify(payload)
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
@@ -148,7 +159,7 @@ const Subscriptions = () => {
       return;
     }
     
-    const subscriptionData: Omit<Subscription, 'id'> = {
+    const subscriptionData: SubscriptionRequest = {
       name: formData.name.trim(),
       price: parseFloat(formData.price),
       billingPeriod: formData.billingPeriod,
@@ -243,7 +254,7 @@ const Subscriptions = () => {
           error={subscriptionsError || categoriesError!}
           onRetry={() => {
             refetchSubscriptions();
-            // Add categories refetch when available
+            queryClient.invalidateQueries({ queryKey: ['categories'] });
           }}
           title="Unable to load data"
         />
@@ -267,7 +278,7 @@ const Subscriptions = () => {
             Subscriptions
           </h1>
           <p style={{ color: '#94a3b8', fontSize: '1.1rem' }}>
-            Manage your recurring subscriptions • ${totalMonthlySpend.toFixed(2)}/month total
+            Manage your recurring subscriptions • {formatCurrency(totalMonthlySpend, userCurrency)}/month total
           </p>
         </div>
         <button
@@ -708,9 +719,9 @@ const Subscriptions = () => {
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ textAlign: 'right' }}>
                     <div style={{ color: 'white', fontSize: '1.25rem', fontWeight: '700' }}>
-                      ${subscription.price.toFixed(2)}
+                      {formatCurrency(subscription.price, userCurrency)}
                     </div>
                     <div style={{ color: '#94a3b8', fontSize: '0.75rem', textTransform: 'uppercase' }}>
                       {subscription.billingPeriod.toLowerCase()}

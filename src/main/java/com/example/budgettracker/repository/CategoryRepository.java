@@ -23,4 +23,8 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     
     @Query("SELECT c FROM Category c JOIN c.appUser u WHERE c.id = :categoryId AND u.id = :userId")
     Optional<Category> findByIdAndUserId(@Param("categoryId") Long categoryId, @Param("userId") Long userId);
+
+    // Bulk count of active subscriptions per category for a given user to avoid N+1 queries
+    @Query("SELECT c.id, COUNT(s.id) FROM Category c LEFT JOIN Subscription s ON s.category = c AND s.active = true WHERE c.appUser = :appUser GROUP BY c.id")
+    List<Object[]> countActiveSubscriptionsByUserGrouped(@Param("appUser") AppUser appUser);
 }

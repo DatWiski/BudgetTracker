@@ -91,3 +91,7 @@ export interface RecentActivity extends Subscription {
   lastBillingDate: Date;
   daysSinceLastBilling: number;
 }
+
+export interface UserCurrencyResponse {
+  currency: 'USD' | 'EUR';
+}

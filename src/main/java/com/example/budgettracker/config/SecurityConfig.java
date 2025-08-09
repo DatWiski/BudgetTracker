@@ -38,12 +38,13 @@ public class SecurityConfig {
         CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
         requestHandler.setCsrfRequestAttributeName("_csrf");
 
-        // Configure CSRF repository with secure cookie attributes
-        CookieCsrfTokenRepository csrfRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        // Configure CSRF repository with hardened cookie attributes (HttpOnly)
+        CookieCsrfTokenRepository csrfRepository = new CookieCsrfTokenRepository();
         csrfRepository.setCookieCustomizer(builder -> builder
                 .sameSite("Lax")
                 .secure(csrfCookieSecure)
                 .path("/")
+                .httpOnly(true)
         );
 
         http
