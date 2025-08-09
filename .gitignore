@@ -37,4 +37,4 @@ build/
 ### Logs ###
 *.log
 app.log
-spring.log
+spring.logcookies.txt
