@@ -15,28 +15,36 @@ const Sidebar = () => {
     { path: '/settings', name: 'Settings', icon: 'settings' },
   ];
 
-  const handleLogout = () => {
-    // First clear all cached queries, especially auth status
-    queryClient.clear();
-    // Clear CSRF token cache
-    clearCsrfToken();
-    
-    // Call logout endpoint and redirect to login
-    fetch('/logout', {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+  const handleLogout = async () => {
+    try {
+      await queryClient.invalidateQueries({ queryKey: ['auth-status'] });
+      
+      const csrfResponse = await fetch('/api/csrf-token', {
+        credentials: 'include'
+      });
+      
+      if (csrfResponse.ok) {
+        const csrfData = await csrfResponse.json();
+        const token = csrfData.token || csrfData.value;
+        const headerName = csrfData.headerName || 'X-CSRF-TOKEN';
+        
+        await fetch('/logout', {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            [headerName]: token
+          }
+        });
       }
-    }).then(() => {
-      // Ensure cache is cleared again after logout
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
       queryClient.clear();
+      clearCsrfToken();
+      await queryClient.invalidateQueries({ queryKey: ['auth-status'] });
       window.location.href = '/login';
-    }).catch(() => {
-      // Even if logout fails, clear cache and redirect to login
-      queryClient.clear();
-      window.location.href = '/login';
-    });
+    }
   };
 
   return (
