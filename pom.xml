@@ -186,12 +186,12 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>npm install</id>
+                        <id>npm ci</id>
                         <goals>
                             <goal>npm</goal>
                         </goals>
                         <configuration>
-                            <arguments>install</arguments>
+                            <arguments>ci --no-audit --no-fund</arguments>
                         </configuration>
                     </execution>
                     <execution>
@@ -218,7 +218,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${basedir}/src/main/resources/static</outputDirectory>
+                            <outputDirectory>${project.build.outputDirectory}/static</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>ui/dist</directory>
