@@ -4,11 +4,17 @@
  * Calculates the previous billing date based on the next billing date and billing period
  * Handles month/year boundaries properly
  */
-export const calculatePreviousBillingDate = (nextBillingDate: string, billingPeriod: 'MONTHLY' | 'YEARLY' | 'WEEKLY'): Date => {
+export const calculatePreviousBillingDate = (
+  nextBillingDate: string,
+  billingPeriod: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY'
+): Date => {
   const nextDate = new Date(nextBillingDate);
   const prevDate = new Date(nextDate);
 
   switch (billingPeriod) {
+    case 'DAILY':
+      prevDate.setDate(prevDate.getDate() - 1);
+      break;
     case 'WEEKLY':
       prevDate.setDate(prevDate.getDate() - 7);
       break;

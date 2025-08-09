@@ -2,7 +2,7 @@ export interface Subscription {
   id: number;
   name: string;
   price: number;
-  billingPeriod: 'MONTHLY' | 'YEARLY' | 'WEEKLY';
+  billingPeriod: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
   nextBillingDate: string;
   active: boolean;
   categoryId: number;
@@ -13,9 +13,10 @@ export interface Subscription {
 export interface SubscriptionRequest {
   name: string;
   price: number;
-  billingPeriod: 'MONTHLY' | 'YEARLY' | 'WEEKLY';
+  billingPeriod: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
   nextBillingDate: string;
   categoryId?: number;
+  active?: boolean;
 }
 
 export interface Category {
@@ -73,7 +74,7 @@ export interface ErrorResponse {
 
 export interface ValidationErrorResponse {
   message: string;
-  errors: Record<string, string[]>;
+  errors: Record<string, string>;
   timestamp: string;
   path: string;
 }

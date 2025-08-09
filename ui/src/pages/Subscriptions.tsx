@@ -8,7 +8,7 @@ import type { Category, Subscription, PaginatedResponse } from '../types';
 interface SubscriptionFormData {
   name: string;
   price: string;
-  billingPeriod: 'MONTHLY' | 'YEARLY' | 'WEEKLY';
+  billingPeriod: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
   nextBillingDate: string;
   categoryId: string;
   active: boolean;
@@ -474,7 +474,7 @@ const Subscriptions = () => {
                   </label>
                   <select
                     value={formData.billingPeriod}
-                    onChange={(e) => setFormData({ ...formData, billingPeriod: e.target.value as 'MONTHLY' | 'YEARLY' | 'WEEKLY' })}
+                    onChange={(e) => setFormData({ ...formData, billingPeriod: e.target.value as 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY' })}
                     style={{
                       width: '100%',
                       background: 'rgba(255, 255, 255, 0.1)',
@@ -485,6 +485,7 @@ const Subscriptions = () => {
                       fontSize: '1rem'
                     }}
                   >
+                    <option value="DAILY">Daily</option>
                     <option value="WEEKLY">Weekly</option>
                     <option value="MONTHLY">Monthly</option>
                     <option value="YEARLY">Yearly</option>

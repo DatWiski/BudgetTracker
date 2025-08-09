@@ -31,6 +31,12 @@ export const apiRequest = async <T>(
       credentials: 'include'
     });
 
+    // Handle no-content responses (e.g., DELETE 204)
+    if (response.status === 204) {
+      // @ts-expect-error allow void return for no-content endpoints
+      return undefined;
+    }
+
     // Handle CSRF token expiration
     if (response.status === 403) {
       clearCsrfToken();
@@ -41,6 +47,11 @@ export const apiRequest = async <T>(
         headers: { ...headers, ...csrfHeaders },
         credentials: 'include'
       });
+
+      if (retryResponse.status === 204) {
+        // @ts-expect-error allow void return for no-content endpoints
+        return undefined;
+      }
 
       if (!retryResponse.ok) {
         throw new ApiError(

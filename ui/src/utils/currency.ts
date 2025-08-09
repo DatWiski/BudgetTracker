@@ -17,8 +17,14 @@ export const formatCurrency = (amount: number, currency = '$'): string => {
 /**
  * Converts subscription price to monthly amount based on billing period
  */
-export const convertToMonthly = (price: number, billingPeriod: 'MONTHLY' | 'YEARLY' | 'WEEKLY'): number => {
+export const convertToMonthly = (
+  price: number,
+  billingPeriod: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY'
+): number => {
   switch (billingPeriod) {
+    case 'DAILY':
+      // Approximate monthly from daily: 365 days / 12 months
+      return roundToCurrency(price * (365 / 12));
     case 'YEARLY':
       return roundToCurrency(price / 12);
     case 'WEEKLY':
