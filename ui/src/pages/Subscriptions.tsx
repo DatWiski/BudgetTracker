@@ -1,9 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { convertToMonthly, formatCurrency } from '../utils/currency';
+import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { formatCurrency } from '../utils/currency';
 import { apiRequest } from '../utils/api';
 import { Loading, ErrorDisplay } from '../components/ApiStatus';
 import type { Category, Subscription, PaginatedResponse, SubscriptionRequest } from '../types';
+import { useSubscriptionsData } from '../hooks/useSubscriptionsData';
+import SubscriptionForm, { type SubscriptionFormValues } from '../components/subscriptions/SubscriptionForm';
+import SubscriptionList from '../components/subscriptions/SubscriptionList';
 
 interface SubscriptionFormData {
   name: string;
@@ -30,35 +33,9 @@ const Subscriptions = () => {
   });
 
   const queryClient = useQueryClient();
-  const [userCurrency, setUserCurrency] = useState<'USD' | 'EUR'>('USD');
+  const { safeSubscriptions, safeCategories, currency, totalMonthlySpend, isLoading, error, refetchAll } = useSubscriptionsData();
 
-  useEffect(() => {
-    fetch('/api/user/currency', { credentials: 'include' })
-      .then(res => res.ok ? res.json() : Promise.reject(new Error('Failed to fetch currency')))
-      .then(data => {
-        const code = data?.currency;
-        if (code === 'EUR' || code === 'USD') setUserCurrency(code);
-      })
-      .catch(() => {});
-  }, []);
-
-  // Fetch subscriptions only if authenticated
-  const { data: subscriptionsPage, isLoading: subscriptionsLoading, error: subscriptionsError, refetch: refetchSubscriptions } = useQuery<PaginatedResponse<Subscription>>({
-    queryKey: ['subscriptions'],
-    queryFn: () => apiRequest<PaginatedResponse<Subscription>>('/api/subscriptions'),
-    // Query will run automatically since route is protected
-  });
-
-  // Fetch categories only if authenticated
-  const { data: categories, isLoading: categoriesLoading, error: categoriesError } = useQuery<Category[]>({
-    queryKey: ['categories'],
-    queryFn: () => apiRequest<Category[]>('/api/categories'),
-    // Query will run automatically since route is protected
-  });
-
-  // Extract data from paginated responses
-  const safeSubscriptions = Array.isArray(subscriptionsPage?.content) ? subscriptionsPage.content : [];
-  const safeCategories = Array.isArray(categories) ? categories : [];
+  // Fetching moved to useSubscriptionsData
 
   // Create subscription mutation
   const createMutation = useMutation({
@@ -135,45 +112,7 @@ const Subscriptions = () => {
     updateMutation.reset();
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Basic validation
-    if (!formData.name.trim()) {
-      alert('Please enter a subscription name');
-      return;
-    }
-    
-    if (!formData.price || parseFloat(formData.price) <= 0) {
-      alert('Please enter a valid price greater than 0');
-      return;
-    }
-    
-    if (!formData.nextBillingDate) {
-      alert('Please select a next billing date');
-      return;
-    }
-    
-    if (!formData.categoryId) {
-      alert('Please select a category');
-      return;
-    }
-    
-    const subscriptionData: SubscriptionRequest = {
-      name: formData.name.trim(),
-      price: parseFloat(formData.price),
-      billingPeriod: formData.billingPeriod,
-      nextBillingDate: formData.nextBillingDate,
-      categoryId: parseInt(formData.categoryId),
-      active: formData.active
-    };
-
-    if (editingSubscription) {
-      updateMutation.mutate({ ...subscriptionData, id: editingSubscription.id });
-    } else {
-      createMutation.mutate(subscriptionData);
-    }
-  };
+  // submit handled inside SubscriptionForm via onSubmit callback
 
   const handleEdit = (subscription: Subscription) => {
     setEditingSubscription(subscription);
@@ -217,18 +156,15 @@ const Subscriptions = () => {
       }
     });
 
-  const totalMonthlySpend = safeSubscriptions
-    .filter((sub: Subscription) => sub.active)
-    .reduce((total: number, sub: Subscription) => {
-      return total + convertToMonthly(sub.price, sub.billingPeriod);
-    }, 0);
+  // totalMonthlySpend from hook
 
 
-  if (subscriptionsLoading || categoriesLoading) {
+  // remove stray references; using hook state now
+  if (isLoading) {
     return (
       <div style={{ padding: '2rem', color: 'white', minHeight: '100vh' }}>
         <Loading 
-          message={subscriptionsLoading ? "Loading subscriptions..." : "Loading categories..."} 
+          message={"Loading subscriptions..."}
           size="lg" 
         />
       </div>
@@ -236,7 +172,7 @@ const Subscriptions = () => {
   }
 
   // Show error for API errors
-  if (subscriptionsError || categoriesError) {
+  if (error) {
     return (
       <div style={{ padding: '2rem', color: 'white', minHeight: '100vh' }}>
         <h1 style={{
@@ -250,14 +186,7 @@ const Subscriptions = () => {
           Subscriptions
         </h1>
         
-        <ErrorDisplay
-          error={subscriptionsError || categoriesError!}
-          onRetry={() => {
-            refetchSubscriptions();
-            queryClient.invalidateQueries({ queryKey: ['categories'] });
-          }}
-          title="Unable to load data"
-        />
+          <ErrorDisplay error={error as Error} onRetry={refetchAll} title="Unable to load data" />
       </div>
     );
   }
@@ -278,7 +207,7 @@ const Subscriptions = () => {
             Subscriptions
           </h1>
           <p style={{ color: '#94a3b8', fontSize: '1.1rem' }}>
-            Manage your recurring subscriptions • {formatCurrency(totalMonthlySpend, userCurrency)}/month total
+            Manage your recurring subscriptions • {formatCurrency(totalMonthlySpend, currency)}/month total
           </p>
         </div>
         <button
@@ -417,195 +346,27 @@ const Subscriptions = () => {
             <h2 style={{ color: 'white', marginBottom: '1.5rem', fontSize: '1.5rem', fontWeight: '700' }}>
               {editingSubscription ? 'Edit Subscription' : 'Add New Subscription'}
             </h2>
-            
-            {/* Error Display */}
-            {(createMutation.error || updateMutation.error) && (
-              <div style={{
-                background: 'rgba(239, 68, 68, 0.1)',
-                border: '1px solid rgba(239, 68, 68, 0.3)',
-                borderRadius: '8px',
-                padding: '1rem',
-                marginBottom: '1.5rem',
-                color: '#fca5a5'
-              }}>
-                <strong>Error:</strong> {(createMutation.error || updateMutation.error)?.message}
-              </div>
-            )}
-            
-            <form onSubmit={handleSubmit}>
-              <div style={{ marginBottom: '1rem' }}>
-                <label style={{ color: '#94a3b8', fontSize: '0.875rem', display: 'block', marginBottom: '0.5rem' }}>
-                  Subscription Name
-                </label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
-                  style={{
-                    width: '100%',
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    color: 'white',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    borderRadius: '8px',
-                    padding: '0.75rem',
-                    fontSize: '1rem'
-                  }}
-                  placeholder="e.g., Netflix, Spotify"
-                />
-              </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-                <div>
-                  <label style={{ color: '#94a3b8', fontSize: '0.875rem', display: 'block', marginBottom: '0.5rem' }}>
-                    Price
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                    required
-                    style={{
-                      width: '100%',
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      color: 'white',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                      borderRadius: '8px',
-                      padding: '0.75rem',
-                      fontSize: '1rem'
-                    }}
-                    placeholder="0.00"
-                  />
-                </div>
-
-                <div>
-                  <label style={{ color: '#94a3b8', fontSize: '0.875rem', display: 'block', marginBottom: '0.5rem' }}>
-                    Billing Period
-                  </label>
-                  <select
-                    value={formData.billingPeriod}
-                    onChange={(e) => setFormData({ ...formData, billingPeriod: e.target.value as 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY' })}
-                    style={{
-                      width: '100%',
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      color: 'white',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                      borderRadius: '8px',
-                      padding: '0.75rem',
-                      fontSize: '1rem'
-                    }}
-                  >
-                    <option value="DAILY">Daily</option>
-                    <option value="WEEKLY">Weekly</option>
-                    <option value="MONTHLY">Monthly</option>
-                    <option value="YEARLY">Yearly</option>
-                  </select>
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-                <div>
-                  <label style={{ color: '#94a3b8', fontSize: '0.875rem', display: 'block', marginBottom: '0.5rem' }}>
-                    Next Billing Date
-                  </label>
-                  <input
-                    type="date"
-                    value={formData.nextBillingDate}
-                    onChange={(e) => setFormData({ ...formData, nextBillingDate: e.target.value })}
-                    required
-                    style={{
-                      width: '100%',
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      color: 'white',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                      borderRadius: '8px',
-                      padding: '0.75rem',
-                      fontSize: '1rem'
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <label style={{ color: '#94a3b8', fontSize: '0.875rem', display: 'block', marginBottom: '0.5rem' }}>
-                    Category
-                  </label>
-                  <select
-                    value={formData.categoryId}
-                    onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                    required
-                    style={{
-                      width: '100%',
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      color: 'white',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                      borderRadius: '8px',
-                      padding: '0.75rem',
-                      fontSize: '1rem'
-                    }}
-                  >
-                    <option value="">Select Category</option>
-                    {safeCategories.map((category: Category) => (
-                      <option key={category.id} value={category.id}>{category.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div style={{ marginBottom: '2rem' }}>
-                <label style={{ display: 'flex', alignItems: 'center', color: 'white', cursor: 'pointer' }}>
-                  <input
-                    type="checkbox"
-                    checked={formData.active}
-                    onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
-                    style={{ marginRight: '0.5rem' }}
-                  />
-                  Active subscription
-                </label>
-              </div>
-
-              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowForm(false);
-                    setEditingSubscription(null);
-                    resetForm();
-                  }}
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    color: 'white',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    borderRadius: '8px',
-                    padding: '0.75rem 1.5rem',
-                    fontSize: '1rem',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={createMutation.isPending || updateMutation.isPending}
-                  style={{
-                    background: 'linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    padding: '0.75rem 1.5rem',
-                    fontSize: '1rem',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    opacity: (createMutation.isPending || updateMutation.isPending) ? 0.7 : 1
-                  }}
-                >
-                  {createMutation.isPending || updateMutation.isPending 
-                    ? 'Saving...' 
-                    : editingSubscription ? 'Update' : 'Create'
-                  }
-                </button>
-              </div>
-            </form>
+            <SubscriptionForm
+              mode={editingSubscription ? 'edit' : 'create'}
+              values={formData as SubscriptionFormValues}
+              onChange={(v) => setFormData(v)}
+              categories={safeCategories as Category[]}
+              isSubmitting={createMutation.isPending || updateMutation.isPending}
+              onCancel={() => {
+                setShowForm(false);
+                setEditingSubscription(null);
+                resetForm();
+              }}
+              onSubmit={(payload) => {
+                if ('id' in payload) {
+                  updateMutation.mutate(payload as { id: number } & SubscriptionRequest);
+                } else {
+                  createMutation.mutate(payload as SubscriptionRequest);
+                }
+              }}
+              editingId={editingSubscription?.id ?? null}
+            />
           </div>
         </div>
       )}
@@ -646,125 +407,13 @@ const Subscriptions = () => {
           </button>
         </div>
       ) : (
-        <div style={{ display: 'grid', gap: '1rem' }}>
-          {filteredAndSortedSubscriptions.map((subscription: Subscription) => {
-            const daysUntilBilling = Math.ceil(
-              (new Date(subscription.nextBillingDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
-            );
-            
-            return (
-              <div
-                key={subscription.id}
-                style={{
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  backdropFilter: 'blur(10px)',
-                  borderRadius: '16px',
-                  padding: '1.5rem',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <div
-                    style={{
-                      width: '12px',
-                      height: '12px',
-                      borderRadius: '50%',
-                      background: subscription.categoryColor || '#8b5cf6'
-                    }}
-                  />
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                      <h3 style={{ color: 'white', fontSize: '1.1rem', fontWeight: '600', margin: 0 }}>
-                        {subscription.name}
-                      </h3>
-                      {!subscription.active && (
-                        <span style={{
-                          background: 'rgba(239, 68, 68, 0.2)',
-                          color: '#fca5a5',
-                          fontSize: '0.75rem',
-                          padding: '0.25rem 0.5rem',
-                          borderRadius: '12px',
-                          fontWeight: '600'
-                        }}>
-                          INACTIVE
-                        </span>
-                      )}
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                      <span style={{ color: '#94a3b8', fontSize: '0.875rem' }}>
-                        {subscription.categoryName}
-                      </span>
-                      <span style={{ color: '#94a3b8', fontSize: '0.875rem' }}>
-                        {daysUntilBilling > 0 
-                          ? `Due in ${daysUntilBilling} days`
-                          : daysUntilBilling === 0 
-                            ? 'Due today'
-                            : `Overdue by ${Math.abs(daysUntilBilling)} days`
-                        }
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{ textAlign: 'right' }}>
-                    <div style={{ color: 'white', fontSize: '1.25rem', fontWeight: '700' }}>
-                      {formatCurrency(subscription.price, userCurrency)}
-                    </div>
-                    <div style={{ color: '#94a3b8', fontSize: '0.75rem', textTransform: 'uppercase' }}>
-                      {subscription.billingPeriod.toLowerCase()}
-                    </div>
-                  </div>
-                  
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button
-                      onClick={() => handleEdit(subscription)}
-                      style={{
-                        background: 'rgba(59, 130, 246, 0.2)',
-                        color: '#60a5fa',
-                        border: '1px solid rgba(59, 130, 246, 0.3)',
-                        borderRadius: '8px',
-                        padding: '0.5rem',
-                        cursor: 'pointer',
-                        fontSize: '0.875rem'
-                      }}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(subscription.id!)}
-                      disabled={deleteMutation.isPending}
-                      style={{
-                        background: 'rgba(239, 68, 68, 0.2)',
-                        color: '#fca5a5',
-                        border: '1px solid rgba(239, 68, 68, 0.3)',
-                        borderRadius: '8px',
-                        padding: '0.5rem',
-                        cursor: 'pointer',
-                        fontSize: '0.875rem',
-                        opacity: deleteMutation.isPending ? 0.7 : 1
-                      }}
-                    >
-                      {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <SubscriptionList
+          subscriptions={filteredAndSortedSubscriptions as Subscription[]}
+          currency={currency}
+          onEdit={handleEdit}
+          onDelete={(id) => handleDelete(id)}
+          deletingId={deleteMutation.isPending ? -1 : null}
+        />
       )}
     </div>
   );
