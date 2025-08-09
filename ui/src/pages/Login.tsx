@@ -27,13 +27,26 @@ const Login = () => {
     
     // Listen for success message from popup
     const handleMessage = (event: MessageEvent) => {
-      if (event.source === popup && isOAuthSuccessMessage(event.data)) {
-        // Clear auth cache to trigger re-check
-        queryClient.clear();
-        // Success! Redirect to dashboard
-        window.location.href = '/';
-        window.removeEventListener('message', handleMessage);
+      if (!(event.source === popup && isOAuthSuccessMessage(event.data))) {
+        return;
       }
+
+      // Validate origin: allow same-origin and optional configured backend origin
+      const allowedOrigins = new Set<string>([window.location.origin]);
+      const envOrigin = import.meta.env.VITE_BACKEND_ORIGIN as string | undefined;
+      if (envOrigin) {
+        allowedOrigins.add(envOrigin);
+      }
+
+      if (!allowedOrigins.has(event.origin)) {
+        // Ignore messages from unexpected origins
+        return;
+      }
+
+      // Clear auth cache to trigger re-check and navigate
+      queryClient.clear();
+      window.location.href = '/';
+      window.removeEventListener('message', handleMessage);
     };
     
     window.addEventListener('message', handleMessage);

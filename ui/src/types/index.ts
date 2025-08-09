@@ -67,16 +67,17 @@ export interface AuthStatus {
 }
 
 export interface ErrorResponse {
+  status: number;
+  error: string;
   message: string;
   timestamp: string;
-  path: string;
 }
 
 export interface ValidationErrorResponse {
-  message: string;
-  errors: Record<string, string>;
+  status: number;
+  error: string;
+  fieldErrors: Record<string, string>;
   timestamp: string;
-  path: string;
 }
 
 export interface SubscriptionMetrics {
