@@ -39,17 +39,7 @@ public class OAuthController {
                     <div class="title">Completing login...</div>
                     <div class="subtitle">Please wait while we complete your authentication</div>
                 </div>
-                <script>
-                    // Check if we're in a popup and communicate with parent
-                    if (window.opener && window.opener !== window) {
-                        // We're in a popup - tell parent window and close
-                        window.opener.postMessage({ type: 'OAUTH_SUCCESS' }, window.location.origin);
-                        window.close();
-                    } else {
-                        // Not in popup, redirect to main app
-                        window.location.href = '/';
-                    }
-                </script>
+                <script src="/oauth-complete.js"></script>
             </body>
             </html>
             """);

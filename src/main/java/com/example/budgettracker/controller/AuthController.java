@@ -17,8 +17,8 @@ public class AuthController {
 
     private static final String ANONYMOUS_USER = "anonymousUser";
     
-    @Value("${spring.security.oauth2.client.registration.google.client-id:NOT_SET}")
-    private String googleClientId;
+    @Value("${spring.profiles.active:}")
+    private String activeProfile;
 
     @GetMapping("/status")
     public ResponseEntity<Map<String, Object>> getAuthStatus() {
@@ -33,8 +33,10 @@ public class AuthController {
             response.put("authenticated", false);
         }
         
-        // Add debug info for OAuth config
-        response.put("googleClientId", googleClientId.substring(0, Math.min(20, googleClientId.length())) + "...");
+        // Only add debug info in dev profile
+        if ("dev".equalsIgnoreCase(activeProfile)) {
+            response.put("env", "dev");
+        }
         
         return ResponseEntity.ok(response);
     }

@@ -1,5 +1,15 @@
 import { useQueryClient } from '@tanstack/react-query';
 
+type OAuthSuccessMessage = { type: 'OAUTH_SUCCESS'; origin?: string };
+const isOAuthSuccessMessage = (data: unknown): data is OAuthSuccessMessage => {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'type' in data &&
+    (data as { type?: unknown }).type === 'OAUTH_SUCCESS'
+  );
+};
+
 const Login = () => {
   const queryClient = useQueryClient();
   
@@ -17,11 +27,12 @@ const Login = () => {
     
     // Listen for success message from popup
     const handleMessage = (event: MessageEvent) => {
-      if (event.origin === window.location.origin && event.data.type === 'OAUTH_SUCCESS') {
+      if (event.source === popup && isOAuthSuccessMessage(event.data)) {
         // Clear auth cache to trigger re-check
         queryClient.clear();
         // Success! Redirect to dashboard
         window.location.href = '/';
+        window.removeEventListener('message', handleMessage);
       }
     };
     
