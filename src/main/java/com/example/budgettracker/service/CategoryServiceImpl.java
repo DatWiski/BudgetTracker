@@ -82,7 +82,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public Category findByIdAndUser(Long categoryId, AppUser user) {
         return categoryRepository.findByIdAndUserId(categoryId, user.getId())
-            .orElseThrow(() -> new RuntimeException("Category not found or not owned by user"));
+            .orElseThrow(() -> new com.example.budgettracker.exception.CategoryNotFoundException(categoryId));
     }
     
     // Available colors for category generation

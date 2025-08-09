@@ -16,8 +16,8 @@ public class SubscriptionRequest {
 
     @NotNull(message = "Price is required")
     @DecimalMin(value = "0.01", message = "Price must be greater than 0")
-    @DecimalMax(value = "999999.99", message = "Price cannot exceed 999,999.99")
-    @Digits(integer = 6, fraction = 2, message = "Price must have at most 6 digits before decimal and 2 after")
+    @DecimalMax(value = "99999999.99", message = "Price cannot exceed 99,999,999.99")
+    @Digits(integer = 8, fraction = 2, message = "Price must have at most 8 digits before decimal and 2 after")
     private BigDecimal price;
 
     @NotNull(message = "Billing period is required")

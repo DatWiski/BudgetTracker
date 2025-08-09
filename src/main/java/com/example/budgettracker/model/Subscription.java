@@ -25,7 +25,7 @@ public class Subscription extends BaseEntity {
     @Column(nullable = false)
     private String name;
 
-    @Column(scale = 2, precision = 10)
+    @Column(precision = 10, scale = 2)
     private BigDecimal price;
 
     @Enumerated(EnumType.STRING)

@@ -66,7 +66,9 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             Category category = categoryService.findByIdAndUser(request.getCategoryId(), user);
             subscription.setCategory(category);
         } else {
-            subscription.setCategory(null);
+            // Align with create behavior: use default "Subscriptions" category when none specified
+            Category defaultCategory = categoryService.findOrCreateCategory(DEFAULT_SUBSCRIPTION_CATEGORY, user);
+            subscription.setCategory(defaultCategory);
         }
 
         return subscriptionRepository.save(subscription);
