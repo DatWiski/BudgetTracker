@@ -25,10 +25,11 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = globalExceptionHandler.handleSubscriptionNotFound(exception);
         
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(404, response.getBody().getStatus());
-        assertEquals("Subscription not found", response.getBody().getError());
-        assertTrue(response.getBody().getMessage().contains("123"));
+        ErrorResponse body = response.getBody();
+        assertNotNull(body);
+        assertEquals(404, body.getStatus());
+        assertEquals("Subscription not found", body.getError());
+        assertTrue(body.getMessage().contains("123"));
     }
 
     @Test
@@ -38,11 +39,12 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = globalExceptionHandler.handleUnauthorizedAccess(exception);
         
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(403, response.getBody().getStatus());
-        assertEquals("Access denied", response.getBody().getError());
-        assertTrue(response.getBody().getMessage().contains("Subscription 123"));
-        assertTrue(response.getBody().getMessage().contains("456"));
+        ErrorResponse body = response.getBody();
+        assertNotNull(body);
+        assertEquals(403, body.getStatus());
+        assertEquals("Access denied", body.getError());
+        assertTrue(body.getMessage().contains("Subscription 123"));
+        assertTrue(body.getMessage().contains("456"));
     }
 
     @Test
@@ -52,10 +54,11 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = globalExceptionHandler.handleAccessDenied(exception);
         
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(403, response.getBody().getStatus());
-        assertEquals("Access denied", response.getBody().getError());
-        assertEquals("You don't have permission to access this resource", response.getBody().getMessage());
+        ErrorResponse body = response.getBody();
+        assertNotNull(body);
+        assertEquals(403, body.getStatus());
+        assertEquals("Access denied", body.getError());
+        assertEquals("You don't have permission to access this resource", body.getMessage());
     }
 
     @Test
@@ -65,9 +68,10 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = globalExceptionHandler.handleGenericException(exception);
         
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(500, response.getBody().getStatus());
-        assertEquals("Internal server error", response.getBody().getError());
-        assertEquals("An unexpected error occurred. Please try again later.", response.getBody().getMessage());
+        ErrorResponse body = response.getBody();
+        assertNotNull(body);
+        assertEquals(500, body.getStatus());
+        assertEquals("Internal server error", body.getError());
+        assertEquals("An unexpected error occurred. Please try again later.", body.getMessage());
     }
 }
