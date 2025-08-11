@@ -88,12 +88,9 @@ public class SecurityConfig {
                 )
                 .oauth2Login(o -> o
                         .loginPage("/login")
-                        .defaultSuccessUrl("/oauth-complete", true)
+                        .defaultSuccessUrl("/", true)
                         .failureUrl("/login?error=oauth_failed")
                         .userInfoEndpoint(u -> u.oidcUserService(googleUserService))
-                        .successHandler((request, response, authentication) -> {
-                            response.sendRedirect("/oauth-complete");
-                        })
                 )
                 .formLogin(form -> form.disable())
                 .logout(l -> l
