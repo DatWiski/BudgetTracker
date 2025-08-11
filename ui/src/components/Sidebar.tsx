@@ -49,12 +49,12 @@ const Sidebar = () => {
 
   return (
     <div style={{
-      background: 'linear-gradient(180deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%)',
+      background: '#1e293b',
       color: 'white',
       width: '16rem',
       minHeight: '100vh',
       borderRight: '1px solid rgba(255, 255, 255, 0.1)',
-      boxShadow: '0 0 50px rgba(139, 92, 246, 0.1)'
+      boxShadow: '0 0 20px rgba(0, 0, 0, 0.3)'
     }}>
       <div style={{ padding: '1.5rem' }}>
         {/* Logo Header */}
@@ -70,10 +70,10 @@ const Sidebar = () => {
             justifyContent: 'center',
             width: '48px',
             height: '48px',
-            background: 'linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)',
+            background: '#475569',
             borderRadius: '12px',
             marginBottom: '0.75rem',
-            boxShadow: '0 4px 20px rgba(139, 92, 246, 0.3)'
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
           }}>
             <svg style={{ width: '24px', height: '24px', color: 'white' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -105,11 +105,11 @@ const Sidebar = () => {
                 marginBottom: '0.5rem',
                 transition: 'all 0.3s ease',
                 background: isActive 
-                  ? 'linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)'
+                  ? 'rgba(255, 255, 255, 0.12)'
                   : 'rgba(255, 255, 255, 0.05)',
                 color: isActive ? 'white' : '#e2e8f0',
-                border: '1px solid ' + (isActive ? 'rgba(139, 92, 246, 0.5)' : 'rgba(255, 255, 255, 0.1)'),
-                boxShadow: isActive ? '0 4px 15px rgba(139, 92, 246, 0.3)' : 'none'
+                border: '1px solid ' + (isActive ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.1)'),
+                boxShadow: isActive ? '0 2px 8px rgba(0, 0, 0, 0.1)' : 'none'
               })}
               onMouseEnter={(e) => {
                 if (!e.currentTarget.classList.contains('active')) {

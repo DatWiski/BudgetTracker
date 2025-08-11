@@ -35,9 +35,9 @@ export const Button = ({
 
   const variants = {
     primary: {
-      background: 'linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)',
+      background: '#475569',
       color: 'white',
-      boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)'
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
     },
     secondary: {
       background: 'rgba(255, 255, 255, 0.1)',
@@ -45,9 +45,9 @@ export const Button = ({
       border: '1px solid rgba(255, 255, 255, 0.2)'
     },
     danger: {
-      background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+      background: '#dc2626',
       color: 'white',
-      boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
+      boxShadow: '0 4px 12px rgba(220, 38, 38, 0.3)'
     },
     ghost: {
       background: 'transparent',

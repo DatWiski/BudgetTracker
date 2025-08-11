@@ -10,7 +10,7 @@ interface StatCardProps {
   iconName: string;
   iconColor?: string;
   valueColor?: string;
-  gradientColors: [string, string];
+  backgroundColor?: string;
   isLoading?: boolean;
 }
 
@@ -22,13 +22,13 @@ export const StatCard = ({
   iconName,
   iconColor = 'white',
   valueColor = 'white',
-  gradientColors,
+  backgroundColor = '#475569',
   isLoading = false
 }: StatCardProps) => {
   const iconStyle: CSSProperties = {
     width: '60px',
     height: '60px',
-    background: `linear-gradient(135deg, ${gradientColors[0]} 0%, ${gradientColors[1]} 100%)`,
+    background: backgroundColor,
     borderRadius: '16px',
     display: 'flex',
     alignItems: 'center',

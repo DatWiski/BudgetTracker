@@ -24,9 +24,7 @@ const Dashboard: FC = () => {
         <h1 style={{
           fontSize: theme.typography.fontSize['4xl'],
           fontWeight: theme.typography.fontWeight.extrabold,
-          background: theme.gradients.primary,
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
+          color: theme.colors.white,
           marginBottom: theme.spacing.sm
         }}>
           Dashboard
@@ -52,7 +50,7 @@ const Dashboard: FC = () => {
           subtitle="Monthly"
           description={`From ${metrics.activeSubscriptions} active subscriptions`}
           iconName="money"
-          gradientColors={[theme.colors.secondary[500], theme.colors.primary[500]]}
+          backgroundColor={theme.colors.primary[500]}
           isLoading={isLoading}
         />
         
@@ -62,7 +60,7 @@ const Dashboard: FC = () => {
           subtitle="Active"
           description={isLoading ? 'Loading...' : `${formatCurrency(metrics.totalMonthlySpend)}/month total`}
           iconName="subscriptions"
-          gradientColors={[theme.colors.primary[500], theme.colors.primary[700]]}
+          backgroundColor={theme.colors.secondary[500]}
           isLoading={isLoading}
         />
         
@@ -82,7 +80,7 @@ const Dashboard: FC = () => {
             )
           }
           iconName="calendar"
-          gradientColors={[theme.colors.success[500], theme.colors.success[600]]}
+          backgroundColor={theme.colors.success[500]}
           isLoading={isLoading}
         />
       </div>

@@ -9,9 +9,7 @@ const Settings = () => {
         <h1 style={{
           fontSize: '2.5rem',
           fontWeight: '800',
-          background: 'linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
+          color: 'white',
           marginBottom: '0.5rem'
         }}>
           Settings

@@ -3,26 +3,26 @@
 export const theme = {
   colors: {
     primary: {
-      50: '#f0f9ff',
-      500: '#3b82f6',
-      600: '#2563eb',
-      700: '#1d4ed8'
+      50: '#f8fafc',
+      500: '#475569',
+      600: '#334155',
+      700: '#1e293b'
     },
     secondary: {
-      500: '#8b5cf6',
-      600: '#7c3aed'
+      500: '#64748b',
+      600: '#475569'
     },
     success: {
-      500: '#10b981',
-      600: '#059669'
+      500: '#059669',
+      600: '#047857'
     },
     warning: {
-      500: '#f59e0b',
-      600: '#d97706'
+      500: '#d97706',
+      600: '#b45309'
     },
     danger: {
-      500: '#ef4444',
-      600: '#dc2626'
+      500: '#dc2626',
+      600: '#b91c1c'
     },
     gray: {
       50: '#f8fafc',
@@ -40,13 +40,13 @@ export const theme = {
     black: '#000000'
   },
   gradients: {
-    primary: 'linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)',
-    secondary: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-    success: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-    danger: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-    background: 'linear-gradient(135deg, #0f0f23 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #1a1a2e 100%)',
-    card: 'rgba(255, 255, 255, 0.05)',
-    cardHover: 'rgba(255, 255, 255, 0.08)'
+    primary: '#475569',
+    secondary: '#64748b',
+    success: '#059669',
+    danger: '#dc2626',
+    background: '#0f172a',
+    card: 'rgba(255, 255, 255, 0.03)',
+    cardHover: 'rgba(255, 255, 255, 0.05)'
   },
   spacing: {
     xs: '0.25rem',
