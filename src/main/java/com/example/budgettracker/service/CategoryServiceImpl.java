@@ -1,6 +1,5 @@
 package com.example.budgettracker.service;
 
-import com.example.budgettracker.config.CategoryConfig;
 import com.example.budgettracker.dto.CategoryResponse;
 import com.example.budgettracker.model.AppUser;
 import com.example.budgettracker.model.Category;
@@ -11,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
-    private final CategoryConfig categoryConfig;
     
     @Override
     @Transactional
@@ -36,7 +35,7 @@ public class CategoryServiceImpl implements CategoryService {
         
         List<Category> categoriesToCreate = new ArrayList<>();
         
-        categoryConfig.getDefaults().forEach((name, color) -> {
+        getDefaultCategories().forEach((name, color) -> {
             if (!existingNames.contains(name)) {
                 categoriesToCreate.add(new Category(name, color, user));
             }
@@ -53,7 +52,7 @@ public class CategoryServiceImpl implements CategoryService {
     public Category findOrCreateCategory(String name, AppUser user) {
         return categoryRepository.findByNameIgnoreCaseAndAppUser(name, user)
             .orElseGet(() -> {
-                String color = categoryConfig.getDefaults().getOrDefault(name, generateRandomColor());
+                String color = getDefaultCategories().getOrDefault(name, generateRandomColor());
                 return categoryRepository.save(new Category(name, color, user));
             });
     }
@@ -93,6 +92,14 @@ public class CategoryServiceImpl implements CategoryService {
             .orElseThrow(() -> new com.example.budgettracker.exception.CategoryNotFoundException(categoryId));
     }
     
+    private static final Map<String, String> DEFAULT_CATEGORIES = Map.of(
+        "Entertainment", "#FF6B6B",
+        "Productivity", "#4ECDC4", 
+        "Utilities", "#45B7D1",
+        "Education", "#96CEB4",
+        "Fitness", "#FFEAA7"
+    );
+    
     // Available colors for category generation
     private static final String[] AVAILABLE_COLORS = {
         "#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7", 
@@ -100,6 +107,10 @@ public class CategoryServiceImpl implements CategoryService {
     };
     
     private static final Random RANDOM = new Random();
+    
+    private Map<String, String> getDefaultCategories() {
+        return DEFAULT_CATEGORIES;
+    }
     
     private String generateRandomColor() {
         return AVAILABLE_COLORS[RANDOM.nextInt(AVAILABLE_COLORS.length)];
