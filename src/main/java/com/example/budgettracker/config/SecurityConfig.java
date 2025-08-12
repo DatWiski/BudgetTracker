@@ -30,8 +30,6 @@ public class SecurityConfig {
     @Value("${app.security.csrf.cookie-secure:false}")
     private boolean csrfCookieSecure;
 
-    @Value("${spring.h2.console.enabled:false}")
-    private boolean h2ConsoleEnabled;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, GoogleOidcUserService googleUserService) throws Exception {
@@ -52,7 +50,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(csrfRepository)
                         .csrfTokenRequestHandler(requestHandler)
-                        .ignoringRequestMatchers("/h2-console/**", "/api/auth/status", "/api/csrf-token")
+                        .ignoringRequestMatchers("/api/auth/status", "/api/csrf-token")
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/status", "/api/csrf-token").permitAll()
@@ -68,10 +66,6 @@ public class SecurityConfig {
                             .includeSubDomains(true)
                             .preload(true));
                     headers.referrerPolicy(rp -> rp.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER));
-                    // Allow H2 console frames only when enabled (typically dev)
-                    if (h2ConsoleEnabled) {
-                        headers.frameOptions(frameOptions -> frameOptions.disable());
-                    }
                 })
                 .exceptionHandling(ex -> ex
                         .defaultAuthenticationEntryPointFor(
