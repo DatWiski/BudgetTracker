@@ -18,7 +18,6 @@ public class SubscriptionResponse {
     private boolean active;
     private Long categoryId;
     private String categoryName;
-    private String categoryColor;
 
     public static SubscriptionResponse fromEntity(Subscription subscription) {
         SubscriptionResponse dto = new SubscriptionResponse();
@@ -31,7 +30,6 @@ public class SubscriptionResponse {
         if (subscription.getCategory() != null) {
             dto.setCategoryId(subscription.getCategory().getId());
             dto.setCategoryName(subscription.getCategory().getName());
-            dto.setCategoryColor(subscription.getCategory().getColor());
         }
         return dto;
     }

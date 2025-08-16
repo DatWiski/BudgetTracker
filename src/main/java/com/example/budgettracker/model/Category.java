@@ -27,9 +27,6 @@ public class Category extends BaseEntity {
 
     @Column(nullable = false)
     private String name;
-    
-    @Column(nullable = false, length = 7)
-    private String color;
 
     @Column(nullable = false)
     private boolean locked = false;
@@ -44,9 +41,8 @@ public class Category extends BaseEntity {
     @JoinColumn(name = "app_user_id", nullable = false)
     private AppUser appUser;
     
-    public Category(String name, String color, AppUser appUser) {
+    public Category(String name, AppUser appUser) {
         this.name = name;
-        this.color = color;
         this.appUser = appUser;
     }
 }

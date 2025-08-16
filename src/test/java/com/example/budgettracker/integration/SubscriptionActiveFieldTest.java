@@ -53,7 +53,7 @@ public class SubscriptionActiveFieldTest {
         testUser = new AppUser("test-google-sub", "Test User", "test@example.com", "http://example.com/pic.jpg");
         testUser = appUserRepository.save(testUser);
 
-        testCategory = new Category("Entertainment", "#FF6B6B", testUser);
+        testCategory = new Category("Entertainment", testUser);
         testCategory = categoryRepository.save(testCategory);
     }
 

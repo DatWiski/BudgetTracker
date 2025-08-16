@@ -31,7 +31,6 @@ class CategoryLockedTest {
 
         Category cat = new Category();
         cat.setName("Subscriptions");
-        cat.setColor("#fff");
         cat.setLocked(true);
         cat.setAppUser(user);
         em.persistAndFlush(cat);

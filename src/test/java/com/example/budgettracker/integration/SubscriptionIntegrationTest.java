@@ -57,7 +57,7 @@ public class SubscriptionIntegrationTest {
         testUser = appUserRepository.save(testUser);
 
         // Create test category
-        testCategory = new Category("Entertainment", "#FF6B6B", testUser);
+        testCategory = new Category("Entertainment", testUser);
         testCategory = categoryRepository.save(testCategory);
     }
 

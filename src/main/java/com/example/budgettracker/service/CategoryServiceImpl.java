@@ -10,8 +10,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,9 +33,9 @@ public class CategoryServiceImpl implements CategoryService {
         
         List<Category> categoriesToCreate = new ArrayList<>();
         
-        getDefaultCategories().forEach((name, color) -> {
+        getDefaultCategories().forEach(name -> {
             if (!existingNames.contains(name)) {
-                categoriesToCreate.add(new Category(name, color, user));
+                categoriesToCreate.add(new Category(name, user));
             }
         });
         
@@ -51,10 +49,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional
     public Category findOrCreateCategory(String name, AppUser user) {
         return categoryRepository.findByNameIgnoreCaseAndAppUser(name, user)
-            .orElseGet(() -> {
-                String color = getDefaultCategories().getOrDefault(name, generateRandomColor());
-                return categoryRepository.save(new Category(name, color, user));
-            });
+            .orElseGet(() -> categoryRepository.save(new Category(name, user)));
     }
     
     @Override
@@ -92,27 +87,19 @@ public class CategoryServiceImpl implements CategoryService {
             .orElseThrow(() -> new com.example.budgettracker.exception.CategoryNotFoundException(categoryId));
     }
     
-    private static final Map<String, String> DEFAULT_CATEGORIES = Map.of(
-        "Entertainment", "#FF6B6B",
-        "Productivity", "#4ECDC4", 
-        "Utilities", "#45B7D1",
-        "Education", "#96CEB4",
-        "Fitness", "#FFEAA7"
+    private static final List<String> DEFAULT_CATEGORIES = List.of(
+        "Entertainment",
+        "Productivity", 
+        "Utilities",
+        "Education",
+        "Fitness",
+        "Food",
+        "Transport",
+        "Health",
+        "Shopping"
     );
     
-    // Available colors for category generation
-    private static final String[] AVAILABLE_COLORS = {
-        "#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7", 
-        "#DDA0DD", "#F39C12", "#E74C3C", "#9B59B6", "#3498DB"
-    };
-    
-    private static final Random RANDOM = new Random();
-    
-    private Map<String, String> getDefaultCategories() {
+    private List<String> getDefaultCategories() {
         return DEFAULT_CATEGORIES;
-    }
-    
-    private String generateRandomColor() {
-        return AVAILABLE_COLORS[RANDOM.nextInt(AVAILABLE_COLORS.length)];
     }
 } 

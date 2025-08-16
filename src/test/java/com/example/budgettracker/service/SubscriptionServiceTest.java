@@ -46,7 +46,7 @@ class SubscriptionServiceTest {
     @BeforeEach
     void setUp() {
         testUser = TestDataBuilder.createTestUser();
-        testCategory = TestDataBuilder.createTestCategory(1L, "Entertainment", "#FF6B6B", testUser);
+        testCategory = TestDataBuilder.createTestCategory(1L, "Entertainment", testUser);
         validRequest = TestDataBuilder.createValidSubscriptionRequest();
     }
 
@@ -80,7 +80,7 @@ class SubscriptionServiceTest {
     @Test
     void saveSubscriptionForUser_WithNewCategory_ShouldCreateCategoryAndSave() {
         // Arrange
-        Category newCategory = new Category("Music", "#4ECDC4", testUser);
+        Category newCategory = new Category("Music", testUser);
         newCategory.setId(2L);
         
         when(categoryService.findByIdAndUser(2L, testUser))
@@ -112,7 +112,7 @@ class SubscriptionServiceTest {
         // Arrange
         validRequest.setCategoryId(null);
         
-        Category defaultCategory = new Category("Subscriptions", "#808080", testUser);
+        Category defaultCategory = new Category("Subscriptions", testUser);
         defaultCategory.setId(1L);
         
         when(categoryService.findOrCreateCategory("Subscriptions", testUser))

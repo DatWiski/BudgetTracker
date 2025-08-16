@@ -415,8 +415,9 @@
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    box-shadow: 0 0 8px currentColor;
-    opacity: 0.6;
+    background-color: var(--color-primary);
+    box-shadow: 0 0 8px rgba(139, 92, 246, 0.3);
+    opacity: 0.8;
   }
   
   /* Modal */

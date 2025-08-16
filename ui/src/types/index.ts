@@ -7,7 +7,6 @@ export interface Subscription {
   active: boolean;
   categoryId: number;
   categoryName?: string;
-  categoryColor?: string;
 }
 
 export interface SubscriptionRequest {
@@ -22,14 +21,12 @@ export interface SubscriptionRequest {
 export interface Category {
   id: number;
   name: string;
-  color: string;
   locked: boolean;
   subscriptionCount?: number;
 }
 
 export interface CategoryRequest {
   name: string;
-  color: string;
 }
 
 export interface PaginatedResponse<T> {

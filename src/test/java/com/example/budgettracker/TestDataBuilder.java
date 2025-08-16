@@ -25,11 +25,11 @@ public class TestDataBuilder {
     }
     
     public static Category createTestCategory() {
-        return createTestCategory(1L, "Entertainment", "#FF6B6B", createTestUser());
+        return createTestCategory(1L, "Entertainment", createTestUser());
     }
     
-    public static Category createTestCategory(Long id, String name, String color, AppUser user) {
-        Category category = new Category(name, color, user);
+    public static Category createTestCategory(Long id, String name, AppUser user) {
+        Category category = new Category(name, user);
         category.setId(id);
         return category;
     }

@@ -24,7 +24,7 @@ const Settings = () => {
         </p>
       </div>
     </div>
-  );}
-};
+  );
+}
 
 export default Settings;

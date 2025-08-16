@@ -26,13 +26,7 @@ const SubscriptionList: React.FC<Props> = ({ subscriptions, currency, onEdit, on
             style={{ padding: 'var(--spacing-xl)' }}
           >
             <div className="flex items-center gap-4">
-              <div
-                className="category-dot"
-                style={{ 
-                  backgroundColor: subscription.categoryColor || '#8b5cf6',
-                  color: subscription.categoryColor || '#8b5cf6'
-                }}
-              />
+              <div className="category-dot" />
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <h3 className="heading-3 text-lg">
