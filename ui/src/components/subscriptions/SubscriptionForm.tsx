@@ -52,73 +52,58 @@ const SubscriptionForm: React.FC<Props> = ({
 
   return (
     <form onSubmit={handleSubmit}>
-      <div style={{ marginBottom: '1rem' }}>
-        <label style={{ color: '#94a3b8', fontSize: '0.875rem', display: 'block', marginBottom: '0.5rem' }}>
+      <div className="mb-4">
+        <label className="form-label block mb-2">
           Subscription Name
         </label>
         <input
+          id="name"
           type="text"
           value={values.name}
           onChange={(e) => onChange({ ...values, name: e.target.value })}
           required
-          style={{
-            width: '100%',
-            background: 'rgba(255, 255, 255, 0.1)',
-            color: 'white',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-            borderRadius: '8px',
-            padding: '0.75rem',
-            fontSize: '1rem',
-          }}
           placeholder="e.g., Netflix, Spotify"
+          className="w-full text-white text-sm outline-none rounded-lg focus:border-violet-400 transition-colors"
+          style={{
+            background: 'var(--bg-glass-hover)',
+            border: '1px solid var(--border-secondary)',
+            padding: 'var(--spacing-sm) 0.75rem'
+          }}
         />
-        {errors?.name && <div style={{ color: '#fca5a5', marginTop: '0.25rem' }}>{errors.name}</div>}
+        {errors?.name && <div className="text-xs mt-1" style={{ color: 'var(--color-error-light)' }}>{errors.name}</div>}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+      <div className="grid grid-cols-2 gap-4 mb-4">
         <div>
-          <label style={{ color: '#94a3b8', fontSize: '0.875rem', display: 'block', marginBottom: '0.5rem' }}>
+          <label className="form-label block mb-2">
             Price
           </label>
           <input
+            id="price"
             type="number"
             step="0.01"
             value={values.price}
             onChange={(e) => onChange({ ...values, price: e.target.value })}
             required
-            style={{
-              width: '100%',
-              background: 'rgba(255, 255, 255, 0.1)',
-              color: 'white',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              borderRadius: '8px',
-              padding: '0.75rem',
-              fontSize: '1rem',
-            }}
             placeholder="0.00"
+            className="w-full text-white text-sm outline-none rounded-lg focus:border-violet-400 transition-colors"
+            style={{
+              background: 'var(--bg-glass-hover)',
+              border: '1px solid var(--border-secondary)',
+              padding: 'var(--spacing-sm) 0.75rem'
+            }}
           />
-          {errors?.price && <div style={{ color: '#fca5a5', marginTop: '0.25rem' }}>{errors.price}</div>}
+          {errors?.price && <div className="text-xs mt-1" style={{ color: 'var(--color-error-light)' }}>{errors.price}</div>}
         </div>
 
         <div>
-          <label style={{ color: '#94a3b8', fontSize: '0.875rem', display: 'block', marginBottom: '0.5rem' }}>
+          <label className="form-label block mb-2">
             Billing Period
           </label>
-          <select
-            value={values.billingPeriod}
-            onChange={(e) => onChange({
-              ...values,
-              billingPeriod: e.target.value as 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY',
-            })}
-            style={{
-              width: '100%',
-              background: 'rgba(255, 255, 255, 0.1)',
-              color: 'white',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              borderRadius: '8px',
-              padding: '0.75rem',
-              fontSize: '1rem',
-            }}
+          <select 
+            value={values.billingPeriod} 
+            onChange={(e) => onChange({ ...values, billingPeriod: e.target.value as 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY' })}
+            className="form-select w-full cursor-pointer"
           >
             <option value="DAILY">Daily</option>
             <option value="WEEKLY">Weekly</option>
@@ -128,101 +113,77 @@ const SubscriptionForm: React.FC<Props> = ({
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+      <div className="grid grid-cols-2 gap-4 mb-4">
         <div>
-          <label style={{ color: '#94a3b8', fontSize: '0.875rem', display: 'block', marginBottom: '0.5rem' }}>
+          <label className="form-label block mb-2">
             Next Billing Date
           </label>
           <input
+            id="next-billing"
             type="date"
             value={values.nextBillingDate}
             onChange={(e) => onChange({ ...values, nextBillingDate: e.target.value })}
             required
+            className="w-full text-white text-sm outline-none rounded-lg focus:border-violet-400 transition-colors"
             style={{
-              width: '100%',
-              background: 'rgba(255, 255, 255, 0.1)',
-              color: 'white',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              borderRadius: '8px',
-              padding: '0.75rem',
-              fontSize: '1rem',
+              background: 'var(--bg-glass-hover)',
+              border: '1px solid var(--border-secondary)',
+              padding: 'var(--spacing-sm) 0.75rem'
             }}
           />
         </div>
 
         <div>
-          <label style={{ color: '#94a3b8', fontSize: '0.875rem', display: 'block', marginBottom: '0.5rem' }}>
+          <label className="form-label block mb-2">
             Category
           </label>
-          <select
-            value={values.categoryId}
+          <select 
+            value={values.categoryId} 
             onChange={(e) => onChange({ ...values, categoryId: e.target.value })}
-            required
-            style={{
-              width: '100%',
-              background: 'rgba(255, 255, 255, 0.1)',
-              color: 'white',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              borderRadius: '8px',
-              padding: '0.75rem',
-              fontSize: '1rem',
-            }}
+            className="form-select w-full cursor-pointer"
           >
             <option value="">Select Category</option>
             {categories.map((c) => (
-              <option key={c.id} value={c.id}>
+              <option key={c.id} value={c.id.toString()}>
                 {c.name}
               </option>
             ))}
           </select>
           {errors?.categoryId && (
-            <div style={{ color: '#fca5a5', marginTop: '0.25rem' }}>{errors.categoryId}</div>
+            <div className="text-xs mt-1" style={{ color: 'var(--color-error-light)' }}>{errors.categoryId}</div>
           )}
         </div>
       </div>
 
-      <div style={{ marginBottom: '2rem' }}>
-        <label style={{ display: 'flex', alignItems: 'center', color: 'white', cursor: 'pointer' }}>
+      <div className="mb-6">
+        <div className="flex items-center gap-2">
           <input
+            id="active"
             type="checkbox"
             checked={values.active}
             onChange={(e) => onChange({ ...values, active: e.target.checked })}
-            style={{ marginRight: '0.5rem' }}
+            className="w-4 h-4 cursor-pointer"
+            style={{ accentColor: 'var(--color-primary)' }}
           />
-          Active subscription
-        </label>
+          <label htmlFor="active" className="text-white cursor-pointer text-sm">
+            Active subscription
+          </label>
+        </div>
       </div>
 
-      <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+      <div className="flex gap-4 justify-end">
         <button
           type="button"
           onClick={onCancel}
-          style={{
-            background: 'rgba(255, 255, 255, 0.1)',
-            color: 'white',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-            borderRadius: '8px',
-            padding: '0.75rem 1.5rem',
-            fontSize: '1rem',
-            cursor: 'pointer',
-          }}
+          className="btn btn-secondary"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={isSubmitting}
-          style={{
-            background: 'linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            padding: '0.75rem 1.5rem',
-            fontSize: '1rem',
-            fontWeight: '600',
-            cursor: 'pointer',
-            opacity: isSubmitting ? 0.7 : 1,
-          }}
+          className="btn btn-primary"
+          style={{ opacity: isSubmitting ? 0.6 : 1, cursor: isSubmitting ? 'not-allowed' : 'pointer' }}
         >
           {isSubmitting ? 'Saving...' : mode === 'edit' ? 'Update' : 'Create'}
         </button>

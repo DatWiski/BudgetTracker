@@ -5,6 +5,12 @@ import com.example.budgettracker.dto.SubscriptionResponse;
 import com.example.budgettracker.model.AppUser;
 import com.example.budgettracker.model.Subscription;
 import com.example.budgettracker.service.SubscriptionService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -18,37 +24,64 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/subscriptions")
 @RequiredArgsConstructor
+@Tag(name = "Subscriptions", description = "Subscription management operations")
 public class SubscriptionController {
     private final SubscriptionService subscriptionService;
 
     @PostMapping
+    @Operation(summary = "Create a new subscription", description = "Creates a new subscription for the authenticated user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Subscription created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "401", description = "User not authenticated")
+    })
     public ResponseEntity<SubscriptionResponse> addSubscription(
-            @Valid @RequestBody SubscriptionRequest subscriptionRequest,
-            AppUser appUser) {
+            @RequestBody(description = "Subscription details", required = true) @Valid @org.springframework.web.bind.annotation.RequestBody SubscriptionRequest subscriptionRequest,
+            @Parameter(hidden = true) AppUser appUser) {
         Subscription saved = subscriptionService.saveSubscriptionForUser(subscriptionRequest, appUser);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(SubscriptionResponse.fromEntity(saved));
     }
 
     @PutMapping("/{id}")
+    @Operation(summary = "Update a subscription", description = "Updates an existing subscription for the authenticated user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Subscription updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "401", description = "User not authenticated"),
+            @ApiResponse(responseCode = "404", description = "Subscription not found")
+    })
     public ResponseEntity<SubscriptionResponse> updateSubscription(
-            @PathVariable Long id,
-            @Valid @RequestBody SubscriptionRequest subscriptionRequest,
-            AppUser appUser) {
+            @Parameter(description = "Subscription ID") @PathVariable Long id,
+            @RequestBody(description = "Updated subscription details", required = true) @Valid @org.springframework.web.bind.annotation.RequestBody SubscriptionRequest subscriptionRequest,
+            @Parameter(hidden = true) AppUser appUser) {
         Subscription updated = subscriptionService.updateSubscriptionForUser(id, subscriptionRequest, appUser);
         return ResponseEntity.ok(SubscriptionResponse.fromEntity(updated));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteSubscription(@PathVariable Long id, AppUser appUser) {
+    @Operation(summary = "Delete a subscription", description = "Deletes a subscription for the authenticated user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Subscription deleted successfully"),
+            @ApiResponse(responseCode = "401", description = "User not authenticated"),
+            @ApiResponse(responseCode = "404", description = "Subscription not found")
+    })
+    public ResponseEntity<Void> deleteSubscription(
+            @Parameter(description = "Subscription ID") @PathVariable Long id,
+            @Parameter(hidden = true) AppUser appUser) {
         subscriptionService.deleteSubscriptionForUser(id, appUser);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping
+    @Operation(summary = "List subscriptions", description = "Retrieves a paginated list of subscriptions for the authenticated user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Subscriptions retrieved successfully"),
+            @ApiResponse(responseCode = "401", description = "User not authenticated")
+    })
     public ResponseEntity<Page<SubscriptionResponse>> listSubscriptions(
-            AppUser appUser,
-            @PageableDefault(size = 20, sort = "name") Pageable pageable) {
+            @Parameter(hidden = true) AppUser appUser,
+            @Parameter(description = "Pagination parameters") @PageableDefault(size = 20, sort = "name") Pageable pageable) {
         Page<SubscriptionResponse> response = subscriptionService.getSubscriptionsForUser(appUser, pageable)
                 .map(SubscriptionResponse::fromEntity);
         return ResponseEntity.ok(response);

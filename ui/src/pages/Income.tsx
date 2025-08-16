@@ -4,40 +4,27 @@ import Icon from '../components/Icon';
 
 const Income = () => {
   return (
-    <div style={{ padding: '2rem', minHeight: '100vh', color: 'white' }}>
-      <div style={{ marginBottom: '2.5rem' }}>
-        <h1 style={{
-          fontSize: '2.5rem',
-          fontWeight: '800',
-          color: 'white',
-          marginBottom: '0.5rem'
-        }}>
+    <div className="page-container">
+      <div className="mb-10">
+        <h1 className="heading-1">
           Income
         </h1>
-        <p style={{ color: '#94a3b8', fontSize: '1.1rem' }}>
+        <p className="text-muted">
           Track your income sources and financial growth
         </p>
       </div>
       
-      <div style={{
-        background: 'rgba(255, 255, 255, 0.05)',
-        backdropFilter: 'blur(10px)',
-        borderRadius: '20px',
-        padding: '2rem',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-        textAlign: 'center'
-      }}>
-        <div style={{ marginBottom: '1rem' }}>
-          <Icon name="income" size={48} color="#94a3b8" />
+      <div className="placeholder-card">
+        <div className="mb-4">
+          <Icon name="income" size={48} color="var(--text-muted)" />
         </div>
-        <p style={{ color: '#94a3b8', fontSize: '1.1rem', marginBottom: '1rem' }}>Income tracking coming soon...</p>
-        <p style={{ color: '#64748b', fontSize: '0.9rem' }}>
+        <p className="text-muted mb-4">Income tracking coming soon...</p>
+        <p className="text-small">
           Record income sources, track growth, and analyze financial trends
         </p>
       </div>
     </div>
-  );
-};
+  );}
+
 
 export default Income;

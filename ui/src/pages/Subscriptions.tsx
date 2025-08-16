@@ -7,6 +7,8 @@ import type { Category, Subscription, PaginatedResponse, SubscriptionRequest } f
 import { useSubscriptionsData } from '../hooks/useSubscriptionsData';
 import SubscriptionForm, { type SubscriptionFormValues } from '../components/subscriptions/SubscriptionForm';
 import SubscriptionList from '../components/subscriptions/SubscriptionList';
+// Removed shadcn/ui imports - using custom components
+import { Plus } from 'lucide-react';
 
 interface SubscriptionFormData {
   name: string;
@@ -162,7 +164,7 @@ const Subscriptions = () => {
   // remove stray references; using hook state now
   if (isLoading) {
     return (
-      <div style={{ padding: '2rem', color: 'white', minHeight: '100vh' }}>
+      <div className="p-8 text-white min-h-screen">
         <Loading 
           message={"Loading subscriptions..."}
           size="lg" 
@@ -174,39 +176,25 @@ const Subscriptions = () => {
   // Show error for API errors
   if (error) {
     return (
-      <div style={{ padding: '2rem', color: 'white', minHeight: '100vh' }}>
-        <h1 style={{
-          fontSize: '2.5rem',
-          fontWeight: '800',
-          background: 'linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          marginBottom: '2rem'
-        }}>
+      <div className="p-8 text-white min-h-screen">
+        <h1 className="text-4xl font-extrabold bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text text-transparent mb-8">
           Subscriptions
         </h1>
         
-          <ErrorDisplay error={error as Error} onRetry={refetchAll} title="Unable to load data" />
+        <ErrorDisplay error={error as Error} onRetry={refetchAll} title="Unable to load data" />
       </div>
     );
   }
 
   return (
-    <div style={{ padding: '2rem', color: 'white', minHeight: '100vh' }}>
+    <div className="page-container">
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div className="flex-between mb-8">
         <div>
-          <h1 style={{
-            fontSize: '2.5rem',
-            fontWeight: '800',
-            background: 'linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            marginBottom: '0.5rem'
-          }}>
+          <h1 className="heading-2 text-gradient">
             Subscriptions
           </h1>
-          <p style={{ color: '#94a3b8', fontSize: '1.1rem' }}>
+          <p className="text-muted">
             Manage your recurring subscriptions • {formatCurrency(totalMonthlySpend, currency)}/month total
           </p>
         </div>
@@ -216,137 +204,71 @@ const Subscriptions = () => {
             resetForm();
             setShowForm(true);
           }}
-          style={{
-            background: 'linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '12px',
-            padding: '0.75rem 1.5rem',
-            fontSize: '1rem',
-            fontWeight: '600',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            boxShadow: '0 4px 15px rgba(139, 92, 246, 0.3)'
-          }}
-          onMouseOver={(e) => {
-            e.currentTarget.style.transform = 'translateY(-2px)';
-            e.currentTarget.style.boxShadow = '0 8px 25px rgba(139, 92, 246, 0.4)';
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 4px 15px rgba(139, 92, 246, 0.3)';
-          }}
+          className="btn btn-primary"
         >
-          + Add Subscription
+          <Plus size={16} />
+          Add Subscription
         </button>
       </div>
 
       {/* Filters - only show if we have any subscriptions */}
       {safeSubscriptions.length > 0 && (
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.05)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '16px',
-          padding: '1.5rem',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          marginBottom: '2rem',
-          display: 'flex',
-          gap: '1rem',
-          flexWrap: 'wrap',
-          alignItems: 'center'
-        }}>
-          <div>
-            <label style={{ color: '#94a3b8', fontSize: '0.875rem', marginRight: '0.5rem' }}>Sort by:</label>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as 'name' | 'price' | 'nextBillingDate')}
-              style={{
-                background: 'rgba(255, 255, 255, 0.1)',
-                color: 'white',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                borderRadius: '8px',
-                padding: '0.5rem',
-                fontSize: '0.875rem'
-              }}
-            >
-              <option value="name">Name</option>
-              <option value="price">Price</option>
-              <option value="nextBillingDate">Next Billing</option>
-            </select>
-          </div>
+        <div className="glass-card mb-8">
+          <div className="flex-wrap">
+            <div className="flex items-center gap-2">
+              <label className="form-label">Sort by:</label>
+              <select 
+                value={sortBy} 
+                onChange={(e) => setSortBy(e.target.value as 'name' | 'price' | 'nextBillingDate')}
+                className="form-select"
+style={{ width: '10rem' }}
+              >
+                <option value="name">Name</option>
+                <option value="price">Price</option>
+                <option value="nextBillingDate">Next Billing</option>
+              </select>
+            </div>
 
-          <div>
-            <label style={{ color: '#94a3b8', fontSize: '0.875rem', marginRight: '0.5rem' }}>Category:</label>
-            <select
-              value={filterCategory}
-              onChange={(e) => setFilterCategory(e.target.value)}
-              style={{
-                background: 'rgba(255, 255, 255, 0.1)',
-                color: 'white',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                borderRadius: '8px',
-                padding: '0.5rem',
-                fontSize: '0.875rem'
-              }}
-            >
-              <option value="all">All Categories</option>
-              {safeCategories.map((category: Category) => (
-                <option key={category.id} value={category.id}>{category.name}</option>
-              ))}
-            </select>
-          </div>
+            <div className="flex items-center gap-2">
+              <label className="form-label">Category:</label>
+              <select 
+                value={filterCategory} 
+                onChange={(e) => setFilterCategory(e.target.value)}
+                className="form-select"
+style={{ width: '12rem' }}
+              >
+                <option value="all">All Categories</option>
+                {safeCategories.map((category: Category) => (
+                  <option key={category.id} value={category.id.toString()}>{category.name}</option>
+                ))}
+              </select>
+            </div>
 
-          <div>
-            <label style={{ color: '#94a3b8', fontSize: '0.875rem', marginRight: '0.5rem' }}>Status:</label>
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value as 'all' | 'active' | 'inactive')}
-              style={{
-                background: 'rgba(255, 255, 255, 0.1)',
-                color: 'white',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                borderRadius: '8px',
-                padding: '0.5rem',
-                fontSize: '0.875rem'
-              }}
-            >
-              <option value="all">All</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
+            <div className="flex items-center gap-2">
+              <label className="form-label">Status:</label>
+              <select 
+                value={filterStatus} 
+                onChange={(e) => setFilterStatus(e.target.value as 'all' | 'active' | 'inactive')}
+                className="form-select"
+style={{ width: '8rem' }}
+              >
+                <option value="all">All</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
           </div>
         </div>
       )}
 
       {/* Subscription Form Modal */}
       {showForm && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.8)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.1)',
-            backdropFilter: 'blur(20px)',
-            borderRadius: '20px',
-            padding: '2rem',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-            width: '90%',
-            maxWidth: '500px',
-            maxHeight: '90vh',
-            overflow: 'auto'
-          }}>
-            <h2 style={{ color: 'white', marginBottom: '1.5rem', fontSize: '1.5rem', fontWeight: '700' }}>
+        <div className="modal-overlay" onClick={() => setShowForm(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h2 className="modal-title">
               {editingSubscription ? 'Edit Subscription' : 'Add New Subscription'}
             </h2>
-
+            
             <SubscriptionForm
               mode={editingSubscription ? 'edit' : 'create'}
               values={formData as SubscriptionFormValues}
@@ -373,37 +295,22 @@ const Subscriptions = () => {
 
       {/* Subscriptions List */}
       {filteredAndSortedSubscriptions.length === 0 ? (
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.05)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '20px',
-          padding: '3rem',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          textAlign: 'center'
-        }}>
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📱</div>
-          <h3 style={{ color: 'white', fontSize: '1.5rem', marginBottom: '0.5rem' }}>No subscriptions yet</h3>
-          <p style={{ color: '#94a3b8', marginBottom: '1.5rem' }}>Start by adding your first subscription to track your recurring expenses.</p>
+        <div className="placeholder-card">
+          <div className="text-5xl mb-4">📱</div>
+          <h3 className="heading-3 mb-2">No subscriptions yet</h3>
+          <p className="text-muted text-base mb-6">
+            Start by adding your first subscription to track your recurring expenses.
+          </p>
           <button
             onClick={() => {
               setEditingSubscription(null);
               resetForm();
               setShowForm(true);
             }}
-            style={{
-              background: 'linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '12px',
-              padding: '0.75rem 1.5rem',
-              fontSize: '1rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              boxShadow: '0 4px 15px rgba(139, 92, 246, 0.3)'
-            }}
+            className="btn btn-primary"
           >
-            + Add Your First Subscription
+            <Plus size={16} />
+            Add Your First Subscription
           </button>
         </div>
       ) : (

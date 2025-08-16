@@ -38,13 +38,9 @@ function AppContent() {
 
   // User is authenticated, show the main app with all routes
   return (
-    <div style={{
-      display: 'flex',
-      minHeight: '100vh',
-      background: '#0f172a'
-    }}>
+    <div className="app-layout">
       <Sidebar />
-      <main style={{ flex: 1 }}>
+      <main className="main-content">
         <ErrorBoundary>
           <Routes>
             <Route path="/" element={<Dashboard />} />

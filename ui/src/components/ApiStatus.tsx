@@ -1,7 +1,5 @@
 import React from 'react';
 import Icon from './Icon';
-import { Button } from './ui/Button';
-import { theme } from '../styles/theme';
 import { ApiError } from '../utils/api';
 
 interface LoadingProps {
@@ -17,18 +15,11 @@ export const Loading: React.FC<LoadingProps> = ({
   const fontSize = size === 'sm' ? 'sm' : size === 'lg' ? 'xl' : 'md';
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: theme.spacing.lg,
-      color: theme.colors.gray[400]
-    }}>
-      <div style={{ marginBottom: theme.spacing.md }}>
+    <div className="flex flex-col items-center justify-center text-muted" style={{ padding: 'var(--spacing-lg)' }}>
+      <div className="mb-4">
         <Icon name="loader" size={iconSize} />
       </div>
-      <p style={{ fontSize: theme.typography.fontSize[fontSize] }}>
+      <p className={`text-${fontSize}`}>
         {message}
       </p>
     </div>
@@ -49,59 +40,40 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
   const isApiError = error instanceof ApiError;
   
   return (
-    <div style={{
-      padding: theme.spacing.lg,
+    <div className="rounded-lg m-4" style={{
+      padding: 'var(--spacing-lg)',
       backgroundColor: 'rgba(239, 68, 68, 0.1)',
-      border: `1px solid ${theme.colors.danger[500]}`,
-      borderRadius: theme.borderRadius.md,
-      margin: theme.spacing.md
+      border: '1px solid var(--color-error)'
     }}>
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        marginBottom: theme.spacing.md
-      }}>
+      <div className="flex items-center mb-4">
         <Icon 
           name="alert-triangle" 
           size={24} 
-          color={theme.colors.danger[500]}
-          style={{ marginRight: theme.spacing.sm }}
+          color="var(--color-error)"
+          style={{ marginRight: 'var(--spacing-sm)' }}
         />
-        <h3 style={{
-          color: theme.colors.danger[500],
-          fontSize: theme.typography.fontSize.lg,
-          fontWeight: theme.typography.fontWeight.semibold,
-          margin: 0
-        }}>
+        <h3 className="text-lg font-semibold m-0" style={{ color: 'var(--color-error)' }}>
           {title}
         </h3>
       </div>
       
-      <p style={{
-        color: theme.colors.gray[300],
-        marginBottom: onRetry ? theme.spacing.md : 0
-      }}>
+      <p className={`text-secondary ${onRetry ? 'mb-4' : ''}`}>
         {error.message}
       </p>
 
       {isApiError && (
-        <p style={{
-          color: theme.colors.gray[400],
-          fontSize: theme.typography.fontSize.sm,
-          marginBottom: onRetry ? theme.spacing.md : 0
-        }}>
+        <p className={`text-small ${onRetry ? 'mb-4' : ''}`}>
           Status: {error.status} {error.statusText}
         </p>
       )}
 
       {onRetry && (
-        <Button 
-          onClick={onRetry} 
-          variant="secondary" 
-          size="sm"
+        <button 
+          onClick={onRetry}
+          className="btn btn-secondary"
         >
           Try Again
-        </Button>
+        </button>
       )}
     </div>
   );

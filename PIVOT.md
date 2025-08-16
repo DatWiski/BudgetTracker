@@ -9,8 +9,6 @@ BudgetTracker aims to become an all-in-one personal finance companion. Building 
 ```
 backend/          Spring Boot microservices (auth, subscriptions, transactions)
 ui-react/         React front-end application (SPA) using TypeScript
-mobile/           React Native mobile clients (future)
-infra/            Terraform + GitHub Actions for cloud deployment & CI
 ```  
 
 **Historical Reference**

@@ -50,18 +50,19 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(csrfRepository)
                         .csrfTokenRequestHandler(requestHandler)
-                        .ignoringRequestMatchers("/api/auth/status", "/api/csrf-token")
+                        .ignoringRequestMatchers("/api/auth/status", "/api/csrf-token", "/swagger-ui/**", "/v3/api-docs/**")
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/status", "/api/csrf-token").permitAll()
                         .requestMatchers("/login", "/oauth-complete", "/oauth2/**", "/static/**", "/*.js", "/*.css", "/*.ico", "/*.png", "/*.svg", "/assets/**").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/v3/api-docs").permitAll()
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .headers(headers -> {
                     // Security headers
                     headers.contentSecurityPolicy(csp -> csp
-                            .policyDirectives("default-src 'self'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; font-src 'self' data:"));
+                            .policyDirectives("default-src 'self'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; font-src 'self' data:"));
                     headers.httpStrictTransportSecurity(hsts -> hsts
                             .includeSubDomains(true)
                             .preload(true));

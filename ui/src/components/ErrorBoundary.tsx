@@ -1,7 +1,5 @@
 import React, { Component, type ReactNode } from 'react';
 import Icon from './Icon';
-import { Button } from './ui/Button';
-import { theme } from '../styles/theme';
 
 interface Props {
   children: ReactNode;
@@ -48,58 +46,40 @@ class ErrorBoundary extends Component<Props, State> {
 
       // Default error UI
       return (
-        <div style={{
-          padding: theme.spacing.xl,
-          minHeight: '50vh',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: theme.colors.white,
-          textAlign: 'center'
-        }}>
-          <div style={{ marginBottom: theme.spacing.lg }}>
-            <Icon name="activity" size={64} color={theme.colors.danger[500]} />
+        <div className="flex flex-col items-center justify-center min-h-[50vh] text-center text-white" style={{ padding: 'var(--spacing-xl)' }}>
+          <div className="mb-6">
+            <Icon name="activity" size={64} color="var(--color-error)" />
           </div>
-          <h2 style={{
-            fontSize: theme.typography.fontSize['2xl'],
-            fontWeight: theme.typography.fontWeight.semibold,
-            color: theme.colors.danger[500],
-            marginBottom: theme.spacing.md
-          }}>
+          <h2 className="heading-2 mb-4" style={{ color: 'var(--color-error)' }}>
             Something went wrong
           </h2>
-          <p style={{
-            color: theme.colors.gray[400],
-            marginBottom: theme.spacing.lg,
-            maxWidth: '400px'
-          }}>
+          <p className="text-muted max-w-96 mb-6">
             We encountered an unexpected error. {this.state.retryCount < 3 ? 'Try again or refresh the page.' : 'Please refresh the page.'}
           </p>
-          <div style={{ display: 'flex', gap: theme.spacing.md }}>
+          <div className="flex gap-4">
             {this.state.retryCount < 3 && (
-              <Button onClick={this.retry} variant="secondary">
+              <button 
+                onClick={this.retry}
+                className="btn btn-secondary"
+              >
                 Try Again
-              </Button>
+              </button>
             )}
-            <Button onClick={() => window.location.reload()}>
+            <button 
+              onClick={() => window.location.reload()}
+              className="btn btn-primary"
+            >
               Refresh Page
-            </Button>
+            </button>
           </div>
           {process.env.NODE_ENV === 'development' && this.state.error && (
-            <details style={{ marginTop: theme.spacing.xl, textAlign: 'left' }}>
-              <summary style={{ color: theme.colors.gray[400], cursor: 'pointer' }}>
+            <details className="mt-8 text-left">
+              <summary className="text-muted cursor-pointer">
                 Error Details (Development)
               </summary>
-              <pre style={{
-                color: theme.colors.danger[500],
-                fontSize: theme.typography.fontSize.sm,
-                padding: theme.spacing.md,
-                background: 'rgba(239, 68, 68, 0.1)',
-                borderRadius: theme.borderRadius.md,
-                marginTop: theme.spacing.sm,
-                overflow: 'auto',
-                maxWidth: '600px'
+              <pre className="text-sm mt-2 p-4 overflow-auto max-w-[600px] rounded-lg" style={{
+                color: 'var(--color-error)',
+                background: 'rgba(239, 68, 68, 0.1)'
               }}>
                 {this.state.error.stack}
               </pre>
