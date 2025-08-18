@@ -1,5 +1,15 @@
 import React from 'react';
 import type { Category, SubscriptionRequest } from '../../types';
+import { FormWrapper } from '../common/FormWrapper';
+import { 
+  FormField, 
+  TextInput, 
+  NumberInput, 
+  DateInput, 
+  SelectInput, 
+  Checkbox,
+  type SelectOption 
+} from '../common/FormField';
 
 export type SubscriptionFormValues = {
   name: string;
@@ -50,145 +60,82 @@ const SubscriptionForm: React.FC<Props> = ({
     }
   };
 
+  // Convert categories to SelectOption format
+  const categoryOptions: SelectOption[] = categories.map(c => ({
+    value: c.id.toString(),
+    label: c.name
+  }));
+
+  const billingPeriodOptions: SelectOption[] = [
+    { value: 'DAILY', label: 'Daily' },
+    { value: 'WEEKLY', label: 'Weekly' },
+    { value: 'MONTHLY', label: 'Monthly' },
+    { value: 'YEARLY', label: 'Yearly' }
+  ];
+
   return (
-    <form onSubmit={handleSubmit}>
-      <div className="mb-4">
-        <label className="form-label block mb-2">
-          Subscription Name
-        </label>
-        <input
+    <FormWrapper
+      onSubmit={handleSubmit}
+      onCancel={onCancel}
+      isSubmitting={isSubmitting}
+      mode={mode}
+    >
+      <FormField label="Subscription Name" error={errors?.name} required width="lg">
+        <TextInput
           id="name"
-          type="text"
           value={values.name}
-          onChange={(e) => onChange({ ...values, name: e.target.value })}
-          required
+          onChange={(value) => onChange({ ...values, name: value })}
           placeholder="e.g., Netflix, Spotify"
-          className="w-full text-white text-sm outline-none rounded-lg focus:border-violet-400 transition-colors"
-          style={{
-            background: 'var(--bg-glass-hover)',
-            border: '1px solid var(--border-secondary)',
-            padding: 'var(--spacing-sm) 0.75rem'
-          }}
+          required
+          maxLength={100}
         />
-        {errors?.name && <div className="text-xs mt-1" style={{ color: 'var(--color-error-light)' }}>{errors.name}</div>}
-      </div>
+      </FormField>
 
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <div>
-          <label className="form-label block mb-2">
-            Price
-          </label>
-          <input
-            id="price"
-            type="number"
-            step="0.01"
-            value={values.price}
-            onChange={(e) => onChange({ ...values, price: e.target.value })}
-            required
-            placeholder="0.00"
-            className="w-full text-white text-sm outline-none rounded-lg focus:border-violet-400 transition-colors"
-            style={{
-              background: 'var(--bg-glass-hover)',
-              border: '1px solid var(--border-secondary)',
-              padding: 'var(--spacing-sm) 0.75rem'
-            }}
-          />
-          {errors?.price && <div className="text-xs mt-1" style={{ color: 'var(--color-error-light)' }}>{errors.price}</div>}
-        </div>
+      <FormField label="Price" error={errors?.price} required width="sm">
+        <NumberInput
+          id="price"
+          value={values.price}
+          onChange={(value) => onChange({ ...values, price: value })}
+          placeholder="0.00"
+          required
+          min={0}
+        />
+      </FormField>
 
-        <div>
-          <label className="form-label block mb-2">
-            Billing Period
-          </label>
-          <select 
-            value={values.billingPeriod} 
-            onChange={(e) => onChange({ ...values, billingPeriod: e.target.value as 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY' })}
-            className="form-select w-full cursor-pointer"
-          >
-            <option value="DAILY">Daily</option>
-            <option value="WEEKLY">Weekly</option>
-            <option value="MONTHLY">Monthly</option>
-            <option value="YEARLY">Yearly</option>
-          </select>
-        </div>
-      </div>
+      <FormField label="Billing Period" required width="sm">
+        <SelectInput
+          value={values.billingPeriod}
+          onChange={(value) => onChange({ ...values, billingPeriod: value as 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY' })}
+          options={billingPeriodOptions}
+          required
+        />
+      </FormField>
 
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <div>
-          <label className="form-label block mb-2">
-            Next Billing Date
-          </label>
-          <input
-            id="next-billing"
-            type="date"
-            value={values.nextBillingDate}
-            onChange={(e) => onChange({ ...values, nextBillingDate: e.target.value })}
-            required
-            className="w-full text-white text-sm outline-none rounded-lg focus:border-violet-400 transition-colors"
-            style={{
-              background: 'var(--bg-glass-hover)',
-              border: '1px solid var(--border-secondary)',
-              padding: 'var(--spacing-sm) 0.75rem'
-            }}
-          />
-        </div>
+      <FormField label="Next Billing Date" required width="sm">
+        <DateInput
+          id="next-billing"
+          value={values.nextBillingDate}
+          onChange={(value) => onChange({ ...values, nextBillingDate: value })}
+          required
+        />
+      </FormField>
 
-        <div>
-          <label className="form-label block mb-2">
-            Category
-          </label>
-          <select 
-            value={values.categoryId} 
-            onChange={(e) => onChange({ ...values, categoryId: e.target.value })}
-            className="form-select w-full cursor-pointer"
-          >
-            <option value="">Select Category</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id.toString()}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-          {errors?.categoryId && (
-            <div className="text-xs mt-1" style={{ color: 'var(--color-error-light)' }}>{errors.categoryId}</div>
-          )}
-        </div>
-      </div>
+      <FormField label="Category" error={errors?.categoryId} width="sm">
+        <SelectInput
+          value={values.categoryId}
+          onChange={(value) => onChange({ ...values, categoryId: value })}
+          options={categoryOptions}
+          placeholder="Select Category"
+        />
+      </FormField>
 
-      <div className="mb-6">
-        <div className="flex items-center gap-2">
-          <input
-            id="active"
-            type="checkbox"
-            checked={values.active}
-            onChange={(e) => onChange({ ...values, active: e.target.checked })}
-            className="w-4 h-4 cursor-pointer"
-            style={{ accentColor: 'var(--color-primary)' }}
-          />
-          <label htmlFor="active" className="text-white cursor-pointer text-sm">
-            Active subscription
-          </label>
-        </div>
-      </div>
-
-      <div className="flex gap-4 justify-end">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="btn btn-secondary"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="btn btn-primary"
-          style={{ opacity: isSubmitting ? 0.6 : 1, cursor: isSubmitting ? 'not-allowed' : 'pointer' }}
-        >
-          {isSubmitting ? 'Saving...' : mode === 'edit' ? 'Update' : 'Create'}
-        </button>
-      </div>
-    </form>
+      <Checkbox
+        id="active"
+        checked={values.active}
+        onChange={(checked) => onChange({ ...values, active: checked })}
+        label="Active subscription"
+      />
+    </FormWrapper>
   );
 };
 
