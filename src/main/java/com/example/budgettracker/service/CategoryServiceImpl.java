@@ -3,6 +3,7 @@ package com.example.budgettracker.service;
 import com.example.budgettracker.dto.CategoryResponse;
 import com.example.budgettracker.model.AppUser;
 import com.example.budgettracker.model.Category;
+import com.example.budgettracker.model.CategoryType;
 import com.example.budgettracker.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -98,6 +99,22 @@ public class CategoryServiceImpl implements CategoryService {
         "Health",
         "Shopping"
     );
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<CategoryResponse> getCategoriesByTypeForUser(AppUser user, CategoryType categoryType) {
+        List<Category> categories = categoryRepository.findByAppUserAndCategoryTypeOrderByNameAsc(user, categoryType);
+        return categories.stream()
+                .map(category -> {
+                    CategoryResponse response = new CategoryResponse();
+                    response.setId(category.getId());
+                    response.setName(category.getName());
+                    response.setLocked(category.isLocked());
+                    response.setSubscriptionCount(0L); // No subscription count needed for income categories
+                    return response;
+                })
+                .collect(Collectors.toList());
+    }
     
     private List<String> getDefaultCategories() {
         return DEFAULT_CATEGORIES;

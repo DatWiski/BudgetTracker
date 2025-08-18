@@ -31,6 +31,10 @@ public class Category extends BaseEntity {
     @Column(nullable = false)
     private boolean locked = false;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "category_type", nullable = false)
+    private CategoryType categoryType = CategoryType.SUBSCRIPTION;
+
     public void assertMutable() {
         if (locked) {
             throw new CategoryLockedException(this.name);

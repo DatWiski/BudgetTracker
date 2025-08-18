@@ -2,6 +2,7 @@ package com.example.budgettracker.controller;
 
 import com.example.budgettracker.dto.CategoryResponse;
 import com.example.budgettracker.model.AppUser;
+import com.example.budgettracker.model.CategoryType;
 import com.example.budgettracker.service.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -25,15 +27,26 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @GetMapping
-    @Operation(summary = "Get all categories", description = "Retrieves all categories with subscription counts for the authenticated user")
+    @Operation(summary = "Get categories", description = "Retrieves categories for the authenticated user, optionally filtered by type")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Categories retrieved successfully"),
             @ApiResponse(responseCode = "401", description = "User not authenticated")
     })
-    public ResponseEntity<List<CategoryResponse>> getAllCategories(
-            @Parameter(hidden = true) AppUser appUser) {
-        List<CategoryResponse> response = categoryService.getCategoriesWithCountsForUser(appUser);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<List<CategoryResponse>> getCategories(
+            @Parameter(hidden = true) AppUser appUser,
+            @RequestParam(required = false) String type) {
+        
+        if ("income".equalsIgnoreCase(type)) {
+            List<CategoryResponse> response = categoryService.getCategoriesByTypeForUser(appUser, CategoryType.INCOME);
+            return ResponseEntity.ok(response);
+        } else if ("subscription".equalsIgnoreCase(type)) {
+            List<CategoryResponse> response = categoryService.getCategoriesByTypeForUser(appUser, CategoryType.SUBSCRIPTION);
+            return ResponseEntity.ok(response);
+        } else {
+            // Default behavior - all categories with subscription counts
+            List<CategoryResponse> response = categoryService.getCategoriesWithCountsForUser(appUser);
+            return ResponseEntity.ok(response);
+        }
     }
 
 
