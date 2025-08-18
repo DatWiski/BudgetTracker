@@ -93,3 +93,21 @@ export interface RecentActivity extends Subscription {
 export interface UserCurrencyResponse {
   currency: 'USD' | 'EUR';
 }
+
+export interface Income {
+  id: number;
+  name: string;
+  amount: number;
+  incomeDate: string;
+  description?: string;
+  categoryId?: number;
+  categoryName?: string;
+}
+
+export interface IncomeRequest {
+  name: string;
+  amount: number;
+  incomeDate: string;
+  description?: string;
+  categoryId?: number;
+}
