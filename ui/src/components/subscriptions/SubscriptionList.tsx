@@ -1,7 +1,8 @@
 import React from 'react';
 import type { Subscription } from '../../types';
 import { formatCurrency } from '../../utils/currency';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit3, X, CreditCard } from 'lucide-react';
+import Card from '../common/Card';
 
 type Props = {
   subscriptions: Subscription[];
@@ -19,67 +20,53 @@ const SubscriptionList: React.FC<Props> = ({ subscriptions, currency, onEdit, on
           (new Date(subscription.nextBillingDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
         );
 
-        return (
-          <div 
-            key={subscription.id} 
-            className="glass-card-strong flex-between mb-4"
-            style={{ padding: 'var(--spacing-xl)' }}
+        const statusColor = daysUntilBilling < 0 ? '#f87171' : 
+                           daysUntilBilling <= 2 ? '#f87171' : 
+                           daysUntilBilling <= 7 ? '#fbbf24' : 
+                           '#cbd5e1';
+
+        const statusText = daysUntilBilling > 0
+          ? `Due in ${daysUntilBilling} days`
+          : daysUntilBilling === 0
+          ? 'Due today'
+          : `Overdue by ${Math.abs(daysUntilBilling)} days`;
+
+        const actions = [
+          <button
+            key="edit"
+            onClick={() => onEdit(subscription)}
+            className="p-3 rounded-md text-slate-400 hover:text-blue-400 hover:bg-blue-400/10 transition-colors"
+            title="Edit subscription"
           >
-            <div className="flex items-center gap-4">
-              <div className="category-dot" />
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="heading-3 text-lg">
-                    {subscription.name}
-                  </h3>
-                  {!subscription.active && (
-                    <span className="status-badge">
-                      INACTIVE
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className="text-small">
-                    {subscription.categoryName || 'Uncategorized'}
-                  </span>
-                  <span className="text-small">
-                    {daysUntilBilling > 0
-                      ? `Due in ${daysUntilBilling} days`
-                      : daysUntilBilling === 0
-                      ? 'Due today'
-                      : `Overdue by ${Math.abs(daysUntilBilling)} days`}
-                  </span>
-                </div>
-              </div>
-            </div>
+            <Edit3 size={18} />
+          </button>,
+          <button
+            key="delete"
+            onClick={() => onDelete(subscription.id!)}
+            disabled={deletingId === subscription.id}
+            className="p-3 rounded-md text-slate-400 hover:text-red-400 hover:bg-red-400/10 transition-colors disabled:opacity-50"
+            title="Delete subscription"
+          >
+            <X size={18} />
+          </button>
+        ];
 
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <div className="text-white text-2xl font-bold">
-                  {formatCurrency(subscription.price, currency)}
-                </div>
-                <div className="text-xs uppercase font-semibold" style={{ color: 'var(--color-primary)' }}>
-                  {subscription.billingPeriod.toLowerCase()}
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <button
-                  onClick={() => onEdit(subscription)}
-                  className="btn-icon"
-                >
-                  <Edit size={16} />
-                </button>
-                <button
-                  onClick={() => onDelete(subscription.id!)}
-                  disabled={deletingId === subscription.id}
-                  className="btn-icon-danger"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-            </div>
-          </div>
+        return (
+          <Card
+            key={subscription.id}
+            title={subscription.name}
+            subtitle={subscription.categoryName || 'Uncategorized'}
+            status={{
+              text: statusText,
+              color: statusColor
+            }}
+            icon={<CreditCard size={36} />}
+            amount={formatCurrency(subscription.price, currency)}
+            amountLabel={subscription.billingPeriod.toLowerCase()}
+            actions={actions}
+            theme="expense"
+            inactive={!subscription.active}
+          />
         );
       })}
     </div>
