@@ -14,6 +14,7 @@ interface IncomeFormData {
   name: string;
   amount: string;
   incomeDate: string;
+  period?: string;
   description?: string;
   categoryId?: string;
 }
@@ -27,6 +28,7 @@ const IncomePage = () => {
     name: '',
     amount: '',
     incomeDate: new Date().toISOString().split('T')[0], // Today's date
+    period: 'ONE_TIME',
     description: '',
     categoryId: ''
   });
@@ -43,6 +45,7 @@ const IncomePage = () => {
       name: '',
       amount: '',
       incomeDate: new Date().toISOString().split('T')[0],
+      period: 'ONE_TIME',
       description: '',
       categoryId: ''
     });
@@ -56,6 +59,7 @@ const IncomePage = () => {
       name: income.name,
       amount: income.amount.toString(),
       incomeDate: income.incomeDate,
+      period: income.period || 'ONE_TIME',
       description: income.description || '',
       categoryId: income.categoryId?.toString() || ''
     });

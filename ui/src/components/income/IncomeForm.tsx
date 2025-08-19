@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { Category, IncomeRequest } from '../../types';
+import type { Category, IncomeRequest, Period } from '../../types';
 import { FormField } from '../common/FormField';
 import { FormWrapper } from '../common/FormWrapper';
 
@@ -7,6 +7,7 @@ export interface IncomeFormValues {
   name: string;
   amount: string;
   incomeDate: string;
+  period?: string;
   description?: string;
   categoryId?: string;
 }
@@ -76,6 +77,7 @@ const IncomeForm = ({
       name: values.name.trim(),
       amount: parseFloat(values.amount),
       incomeDate: values.incomeDate,
+      period: (values.period || 'ONE_TIME') as Period,
       description: values.description?.trim() || undefined,
       categoryId: values.categoryId ? parseInt(values.categoryId) : undefined,
     };
@@ -148,6 +150,26 @@ const IncomeForm = ({
           className="form-input"
           required
         />
+      </FormField>
+
+      <FormField
+        label="Frequency"
+        error={errors.period}
+        required
+      >
+        <select
+          name="period"
+          value={values.period || 'ONE_TIME'}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onChange({ ...values, period: e.target.value })}
+          className="form-select"
+        >
+          <option value="ONE_TIME">One-time</option>
+          <option value="DAILY">Daily</option>
+          <option value="WEEKLY">Weekly</option>
+          <option value="MONTHLY">Monthly</option>
+          <option value="QUARTERLY">Quarterly</option>
+          <option value="YEARLY">Yearly</option>
+        </select>
       </FormField>
 
       <FormField

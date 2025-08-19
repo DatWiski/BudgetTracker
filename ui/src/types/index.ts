@@ -101,6 +101,7 @@ export interface Income {
   name: string;
   amount: number;
   incomeDate: string;
+  period: Period;
   description?: string;
   categoryId?: number;
   categoryName?: string;
@@ -110,6 +111,7 @@ export interface IncomeRequest {
   name: string;
   amount: number;
   incomeDate: string;
+  period: Period;
   description?: string;
   categoryId?: number;
 }

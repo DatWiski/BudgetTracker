@@ -31,6 +31,10 @@ public class Income extends BaseEntity {
     @Column(name = "income_date", nullable = false)
     private LocalDate incomeDate;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Period period = Period.ONE_TIME;
+
     @Column(length = 500)
     private String description;
 

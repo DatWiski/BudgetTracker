@@ -34,6 +34,7 @@ public class IncomeServiceImpl implements IncomeService {
         income.setName(request.getName());
         income.setAmount(request.getAmount());
         income.setIncomeDate(request.getIncomeDate());
+        income.setPeriod(request.getPeriod());
         income.setDescription(request.getDescription());
         income.setAppUser(user);
 
@@ -60,6 +61,7 @@ public class IncomeServiceImpl implements IncomeService {
         income.setName(request.getName());
         income.setAmount(request.getAmount());
         income.setIncomeDate(request.getIncomeDate());
+        income.setPeriod(request.getPeriod());
         income.setDescription(request.getDescription());
 
         // Update category if provided

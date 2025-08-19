@@ -1,5 +1,6 @@
 package com.example.budgettracker.dto;
 
+import com.example.budgettracker.model.Period;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.Data;
@@ -27,6 +28,10 @@ public class IncomeRequest {
     @PastOrPresent(message = "Income date cannot be in the future")
     @Schema(description = "Date when income was received", example = "2024-01-15")
     private LocalDate incomeDate;
+
+    @NotNull(message = "Period is required")
+    @Schema(description = "How often this income occurs", example = "MONTHLY")
+    private Period period = Period.ONE_TIME;
 
     @Size(max = 500, message = "Description cannot exceed 500 characters")
     @Schema(description = "Optional description", example = "January salary payment")
