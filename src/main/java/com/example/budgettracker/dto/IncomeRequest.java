@@ -25,7 +25,6 @@ public class IncomeRequest {
     private BigDecimal amount;
 
     @NotNull(message = "Income date is required")
-    @PastOrPresent(message = "Income date cannot be in the future")
     @Schema(description = "Date when income was received", example = "2024-01-15")
     private LocalDate incomeDate;
 

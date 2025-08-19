@@ -118,6 +118,8 @@ const SubscriptionForm: React.FC<Props> = ({
           value={values.nextBillingDate}
           onChange={(value) => onChange({ ...values, nextBillingDate: value })}
           required
+          min="1900-01-01"
+          max="2100-12-31"
         />
       </FormField>
 

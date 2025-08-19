@@ -204,6 +204,47 @@ export const SelectInput: React.FC<SelectInputProps> = ({
   );
 };
 
+// Textarea component
+export interface TextareaInputProps {
+  id?: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  required?: boolean;
+  rows?: number;
+  maxLength?: number;
+}
+
+export const TextareaInput: React.FC<TextareaInputProps> = ({
+  id,
+  value,
+  onChange,
+  placeholder,
+  required,
+  rows = 3,
+  maxLength
+}) => {
+  return (
+    <textarea
+      id={id}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      required={required}
+      placeholder={placeholder}
+      rows={rows}
+      maxLength={maxLength}
+      className="w-full text-white text-base outline-none rounded-lg focus:border-violet-400 focus:ring-2 focus:ring-violet-400/20 transition-all duration-200 resize-vertical"
+      style={{
+        background: 'rgba(51, 65, 85, 0.8)',
+        border: '1px solid rgba(100, 116, 139, 0.4)',
+        padding: '12px 16px',
+        color: '#ffffff',
+        minHeight: '80px'
+      }}
+    />
+  );
+};
+
 // Checkbox component
 export interface CheckboxProps {
   id?: string;

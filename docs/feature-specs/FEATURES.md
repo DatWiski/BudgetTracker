@@ -11,11 +11,11 @@ For detailed specifications, see individual feature documents:
 ## ✅ Current Features
 - **Google OAuth2 Authentication** with user profiles and currency settings
 - **Subscription Management** - CRUD operations, categories, filtering, status tracking *(see [detailed spec](./subscriptions.md))*
-- **Modern UI** - Dark theme, responsive design, form validation
+- **Income Tracking** - Manual entry, categories, period support, monthly analytics *(see [detailed spec](./income-tracking.md))*
+- **Modern UI** - Dark theme, responsive design, form validation, glassmorphism design
 - **Tech Stack** - Spring Boot 3.5.3, PostgreSQL, React 19, TypeScript, OpenAPI docs
 
 ## 🚧 In Development
-- **Income Tracking** - Manual entry, categories, monthly analytics *(see [detailed spec](./income-tracking.md))*
 - **Bills Management** - Non-subscription recurring bills with payment history *(see [detailed spec](./bills-management.md))*
 
 ## 🎯 Planned Features

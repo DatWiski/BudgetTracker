@@ -29,7 +29,6 @@ public class SubscriptionRequest {
     private Period period;
 
     @NotNull(message = "Next billing date is required")
-    @FutureOrPresent(message = "Next billing date cannot be in the past")
     @Schema(description = "Next billing date", example = "2024-02-15")
     private LocalDate nextBillingDate;
 

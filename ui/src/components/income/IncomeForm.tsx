@@ -1,7 +1,15 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { Category, IncomeRequest, Period } from '../../types';
-import { FormField } from '../common/FormField';
 import { FormWrapper } from '../common/FormWrapper';
+import { 
+  FormField, 
+  TextInput, 
+  NumberInput, 
+  DateInput, 
+  SelectInput, 
+  TextareaInput,
+  type SelectOption 
+} from '../common/FormField';
 
 export interface IncomeFormValues {
   name: string;
@@ -12,18 +20,18 @@ export interface IncomeFormValues {
   categoryId?: string;
 }
 
-interface IncomeFormProps {
+type Props = {
   mode: 'create' | 'edit';
   values: IncomeFormValues;
   onChange: (values: IncomeFormValues) => void;
   categories: Category[];
-  isSubmitting: boolean;
+  isSubmitting?: boolean;
   onCancel: () => void;
-  onSubmit: (payload: IncomeRequest | ({ id: number } & IncomeRequest)) => void;
+  onSubmit: (payload: IncomeRequest | (IncomeRequest & { id: number })) => void;
   editingId?: number | null;
-}
+};
 
-const IncomeForm = ({
+const IncomeForm: React.FC<Props> = ({
   mode,
   values,
   onChange,
@@ -31,8 +39,8 @@ const IncomeForm = ({
   isSubmitting,
   onCancel,
   onSubmit,
-  editingId
-}: IncomeFormProps) => {
+  editingId,
+}) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validateForm = (): boolean => {
@@ -53,13 +61,6 @@ const IncomeForm = ({
 
     if (!values.incomeDate) {
       newErrors.incomeDate = 'Income date is required';
-    } else {
-      const incomeDate = new Date(values.incomeDate);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      if (incomeDate > today) {
-        newErrors.incomeDate = 'Income date cannot be in the future';
-      }
     }
 
     setErrors(newErrors);
@@ -81,9 +82,8 @@ const IncomeForm = ({
       description: values.description?.trim() || undefined,
       categoryId: values.categoryId ? parseInt(values.categoryId) : undefined,
     };
-
-    if (mode === 'edit' && editingId) {
-      onSubmit({ id: editingId, ...payload });
+    if (mode === 'edit' && editingId != null) {
+      onSubmit({ ...payload, id: editingId });
     } else {
       onSubmit(payload);
     }
@@ -96,116 +96,89 @@ const IncomeForm = ({
     }
   }, [values]);
 
+  // Convert categories to SelectOption format
+  const categoryOptions: SelectOption[] = categories.map(c => ({
+    value: c.id.toString(),
+    label: c.name
+  }));
+
+  const periodOptions: SelectOption[] = [
+    { value: 'ONE_TIME', label: 'One-time' },
+    { value: 'DAILY', label: 'Daily' },
+    { value: 'WEEKLY', label: 'Weekly' },
+    { value: 'MONTHLY', label: 'Monthly' },
+    { value: 'QUARTERLY', label: 'Quarterly' },
+    { value: 'YEARLY', label: 'Yearly' }
+  ];
+
   return (
-    <FormWrapper 
-      onSubmit={handleSubmit} 
-      onCancel={onCancel} 
-      isSubmitting={isSubmitting} 
+    <FormWrapper
+      onSubmit={handleSubmit}
+      onCancel={onCancel}
+      isSubmitting={isSubmitting}
       mode={mode}
     >
-      <FormField
-        label="Income Name"
-        error={errors.name}
-        required
-      >
-        <input
-          type="text"
-          name="name"
+      <FormField label="Income Name" error={errors.name} required width="lg">
+        <TextInput
+          id="name"
           value={values.name}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange({ ...values, name: e.target.value })}
+          onChange={(value) => onChange({ ...values, name: value })}
           placeholder="e.g., Monthly Salary, Freelance Payment"
-          className="form-input"
           required
+          maxLength={100}
         />
       </FormField>
 
-      <FormField
-        label="Amount"
-        error={errors.amount}
-        required
-      >
-        <input
-          type="number"
-          name="amount"
+      <FormField label="Amount" error={errors.amount} required width="sm">
+        <NumberInput
+          id="amount"
           value={values.amount}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange({ ...values, amount: e.target.value })}
+          onChange={(value) => onChange({ ...values, amount: value })}
           placeholder="0.00"
+          required
+          min={0}
           step="0.01"
-          min="0"
-          className="form-input"
-          required
         />
       </FormField>
 
-      <FormField
-        label="Income Date"
-        error={errors.incomeDate}
-        required
-      >
-        <input
-          type="date"
-          name="incomeDate"
+      <FormField label="Income Date" error={errors.incomeDate} required width="sm">
+        <DateInput
+          id="income-date"
           value={values.incomeDate}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange({ ...values, incomeDate: e.target.value })}
-          className="form-input"
+          onChange={(value) => onChange({ ...values, incomeDate: value })}
+          required
+          min="1900-01-01"
+          max="2100-12-31"
+        />
+      </FormField>
+
+      <FormField label="Frequency" error={errors.period} required width="sm">
+        <SelectInput
+          value={values.period || 'ONE_TIME'}
+          onChange={(value) => onChange({ ...values, period: value })}
+          options={periodOptions}
           required
         />
       </FormField>
 
-      <FormField
-        label="Frequency"
-        error={errors.period}
-        required
-      >
-        <select
-          name="period"
-          value={values.period || 'ONE_TIME'}
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onChange({ ...values, period: e.target.value })}
-          className="form-select"
-        >
-          <option value="ONE_TIME">One-time</option>
-          <option value="DAILY">Daily</option>
-          <option value="WEEKLY">Weekly</option>
-          <option value="MONTHLY">Monthly</option>
-          <option value="QUARTERLY">Quarterly</option>
-          <option value="YEARLY">Yearly</option>
-        </select>
-      </FormField>
-
-      <FormField
-        label="Description (Optional)"
-        error={errors.description}
-      >
-        <textarea
-          name="description"
+      <FormField label="Description" error={errors.description} width="lg">
+        <TextareaInput
+          id="description"
           value={values.description || ''}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onChange({ ...values, description: e.target.value })}
+          onChange={(value) => onChange({ ...values, description: value })}
           placeholder="Additional details about this income..."
           rows={3}
-          className="form-input"
         />
       </FormField>
 
-      {categories.length > 0 && (
-        <FormField
-          label="Category (Optional)"
-          error={errors.categoryId}
-        >
-          <select
-            name="categoryId"
-            value={values.categoryId || ''}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onChange({ ...values, categoryId: e.target.value })}
-            className="form-select"
-          >
-            <option value="">Select a category</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id.toString()}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-        </FormField>
-      )}
+      <FormField label="Category" error={errors.categoryId} width="sm">
+        <SelectInput
+          value={values.categoryId || ''}
+          onChange={(value) => onChange({ ...values, categoryId: value })}
+          options={categoryOptions}
+          placeholder="Select Category"
+        />
+      </FormField>
     </FormWrapper>
   );
 };

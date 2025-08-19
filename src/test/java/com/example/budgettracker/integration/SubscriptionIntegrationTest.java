@@ -197,8 +197,8 @@ public class SubscriptionIntegrationTest {
                 .andExpect(jsonPath("$.error").value("Validation failed"))
                 .andExpect(jsonPath("$.fieldErrors").exists())
                 .andExpect(jsonPath("$.fieldErrors.name").exists())
-                .andExpect(jsonPath("$.fieldErrors.price").exists())
-                .andExpect(jsonPath("$.fieldErrors.nextBillingDate").exists());
+                .andExpect(jsonPath("$.fieldErrors.price").exists());
+                // Note: nextBillingDate validation removed - past dates now allowed
     }
 
     @Test

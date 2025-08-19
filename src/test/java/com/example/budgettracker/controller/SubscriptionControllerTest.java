@@ -47,6 +47,9 @@ class SubscriptionControllerTest {
     @MockitoBean
     private com.example.budgettracker.service.GoogleOidcUserService googleOidcUserService; // Required by SecurityConfig
 
+    @MockitoBean
+    private com.example.budgettracker.service.PeriodCalculationService periodCalculationService;
+
     private Jwt mockJwt;
     private AppUser mockAppUser;
     private SubscriptionRequest validRequest;

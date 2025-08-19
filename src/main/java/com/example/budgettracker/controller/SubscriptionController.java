@@ -5,6 +5,7 @@ import com.example.budgettracker.dto.SubscriptionResponse;
 import com.example.budgettracker.model.AppUser;
 import com.example.budgettracker.model.Subscription;
 import com.example.budgettracker.service.SubscriptionService;
+import com.example.budgettracker.service.PeriodCalculationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Subscriptions", description = "Subscription management operations")
 public class SubscriptionController {
     private final SubscriptionService subscriptionService;
+    private final PeriodCalculationService periodCalculationService;
 
     @PostMapping
     @Operation(summary = "Create a new subscription", description = "Creates a new subscription for the authenticated user")
@@ -40,7 +42,7 @@ public class SubscriptionController {
             @Parameter(hidden = true) AppUser appUser) {
         Subscription saved = subscriptionService.saveSubscriptionForUser(subscriptionRequest, appUser);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(SubscriptionResponse.fromEntity(saved));
+                .body(SubscriptionResponse.fromEntity(saved, periodCalculationService));
     }
 
     @PutMapping("/{id}")
@@ -56,7 +58,7 @@ public class SubscriptionController {
             @RequestBody(description = "Updated subscription details", required = true) @Valid @org.springframework.web.bind.annotation.RequestBody SubscriptionRequest subscriptionRequest,
             @Parameter(hidden = true) AppUser appUser) {
         Subscription updated = subscriptionService.updateSubscriptionForUser(id, subscriptionRequest, appUser);
-        return ResponseEntity.ok(SubscriptionResponse.fromEntity(updated));
+        return ResponseEntity.ok(SubscriptionResponse.fromEntity(updated, periodCalculationService));
     }
 
     @DeleteMapping("/{id}")
@@ -83,7 +85,7 @@ public class SubscriptionController {
             @Parameter(hidden = true) AppUser appUser,
             @Parameter(description = "Pagination parameters") @PageableDefault(size = 20, sort = "name") Pageable pageable) {
         Page<SubscriptionResponse> response = subscriptionService.getSubscriptionsForUser(appUser, pageable)
-                .map(SubscriptionResponse::fromEntity);
+                .map(subscription -> SubscriptionResponse.fromEntity(subscription, periodCalculationService));
         return ResponseEntity.ok(response);
     }
 }

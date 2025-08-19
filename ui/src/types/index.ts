@@ -6,6 +6,7 @@ export interface Subscription {
   price: number;
   period: Period;
   nextBillingDate: string;
+  actualNextBillingDate: string;
   active: boolean;
   categoryId: number;
   categoryName?: string;

@@ -27,11 +27,17 @@ A full-stack web application built with Spring Boot and React that provides comp
 - **Goal Tracking** - Budget goals and progress monitoring
 - **Real-time Updates** - Live financial health scoring
 
-### 💰 Additional Features (In Development)
-- **Income Tracking** - Manual entry with categorization
+### 💰 Income Tracking
+- **Manual Entry** - Add income with categories and descriptions
+- **Period Support** - One-time, monthly, yearly income tracking
+- **Category Filtering** - Organize income by custom categories
+- **Monthly Analytics** - Real-time monthly income totals
+- **Smart Sorting** - Sort by date, name, or amount
+
+### 📋 Additional Features (In Development)
 - **Bills Management** - Non-subscription recurring bills
 - **Payment History** - Track bill payment records
-- **Monthly Analytics** - Comprehensive spending analysis
+- **Advanced Analytics** - Comprehensive spending analysis
 
 ## 🏗️ Technology Stack
 
@@ -141,6 +147,50 @@ A full-stack web application built with Spring Boot and React that provides comp
    - Backend API: http://localhost:8080
    - API Documentation: http://localhost:8080/swagger-ui.html
 
+## 🎨 Frontend Development
+
+### Tech Stack
+- **React 19** - Modern UI framework with concurrent features
+- **TypeScript** - Type-safe JavaScript development
+- **Vite** - Fast build tool and dev server with HMR
+- **TailwindCSS** - Utility-first CSS framework
+- **TanStack Query** - Server state management and caching
+- **Lucide React** - Modern icon library
+
+### Project Structure
+```
+ui/
+├── src/
+│   ├── components/         # Reusable UI components
+│   │   ├── auth/          # Authentication components
+│   │   ├── forms/         # Form components
+│   │   └── ui/            # Base UI components
+│   ├── hooks/             # Custom React hooks
+│   ├── services/          # API services and utilities
+│   ├── types/             # TypeScript type definitions
+│   └── utils/             # Utility functions
+└── public/                # Static assets
+```
+
+### Development Commands
+```bash
+# Frontend development (from ui/ directory)
+npm install              # Install dependencies
+npm run dev             # Start development server with HMR
+npm run build           # Build for production
+npm run preview         # Preview production build
+npm run copy-to-static  # Copy build to Spring Boot static resources
+```
+
+### Styling System
+- **CSS Custom Properties** - Theme variables in `src/index.css`
+- **TailwindCSS Classes** - Utility-first styling approach
+- **Glass Card Design** - Modern glassmorphism UI components
+- **Responsive Design** - Mobile-first responsive layouts
+
+### Code Quality
+See [Frontend Audit Report](docs/technical/frontend-audit.md) for detailed analysis of code quality, performance optimizations, security considerations, and testing requirements.
+
 ## 📱 Screenshots & Demo
 
 ### Subscription Management
@@ -185,13 +235,13 @@ Interactive API documentation is available at `/swagger-ui.html` when running th
 ### ✅ Completed Features
 - Google OAuth2 authentication
 - Full subscription CRUD operations
+- Complete income tracking system
 - Category management system
-- Responsive UI with dark theme
-- Comprehensive test coverage
+- Responsive UI with dark theme and glassmorphism design
+- Period-based financial projections
 
 ### 🚧 In Development
-- Income tracking system
-- Bills management
+- Bills management system
 - Payment history tracking
 
 ### 🎯 Planned Features

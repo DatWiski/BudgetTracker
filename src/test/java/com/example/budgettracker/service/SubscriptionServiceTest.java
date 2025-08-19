@@ -36,6 +36,9 @@ class SubscriptionServiceTest {
     @Mock
     private SecurityUtils securityUtils;
 
+    @Mock
+    private PeriodCalculationService periodCalculationService;
+
     @InjectMocks
     private SubscriptionServiceImpl subscriptionService;
 

@@ -16,11 +16,13 @@ const SubscriptionList: React.FC<Props> = ({ subscriptions, currency, onEdit, on
   return (
     <div className="grid-gap">
       {subscriptions.map((subscription) => {
+        // Use the calculated actual next billing date instead of the original one
+        const actualBillingDate = new Date(subscription.actualNextBillingDate);
         const daysUntilBilling = Math.ceil(
-          (new Date(subscription.nextBillingDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+          (actualBillingDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
         );
 
-        const statusColor = daysUntilBilling < 0 ? '#f87171' : 
+        const statusColor = daysUntilBilling <= 0 ? '#f87171' : 
                            daysUntilBilling <= 2 ? '#f87171' : 
                            daysUntilBilling <= 7 ? '#fbbf24' : 
                            '#cbd5e1';
@@ -29,7 +31,7 @@ const SubscriptionList: React.FC<Props> = ({ subscriptions, currency, onEdit, on
           ? `Due in ${daysUntilBilling} days`
           : daysUntilBilling === 0
           ? 'Due today'
-          : `Overdue by ${Math.abs(daysUntilBilling)} days`;
+          : `Next billing: ${actualBillingDate.toLocaleDateString()}`;
 
         const actions = [
           <button
