@@ -23,6 +23,12 @@ public class PeriodCalculationService {
      */
     public LocalDate getNextOccurrence(LocalDate originalDate, Period period) {
         LocalDate today = LocalDate.now();
+        
+        // One-time events don't recur - return the original date
+        if (period == Period.ONE_TIME) {
+            return originalDate;
+        }
+        
         LocalDate nextDate = originalDate;
 
         // Keep advancing until we get a future date

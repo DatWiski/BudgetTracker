@@ -13,23 +13,25 @@ interface IncomeListProps {
 }
 
 const IncomeList: React.FC<IncomeListProps> = ({ income, currency, onEdit, onDelete, deletingId }) => {
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+  const formatNextPayment = (nextPaymentDate: string) => {
+    const paymentDate = new Date(nextPaymentDate);
     const now = new Date();
-    const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+    const diffInDays = Math.ceil((paymentDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     
-    if (diffInDays === 0) return 'Received today';
-    if (diffInDays === 1) return 'Received yesterday';
-    if (diffInDays < 7) return `Received ${diffInDays} days ago`;
-    if (diffInDays < 30) return `Received ${Math.floor(diffInDays / 7)} weeks ago`;
-    if (diffInDays < 365) return `Received ${Math.floor(diffInDays / 30)} months ago`;
-    return `Received ${Math.floor(diffInDays / 365)} years ago`;
+    const formattedDate = paymentDate.toLocaleDateString();
+    
+    if (diffInDays === 0) return `Next payment: ${formattedDate} (today)`;
+    if (diffInDays === 1) return `Next payment: ${formattedDate} (tomorrow)`;
+    if (diffInDays > 1) return `Next payment: ${formattedDate} (${diffInDays} days)`;
+    return `Next payment: ${formattedDate} (${Math.abs(diffInDays)} days ago)`;
   };
 
   return (
     <div className="grid-gap">
       {income.map((entry) => {
-        const statusText = formatDate(entry.incomeDate);
+        const statusText = entry.nextPaymentDate 
+          ? formatNextPayment(entry.nextPaymentDate)
+          : `Received ${new Date(entry.incomeDate).toLocaleDateString()}`;
         const statusColor = '#10b981'; // Green color for income
 
         const actions = [

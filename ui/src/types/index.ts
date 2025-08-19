@@ -106,6 +106,7 @@ export interface Income {
   description?: string;
   categoryId?: number;
   categoryName?: string;
+  nextPaymentDate?: string;
 }
 
 export interface IncomeRequest {

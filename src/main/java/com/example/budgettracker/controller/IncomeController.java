@@ -5,6 +5,7 @@ import com.example.budgettracker.dto.IncomeResponse;
 import com.example.budgettracker.model.AppUser;
 import com.example.budgettracker.model.Income;
 import com.example.budgettracker.service.IncomeService;
+import com.example.budgettracker.service.PeriodCalculationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -32,6 +33,15 @@ import java.util.stream.Collectors;
 public class IncomeController {
 
     private final IncomeService incomeService;
+    private final PeriodCalculationService periodCalculationService;
+
+    private IncomeResponse mapToResponse(Income income) {
+        LocalDate nextPaymentDate = periodCalculationService.getNextOccurrence(
+            income.getIncomeDate(), 
+            income.getPeriod()
+        );
+        return IncomeResponse.fromEntity(income, nextPaymentDate);
+    }
 
     @GetMapping
     @Operation(summary = "Get all income entries for the authenticated user")
@@ -50,7 +60,7 @@ public class IncomeController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
         Page<Income> incomePage = incomeService.getIncomeForUser(user, pageable);
-        Page<IncomeResponse> responsePage = incomePage.map(IncomeResponse::fromEntity);
+        Page<IncomeResponse> responsePage = incomePage.map(this::mapToResponse);
 
         return ResponseEntity.ok(responsePage);
     }
@@ -67,7 +77,7 @@ public class IncomeController {
             @Valid @RequestBody IncomeRequest incomeRequest) {
 
         Income savedIncome = incomeService.saveIncomeForUser(incomeRequest, user);
-        IncomeResponse response = IncomeResponse.fromEntity(savedIncome);
+        IncomeResponse response = mapToResponse(savedIncome);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -86,7 +96,7 @@ public class IncomeController {
             @Valid @RequestBody IncomeRequest incomeRequest) {
 
         Income updatedIncome = incomeService.updateIncomeForUser(id, incomeRequest, user);
-        IncomeResponse response = IncomeResponse.fromEntity(updatedIncome);
+        IncomeResponse response = mapToResponse(updatedIncome);
 
         return ResponseEntity.ok(response);
     }
@@ -119,7 +129,7 @@ public class IncomeController {
 
         List<Income> incomeList = incomeService.getIncomeForUserAndDateRange(user, startDate, endDate);
         List<IncomeResponse> responseList = incomeList.stream()
-                .map(IncomeResponse::fromEntity)
+                .map(this::mapToResponse)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(responseList);
