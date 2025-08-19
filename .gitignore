@@ -38,6 +38,9 @@ build/
 src/main/resources/static/assets/
 src/main/resources/static/index.html
 
+# Claude Code local settings
+.claude/settings.local.json
+
 ### Logs ###
 *.log
 app.log
