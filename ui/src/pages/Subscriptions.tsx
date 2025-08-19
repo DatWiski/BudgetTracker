@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatCurrency } from '../utils/currency';
 import { apiRequest } from '../utils/api';
 import { Loading, ErrorDisplay } from '../components/ApiStatus';
-import type { Category, Subscription, PaginatedResponse, SubscriptionRequest } from '../types';
+import type { Category, Subscription, PaginatedResponse, SubscriptionRequest, Period } from '../types';
 import { useSubscriptionsData } from '../hooks/useSubscriptionsData';
 import SubscriptionForm, { type SubscriptionFormValues } from '../components/subscriptions/SubscriptionForm';
 import SubscriptionList from '../components/subscriptions/SubscriptionList';
@@ -13,7 +13,7 @@ import { Plus } from 'lucide-react';
 interface SubscriptionFormData {
   name: string;
   price: string;
-  billingPeriod: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
+  period: Period;
   nextBillingDate: string;
   categoryId: string;
   active: boolean;
@@ -28,7 +28,7 @@ const Subscriptions = () => {
   const [formData, setFormData] = useState<SubscriptionFormData>({
     name: '',
     price: '',
-    billingPeriod: 'MONTHLY',
+    period: 'MONTHLY',
     nextBillingDate: '',
     categoryId: '',
     active: true
@@ -104,7 +104,7 @@ const Subscriptions = () => {
     setFormData({
       name: '',
       price: '',
-      billingPeriod: 'MONTHLY',
+      period: 'MONTHLY',
       nextBillingDate: '',
       categoryId: '',
       active: true
@@ -121,7 +121,7 @@ const Subscriptions = () => {
     setFormData({
       name: subscription.name,
       price: subscription.price.toString(),
-      billingPeriod: subscription.billingPeriod,
+      period: subscription.period,
       nextBillingDate: subscription.nextBillingDate,
       categoryId: subscription.categoryId.toString(),
       active: subscription.active

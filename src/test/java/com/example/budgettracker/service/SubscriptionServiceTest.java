@@ -5,7 +5,7 @@ import com.example.budgettracker.dto.SubscriptionRequest;
 import com.example.budgettracker.exception.SubscriptionNotFoundException;
 import com.example.budgettracker.exception.UnauthorizedAccessException;
 import com.example.budgettracker.model.AppUser;
-import com.example.budgettracker.model.BillingPeriod;
+import com.example.budgettracker.model.Period;
 import com.example.budgettracker.model.Category;
 import com.example.budgettracker.model.Subscription;
 import com.example.budgettracker.repository.SubscriptionRepository;
@@ -57,7 +57,7 @@ class SubscriptionServiceTest {
                 .thenReturn(testCategory);
         
         Subscription savedSubscription = TestDataBuilder.createTestSubscription(1L, "Netflix", 
-            new BigDecimal("15.99"), BillingPeriod.MONTHLY, testUser, testCategory);
+            new BigDecimal("15.99"), Period.MONTHLY, testUser, testCategory);
         
         when(subscriptionRepository.save(any(Subscription.class)))
                 .thenReturn(savedSubscription);
@@ -69,7 +69,7 @@ class SubscriptionServiceTest {
         assertNotNull(result);
         assertEquals("Netflix", result.getName());
         assertEquals(new BigDecimal("15.99"), result.getPrice());
-        assertEquals(BillingPeriod.MONTHLY, result.getBillingPeriod());
+        assertEquals(Period.MONTHLY, result.getPeriod());
         assertEquals(testUser, result.getAppUser());
         assertEquals(testCategory, result.getCategory());
         

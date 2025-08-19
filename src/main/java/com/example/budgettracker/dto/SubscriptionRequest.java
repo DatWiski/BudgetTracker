@@ -1,6 +1,6 @@
 package com.example.budgettracker.dto;
 
-import com.example.budgettracker.model.BillingPeriod;
+import com.example.budgettracker.model.Period;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.Data;
@@ -24,9 +24,9 @@ public class SubscriptionRequest {
     @Schema(description = "Monthly price of the subscription", example = "15.99")
     private BigDecimal price;
 
-    @NotNull(message = "Billing period is required")
+    @NotNull(message = "Period is required")
     @Schema(description = "Billing frequency", example = "MONTHLY")
-    private BillingPeriod billingPeriod;
+    private Period period;
 
     @NotNull(message = "Next billing date is required")
     @FutureOrPresent(message = "Next billing date cannot be in the past")

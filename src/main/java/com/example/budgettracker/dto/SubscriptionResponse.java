@@ -1,6 +1,6 @@
 package com.example.budgettracker.dto;
 
-import com.example.budgettracker.model.BillingPeriod;
+import com.example.budgettracker.model.Period;
 import com.example.budgettracker.model.Subscription;
 import lombok.Data;
 
@@ -13,7 +13,7 @@ public class SubscriptionResponse {
     private Long id;
     private String name;
     private BigDecimal price;
-    private BillingPeriod billingPeriod;
+    private Period period;
     private LocalDate nextBillingDate;
     private boolean active;
     private Long categoryId;
@@ -24,7 +24,7 @@ public class SubscriptionResponse {
         dto.setId(subscription.getId());
         dto.setName(subscription.getName());
         dto.setPrice(subscription.getPrice());
-        dto.setBillingPeriod(subscription.getBillingPeriod());
+        dto.setPeriod(subscription.getPeriod());
         dto.setNextBillingDate(subscription.getNextBillingDate());
         dto.setActive(subscription.isActive());
         if (subscription.getCategory() != null) {

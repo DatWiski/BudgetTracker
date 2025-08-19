@@ -64,7 +64,7 @@ class SubscriptionControllerTest {
         validRequest = new SubscriptionRequest();
         validRequest.setName("Netflix");
         validRequest.setPrice(new BigDecimal("15.99"));
-        validRequest.setBillingPeriod(BillingPeriod.MONTHLY);
+        validRequest.setPeriod(Period.MONTHLY);
         validRequest.setNextBillingDate(LocalDate.now().plusMonths(1));
         validRequest.setCategoryId(1L);
     }

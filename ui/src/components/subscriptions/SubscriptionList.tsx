@@ -62,7 +62,7 @@ const SubscriptionList: React.FC<Props> = ({ subscriptions, currency, onEdit, on
             }}
             icon={<CreditCard size={36} />}
             amount={formatCurrency(subscription.price, currency)}
-            amountLabel={subscription.billingPeriod.toLowerCase()}
+            amountLabel={subscription.period.toLowerCase()}
             actions={actions}
             theme="expense"
             inactive={!subscription.active}

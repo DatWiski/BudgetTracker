@@ -29,7 +29,7 @@ public class Subscription extends BaseEntity {
     private BigDecimal price;
 
     @Enumerated(EnumType.STRING)
-    private BillingPeriod billingPeriod;
+    private Period period;
 
     private LocalDate nextBillingDate;
 

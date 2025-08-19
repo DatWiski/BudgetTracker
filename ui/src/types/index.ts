@@ -1,8 +1,10 @@
+export type Period = 'ONE_TIME' | 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY';
+
 export interface Subscription {
   id: number;
   name: string;
   price: number;
-  billingPeriod: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
+  period: Period;
   nextBillingDate: string;
   active: boolean;
   categoryId: number;
@@ -12,7 +14,7 @@ export interface Subscription {
 export interface SubscriptionRequest {
   name: string;
   price: number;
-  billingPeriod: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
+  period: Period;
   nextBillingDate: string;
   categoryId?: number;
   active?: boolean;

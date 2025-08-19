@@ -36,7 +36,7 @@ export const useSubscriptionsData = () => {
 
   const totalMonthlySpend = safeSubscriptions
     .filter((s: Subscription) => s.active)
-    .reduce((acc: number, s: Subscription) => acc + convertToMonthly(s.price, s.billingPeriod), 0);
+    .reduce((acc: number, s: Subscription) => acc + convertToMonthly(s.price, s.period), 0);
 
   const isLoading = subscriptionsLoading || categoriesLoading;
   const error = subscriptionsError || categoriesError;

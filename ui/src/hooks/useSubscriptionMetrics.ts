@@ -11,7 +11,7 @@ export const useSubscriptionMetrics = (subscriptions: Subscription[] = []): {
   const metrics = useMemo((): SubscriptionMetrics => {
     const activeSubscriptions = subscriptions.filter(sub => sub.active);
     const totalMonthlySpend = activeSubscriptions.reduce((total, sub) => {
-      return total + convertToMonthly(sub.price, sub.billingPeriod);
+      return total + convertToMonthly(sub.price, sub.period);
     }, 0);
 
     const upcomingBills = activeSubscriptions.filter(sub => {
@@ -48,7 +48,7 @@ export const useSubscriptionMetrics = (subscriptions: Subscription[] = []): {
     return subscriptions
       .filter(sub => sub.active)
       .map(sub => {
-        const lastBilling = calculatePreviousBillingDate(sub.nextBillingDate, sub.billingPeriod);
+        const lastBilling = calculatePreviousBillingDate(sub.nextBillingDate, sub.period);
         const daysSinceLastBilling = daysBetweenDates(lastBilling, new Date());
 
         return {

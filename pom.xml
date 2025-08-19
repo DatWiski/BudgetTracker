@@ -110,6 +110,14 @@
             <version>4.0.0</version>
         </dependency>
 
+        <!-- DevTools for automatic restart during development -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+
         <!-- For all testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

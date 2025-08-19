@@ -29,7 +29,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         Subscription subscription = new Subscription();
         subscription.setName(request.getName());
         subscription.setPrice(request.getPrice());
-        subscription.setBillingPeriod(request.getBillingPeriod());
+        subscription.setPeriod(request.getPeriod());
         subscription.setNextBillingDate(request.getNextBillingDate());
         subscription.setActive(request.isActive());
         subscription.setAppUser(user);
@@ -58,7 +58,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
         subscription.setName(request.getName());
         subscription.setPrice(request.getPrice());
-        subscription.setBillingPeriod(request.getBillingPeriod());
+        subscription.setPeriod(request.getPeriod());
         subscription.setNextBillingDate(request.getNextBillingDate());
         subscription.setActive(request.isActive());
 

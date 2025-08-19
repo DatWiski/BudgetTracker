@@ -2,7 +2,7 @@ package com.example.budgettracker.integration;
 
 import com.example.budgettracker.dto.SubscriptionRequest;
 import com.example.budgettracker.model.AppUser;
-import com.example.budgettracker.model.BillingPeriod;
+import com.example.budgettracker.model.Period;
 import com.example.budgettracker.model.Category;
 import com.example.budgettracker.repository.AppUserRepository;
 import com.example.budgettracker.repository.CategoryRepository;
@@ -62,7 +62,7 @@ public class SubscriptionActiveFieldTest {
         SubscriptionRequest request = new SubscriptionRequest();
         request.setName("Netflix");
         request.setPrice(new BigDecimal("15.99"));
-        request.setBillingPeriod(BillingPeriod.MONTHLY);
+        request.setPeriod(Period.MONTHLY);
         request.setNextBillingDate(LocalDate.now().plusMonths(1));
         request.setCategoryId(testCategory.getId());
         // Not setting active field - should default to true
@@ -80,7 +80,7 @@ public class SubscriptionActiveFieldTest {
         SubscriptionRequest request = new SubscriptionRequest();
         request.setName("Cancelled Netflix");
         request.setPrice(new BigDecimal("15.99"));
-        request.setBillingPeriod(BillingPeriod.MONTHLY);
+        request.setPeriod(Period.MONTHLY);
         request.setNextBillingDate(LocalDate.now().plusMonths(1));
         request.setCategoryId(testCategory.getId());
         request.setActive(false); // Explicitly set to inactive
@@ -99,7 +99,7 @@ public class SubscriptionActiveFieldTest {
         SubscriptionRequest createRequest = new SubscriptionRequest();
         createRequest.setName("Test Subscription");
         createRequest.setPrice(new BigDecimal("10.00"));
-        createRequest.setBillingPeriod(BillingPeriod.MONTHLY);
+        createRequest.setPeriod(Period.MONTHLY);
         createRequest.setNextBillingDate(LocalDate.now().plusMonths(1));
         createRequest.setCategoryId(testCategory.getId());
         createRequest.setActive(true);
@@ -118,7 +118,7 @@ public class SubscriptionActiveFieldTest {
         SubscriptionRequest updateRequest = new SubscriptionRequest();
         updateRequest.setName("Test Subscription");
         updateRequest.setPrice(new BigDecimal("10.00"));
-        updateRequest.setBillingPeriod(BillingPeriod.MONTHLY);
+        updateRequest.setPeriod(Period.MONTHLY);
         updateRequest.setNextBillingDate(LocalDate.now().plusMonths(1));
         updateRequest.setCategoryId(testCategory.getId());
         updateRequest.setActive(false); // Change to inactive
@@ -137,7 +137,7 @@ public class SubscriptionActiveFieldTest {
         SubscriptionRequest activeRequest = new SubscriptionRequest();
         activeRequest.setName("Active Subscription");
         activeRequest.setPrice(new BigDecimal("10.00"));
-        activeRequest.setBillingPeriod(BillingPeriod.MONTHLY);
+        activeRequest.setPeriod(Period.MONTHLY);
         activeRequest.setNextBillingDate(LocalDate.now().plusMonths(1));
         activeRequest.setCategoryId(testCategory.getId());
         activeRequest.setActive(true);
@@ -145,7 +145,7 @@ public class SubscriptionActiveFieldTest {
         SubscriptionRequest inactiveRequest = new SubscriptionRequest();
         inactiveRequest.setName("Inactive Subscription");
         inactiveRequest.setPrice(new BigDecimal("20.00"));
-        inactiveRequest.setBillingPeriod(BillingPeriod.YEARLY);
+        inactiveRequest.setPeriod(Period.YEARLY);
         inactiveRequest.setNextBillingDate(LocalDate.now().plusYears(1));
         inactiveRequest.setCategoryId(testCategory.getId());
         inactiveRequest.setActive(false);

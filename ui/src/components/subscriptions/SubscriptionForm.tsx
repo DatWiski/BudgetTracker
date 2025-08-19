@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Category, SubscriptionRequest } from '../../types';
+import type { Category, SubscriptionRequest, Period } from '../../types';
 import { FormWrapper } from '../common/FormWrapper';
 import { 
   FormField, 
@@ -14,7 +14,7 @@ import {
 export type SubscriptionFormValues = {
   name: string;
   price: string;
-  billingPeriod: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
+  period: Period;
   nextBillingDate: string;
   categoryId: string;
   active: boolean;
@@ -48,7 +48,7 @@ const SubscriptionForm: React.FC<Props> = ({
     const payload: SubscriptionRequest = {
       name: values.name.trim(),
       price: parseFloat(values.price),
-      billingPeriod: values.billingPeriod,
+      period: values.period,
       nextBillingDate: values.nextBillingDate,
       categoryId: values.categoryId ? parseInt(values.categoryId) : undefined,
       active: values.active,
@@ -66,10 +66,11 @@ const SubscriptionForm: React.FC<Props> = ({
     label: c.name
   }));
 
-  const billingPeriodOptions: SelectOption[] = [
+  const periodOptions: SelectOption[] = [
     { value: 'DAILY', label: 'Daily' },
     { value: 'WEEKLY', label: 'Weekly' },
     { value: 'MONTHLY', label: 'Monthly' },
+    { value: 'QUARTERLY', label: 'Quarterly' },
     { value: 'YEARLY', label: 'Yearly' }
   ];
 
@@ -104,9 +105,9 @@ const SubscriptionForm: React.FC<Props> = ({
 
       <FormField label="Billing Period" required width="sm">
         <SelectInput
-          value={values.billingPeriod}
-          onChange={(value) => onChange({ ...values, billingPeriod: value as 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY' })}
-          options={billingPeriodOptions}
+          value={values.period}
+          onChange={(value) => onChange({ ...values, period: value as Period })}
+          options={periodOptions}
           required
         />
       </FormField>

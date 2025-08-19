@@ -2,7 +2,7 @@ package com.example.budgettracker.integration;
 
 import com.example.budgettracker.dto.SubscriptionRequest;
 import com.example.budgettracker.model.AppUser;
-import com.example.budgettracker.model.BillingPeriod;
+import com.example.budgettracker.model.Period;
 import com.example.budgettracker.model.Category;
 import com.example.budgettracker.model.Subscription;
 import com.example.budgettracker.repository.AppUserRepository;
@@ -66,7 +66,7 @@ public class SubscriptionIntegrationTest {
         SubscriptionRequest request = new SubscriptionRequest();
         request.setName("Netflix");
         request.setPrice(new BigDecimal("15.99"));
-        request.setBillingPeriod(BillingPeriod.MONTHLY);
+        request.setPeriod(Period.MONTHLY);
         request.setNextBillingDate(LocalDate.now().plusMonths(1));
         request.setCategoryId(testCategory.getId());
 
@@ -77,7 +77,7 @@ public class SubscriptionIntegrationTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.name").value("Netflix"))
                 .andExpect(jsonPath("$.price").value(15.99))
-                .andExpect(jsonPath("$.billingPeriod").value("MONTHLY"))
+                .andExpect(jsonPath("$.period").value("MONTHLY"))
                 .andExpect(jsonPath("$.categoryName").value("Entertainment"))
                 .andExpect(jsonPath("$.active").value(true));
     }
@@ -87,7 +87,7 @@ public class SubscriptionIntegrationTest {
         SubscriptionRequest request = new SubscriptionRequest();
         request.setName("Spotify");
         request.setPrice(new BigDecimal("9.99"));
-        request.setBillingPeriod(BillingPeriod.MONTHLY);
+        request.setPeriod(Period.MONTHLY);
         request.setNextBillingDate(LocalDate.now().plusMonths(1));
         request.setCategoryId(null); // No category
 
@@ -108,7 +108,7 @@ public class SubscriptionIntegrationTest {
         Subscription subscription = new Subscription();
         subscription.setName("Original Name");
         subscription.setPrice(new BigDecimal("10.00"));
-        subscription.setBillingPeriod(BillingPeriod.MONTHLY);
+        subscription.setPeriod(Period.MONTHLY);
         subscription.setNextBillingDate(LocalDate.now().plusMonths(1));
         subscription.setAppUser(testUser);
         subscription.setCategory(testCategory);
@@ -117,7 +117,7 @@ public class SubscriptionIntegrationTest {
         SubscriptionRequest updateRequest = new SubscriptionRequest();
         updateRequest.setName("Updated Name");
         updateRequest.setPrice(new BigDecimal("12.99"));
-        updateRequest.setBillingPeriod(BillingPeriod.YEARLY);
+        updateRequest.setPeriod(Period.YEARLY);
         updateRequest.setNextBillingDate(LocalDate.now().plusYears(1));
         updateRequest.setCategoryId(testCategory.getId());
 
@@ -128,7 +128,7 @@ public class SubscriptionIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Updated Name"))
                 .andExpect(jsonPath("$.price").value(12.99))
-                .andExpect(jsonPath("$.billingPeriod").value("YEARLY"))
+                .andExpect(jsonPath("$.period").value("YEARLY"))
                 .andExpect(jsonPath("$.categoryName").value("Entertainment"));
     }
 
@@ -138,7 +138,7 @@ public class SubscriptionIntegrationTest {
         Subscription subscription = new Subscription();
         subscription.setName("To Delete");
         subscription.setPrice(new BigDecimal("5.00"));
-        subscription.setBillingPeriod(BillingPeriod.MONTHLY);
+        subscription.setPeriod(Period.MONTHLY);
         subscription.setNextBillingDate(LocalDate.now().plusMonths(1));
         subscription.setAppUser(testUser);
         subscription = subscriptionRepository.save(subscription);
@@ -161,7 +161,7 @@ public class SubscriptionIntegrationTest {
         Subscription otherSubscription = new Subscription();
         otherSubscription.setName("Other's Subscription");
         otherSubscription.setPrice(new BigDecimal("10.00"));
-        otherSubscription.setBillingPeriod(BillingPeriod.MONTHLY);
+        otherSubscription.setPeriod(Period.MONTHLY);
         otherSubscription.setNextBillingDate(LocalDate.now().plusMonths(1));
         otherSubscription.setAppUser(otherUser);
         otherSubscription = subscriptionRepository.save(otherSubscription);
@@ -170,7 +170,7 @@ public class SubscriptionIntegrationTest {
         SubscriptionRequest updateRequest = new SubscriptionRequest();
         updateRequest.setName("Hacked");
         updateRequest.setPrice(new BigDecimal("0.01"));
-        updateRequest.setBillingPeriod(BillingPeriod.DAILY);
+        updateRequest.setPeriod(Period.DAILY);
         updateRequest.setNextBillingDate(LocalDate.now().plusDays(1));
 
         mockMvc.perform(put("/api/subscriptions/" + otherSubscription.getId())
@@ -186,7 +186,7 @@ public class SubscriptionIntegrationTest {
         SubscriptionRequest invalidRequest = new SubscriptionRequest();
         invalidRequest.setName(""); // Invalid: empty name
         invalidRequest.setPrice(new BigDecimal("-5.00")); // Invalid: negative price
-        invalidRequest.setBillingPeriod(BillingPeriod.MONTHLY);
+        invalidRequest.setPeriod(Period.MONTHLY);
         invalidRequest.setNextBillingDate(LocalDate.now().minusDays(1)); // Invalid: past date
 
         mockMvc.perform(post("/api/subscriptions")
@@ -206,7 +206,7 @@ public class SubscriptionIntegrationTest {
         SubscriptionRequest request = new SubscriptionRequest();
         request.setName("Test");
         request.setPrice(new BigDecimal("10.00"));
-        request.setBillingPeriod(BillingPeriod.MONTHLY);
+        request.setPeriod(Period.MONTHLY);
         request.setNextBillingDate(LocalDate.now().plusMonths(1));
 
         mockMvc.perform(post("/api/subscriptions")

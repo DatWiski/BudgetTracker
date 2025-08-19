@@ -2,7 +2,7 @@ package com.example.budgettracker.service;
 
 import com.example.budgettracker.dto.SubscriptionRequest;
 import com.example.budgettracker.model.AppUser;
-import com.example.budgettracker.model.BillingPeriod;
+import com.example.budgettracker.model.Period;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +29,7 @@ class SubscriptionDefaultCategoryTest {
         SubscriptionRequest req = new SubscriptionRequest();
         req.setName("Netflix");
         req.setPrice(BigDecimal.valueOf(9.99));
-        req.setBillingPeriod(BillingPeriod.MONTHLY);
+        req.setPeriod(Period.MONTHLY);
         req.setNextBillingDate(LocalDate.now().plusDays(1));
         // no categoryName
 
