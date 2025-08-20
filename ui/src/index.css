@@ -64,6 +64,9 @@
   --font-size-2xl: 1.5rem;
   --font-size-3xl: 2.25rem;
   --font-size-4xl: 2.5rem;
+  --font-size-5xl: 3rem;
+  --font-size-6xl: 3.75rem;
+  --font-size-7xl: 4.5rem;
   
   /* Transitions */
   --transition-fast: 0.15s ease;

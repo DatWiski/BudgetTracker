@@ -51,7 +51,7 @@ const Card: React.FC<CardProps> = ({
       style={{ padding: 'var(--spacing-lg)' }}
       onClick={onClick}
     >
-      <div className="grid grid-cols-3 gap-6 items-center">
+      <div className="grid grid-cols-[1fr_auto_1.5fr] gap-8 items-center">
         {/* Left side - Info */}
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -94,7 +94,7 @@ const Card: React.FC<CardProps> = ({
         {/* Right side - Amount and actions */}
         <div className="flex items-center justify-end">
           <div className="text-right" style={{ paddingRight: '40px' }}>
-            <div className="text-white text-4xl font-black leading-tight" style={{ fontWeight: '900' }}>
+            <div className="text-white text-3xl font-black leading-none">
               {amount}
             </div>
             {amountLabel && (
