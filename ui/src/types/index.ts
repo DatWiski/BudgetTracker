@@ -117,3 +117,24 @@ export interface IncomeRequest {
   description?: string;
   categoryId?: number;
 }
+
+export interface Bill {
+  id: number;
+  name: string;
+  amount: number;
+  period: Period;
+  dueDate: string;
+  actualDueDate: string;
+  active: boolean;
+  categoryId: number;
+  categoryName?: string;
+}
+
+export interface BillRequest {
+  name: string;
+  amount: number;
+  period: Period;
+  dueDate: string;
+  categoryId?: number;
+  active?: boolean;
+}
