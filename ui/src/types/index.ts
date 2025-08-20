@@ -138,3 +138,14 @@ export interface BillRequest {
   categoryId?: number;
   active?: boolean;
 }
+
+export interface DashboardOverview {
+  totalIncome: number;
+  totalExpenses: number;
+  availableMoney: number;
+  savingsRate: number;
+  subscriptionExpenses: number;
+  billExpenses: number;
+  activeSubscriptions: number;
+  activeBills: number;
+}
