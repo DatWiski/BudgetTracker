@@ -34,6 +34,7 @@ export const useCreateBill = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bills'] });
       queryClient.invalidateQueries({ queryKey: ['bill-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'overview'] });
     },
   });
 };
@@ -50,6 +51,7 @@ export const useUpdateBill = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bills'] });
       queryClient.invalidateQueries({ queryKey: ['bill-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'overview'] });
     },
   });
 };
@@ -65,6 +67,7 @@ export const useDeleteBill = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bills'] });
       queryClient.invalidateQueries({ queryKey: ['bill-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'overview'] });
     },
   });
 };

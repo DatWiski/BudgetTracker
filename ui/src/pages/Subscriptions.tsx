@@ -48,6 +48,7 @@ const Subscriptions = () => {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'overview'] });
       setShowForm(false);
       resetForm();
     },
@@ -65,6 +66,7 @@ const Subscriptions = () => {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'overview'] });
       setShowForm(false);
       setEditingSubscription(null);
       resetForm();
@@ -92,6 +94,7 @@ const Subscriptions = () => {
       });
       // Also invalidate to ensure fresh data on next refetch
       queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'overview'] });
     },
     onError: (error) => {
       console.error('Delete subscription error:', error);

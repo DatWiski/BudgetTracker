@@ -31,6 +31,7 @@ export const useCreateIncome = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['income'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'overview'] });
     },
   });
 };
@@ -47,6 +48,7 @@ export const useUpdateIncome = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['income'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'overview'] });
     },
   });
 };
@@ -62,6 +64,7 @@ export const useDeleteIncome = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['income'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'overview'] });
     },
   });
 };

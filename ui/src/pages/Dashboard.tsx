@@ -1,9 +1,17 @@
 import { formatCurrency } from '../utils/currency';
-import { useDashboard } from '../hooks/useDashboard';
 import Icon from '../components/Icon';
+import HeaderFinancialBar from '../components/HeaderFinancialBar';
+import type { DashboardOverview } from '../types';
 
-const Dashboard = () => {
-  const { data, isLoading, error } = useDashboard();
+interface DashboardProps {
+  dashboardData?: DashboardOverview;
+  isDashboardLoading?: boolean;
+}
+
+const Dashboard = ({ dashboardData, isDashboardLoading }: DashboardProps) => {
+  const data = dashboardData;
+  const isLoading = isDashboardLoading;
+  const error = null; // Error handling from parent level
 
   if (isLoading) {
     return (
@@ -47,8 +55,13 @@ const Dashboard = () => {
         </p>
       </div>
       
+      {/* Financial Overview - Better Design */}
+      <div className="mb-4">
+        <HeaderFinancialBar data={overview} />
+      </div>
+
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
         <div className="glass-card">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-muted">Total Income</h3>
@@ -81,7 +94,7 @@ const Dashboard = () => {
       </div>
 
       {/* Breakdown Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="glass-card">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-muted">Subscriptions</h3>
@@ -134,6 +147,7 @@ const Dashboard = () => {
           </p>
         </div>
       </div>
+
     </div>
   );
 };
