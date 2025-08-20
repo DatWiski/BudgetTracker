@@ -27,22 +27,32 @@ public class CategoryServiceImpl implements CategoryService {
     public void ensureDefaultCategoriesExist(AppUser user) {
         log.debug("Ensuring default categories exist for user: {}", user.getId());
         
-        List<Category> existingCategories = categoryRepository.findByAppUserOrderByNameAsc(user);
+        // Ensure categories for each type
+        ensureDefaultCategoriesExistForType(user, CategoryType.SUBSCRIPTION);
+        ensureDefaultCategoriesExistForType(user, CategoryType.BILL);
+        ensureDefaultCategoriesExistForType(user, CategoryType.INCOME);
+    }
+    
+    private void ensureDefaultCategoriesExistForType(AppUser user, CategoryType categoryType) {
+        List<Category> existingCategories = categoryRepository.findByAppUserAndCategoryTypeOrderByNameAsc(user, categoryType);
         Set<String> existingNames = existingCategories.stream()
             .map(Category::getName)
             .collect(Collectors.toSet());
         
         List<Category> categoriesToCreate = new ArrayList<>();
         
-        getDefaultCategories().forEach(name -> {
+        getDefaultCategoriesForType(categoryType).forEach(name -> {
             if (!existingNames.contains(name)) {
-                categoriesToCreate.add(new Category(name, user));
+                Category category = new Category(name, user);
+                category.setCategoryType(categoryType);
+                categoriesToCreate.add(category);
             }
         });
         
         if (!categoriesToCreate.isEmpty()) {
             categoryRepository.saveAll(categoriesToCreate);
-            log.info("Created {} default categories for user {}", categoriesToCreate.size(), user.getId());
+            log.info("Created {} default {} categories for user {}", 
+                    categoriesToCreate.size(), categoryType, user.getId());
         }
     }
     
@@ -88,7 +98,7 @@ public class CategoryServiceImpl implements CategoryService {
             .orElseThrow(() -> new com.example.budgettracker.exception.CategoryNotFoundException(categoryId));
     }
     
-    private static final List<String> DEFAULT_CATEGORIES = List.of(
+    private static final List<String> DEFAULT_SUBSCRIPTION_CATEGORIES = List.of(
         "Entertainment",
         "Productivity", 
         "Utilities",
@@ -98,6 +108,22 @@ public class CategoryServiceImpl implements CategoryService {
         "Transport",
         "Health",
         "Shopping"
+    );
+    
+    private static final List<String> DEFAULT_BILL_CATEGORIES = List.of(
+        "Housing",
+        "Transportation",
+        "Services",
+        "Healthcare",
+        "Financial",
+        "Insurance"
+    );
+    
+    private static final List<String> DEFAULT_INCOME_CATEGORIES = List.of(
+        "Job Salary",
+        "Freelance",
+        "Dividends",
+        "Other Income"
     );
     
     @Override
@@ -116,7 +142,11 @@ public class CategoryServiceImpl implements CategoryService {
                 .collect(Collectors.toList());
     }
     
-    private List<String> getDefaultCategories() {
-        return DEFAULT_CATEGORIES;
+    private List<String> getDefaultCategoriesForType(CategoryType categoryType) {
+        return switch (categoryType) {
+            case SUBSCRIPTION -> DEFAULT_SUBSCRIPTION_CATEGORIES;
+            case BILL -> DEFAULT_BILL_CATEGORIES;
+            case INCOME -> DEFAULT_INCOME_CATEGORIES;
+        };
     }
 } 

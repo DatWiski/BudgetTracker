@@ -42,6 +42,9 @@ public class CategoryController {
         } else if ("subscription".equalsIgnoreCase(type)) {
             List<CategoryResponse> response = categoryService.getCategoriesByTypeForUser(appUser, CategoryType.SUBSCRIPTION);
             return ResponseEntity.ok(response);
+        } else if ("bill".equalsIgnoreCase(type)) {
+            List<CategoryResponse> response = categoryService.getCategoriesByTypeForUser(appUser, CategoryType.BILL);
+            return ResponseEntity.ok(response);
         } else {
             // Default behavior - all categories with subscription counts
             List<CategoryResponse> response = categoryService.getCategoriesWithCountsForUser(appUser);
