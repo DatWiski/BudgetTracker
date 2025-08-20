@@ -91,9 +91,7 @@ const IncomeForm: React.FC<Props> = ({
 
   // Clear errors when values change
   useEffect(() => {
-    if (Object.keys(errors).length > 0) {
-      setErrors({});
-    }
+    setErrors({});
   }, [values]);
 
   // Convert categories to SelectOption format

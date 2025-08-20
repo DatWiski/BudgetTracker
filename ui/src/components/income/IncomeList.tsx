@@ -32,7 +32,7 @@ const IncomeList: React.FC<IncomeListProps> = ({ income, currency, onEdit, onDel
         const statusText = entry.nextPaymentDate 
           ? formatNextPayment(entry.nextPaymentDate)
           : `Received ${new Date(entry.incomeDate).toLocaleDateString()}`;
-        const statusColor = '#10b981'; // Green color for income
+        const statusColor = '#cbd5e1'; // Light gray (same as subscriptions 7+ days)
 
         const actions = [
           <button
