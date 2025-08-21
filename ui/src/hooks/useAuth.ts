@@ -14,10 +14,10 @@ export const useAuth = () => {
       return response.json();
     },
     retry: 1,
-    staleTime: 0, // Always recheck auth status
-    gcTime: 0, // Don't cache auth queries
-    refetchOnWindowFocus: true, // Recheck when window gets focus
-    refetchOnMount: true // Always refetch when component mounts
+    staleTime: 1000 * 30, // 30 seconds
+    gcTime: 1000 * 60, // 1 minute cache
+    refetchOnWindowFocus: false, // Don't recheck on focus
+    refetchOnMount: false // Don't always refetch on mount
   });
 
   const isAuthenticated = authStatus?.authenticated || false;

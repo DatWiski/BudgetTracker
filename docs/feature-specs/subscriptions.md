@@ -34,6 +34,8 @@ Comprehensive subscription tracking system that allows users to manage their rec
 
 ## 🚧 Logo System Implementation Plan
 
+https://simpleicons.org/ there are some logos svg's
+
 ### Backend Components
 1. **PredefinedService Entity**
    - Database table for popular services with logos

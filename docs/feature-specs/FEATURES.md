@@ -8,16 +8,6 @@ For detailed specifications, see individual feature documents:
 - 📋 **[Bills Management](./bills-management.md)** - Non-subscription recurring bills with payment history
 - 📊 **[Dashboard & Analytics](./dashboard-analytics.md)** - Charts, graphs, spending trends, financial overview
 
-## ✅ Current Features
-- **Google OAuth2 Authentication** with user profiles and currency settings
-- **Subscription Management** - CRUD operations, categories, filtering, status tracking *(see [detailed spec](./subscriptions.md))*
-- **Income Tracking** - Manual entry, categories, period support, monthly analytics *(see [detailed spec](./income-tracking.md))*
-- **Modern UI** - Dark theme, responsive design, form validation, glassmorphism design
-- **Tech Stack** - Spring Boot 3.5.3, PostgreSQL, React 19, TypeScript, OpenAPI docs
-
-## 🚧 In Development
-- **Bills Management** - Non-subscription recurring bills with payment history *(see [detailed spec](./bills-management.md))*
-
 ## 🎯 Planned Features
 - **Dashboard with Analytics** - Charts, graphs, spending trends, financial overview *(see [detailed spec](./dashboard-analytics.md))*
 - **Advanced Analytics** - Budget goals, data export, category insights
@@ -26,8 +16,3 @@ For detailed specifications, see individual feature documents:
 - **Integrations** - Bank sync, calendar, mobile apps, API access
 - **Enterprise** - Multi-user support, roles, audit logs
 
-## 📱 Platform Support
-- **Current** - Web browsers (desktop/mobile)
-- **Future** - Native mobile apps, PWA, desktop apps
-
-**Version:** 0.0.1-SNAPSHOT | **Status:** Beta

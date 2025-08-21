@@ -26,7 +26,9 @@ const queryClient = new QueryClient({
 // Main application component with authentication guard
 function AppContent() {
   const { isAuthenticated, isLoading } = useAuth();
-  const { data: dashboardData, isLoading: isDashboardLoading } = useDashboard();
+  
+  // Always call useDashboard but only when authenticated
+  const { data: dashboardData, isLoading: isDashboardLoading } = useDashboard(isAuthenticated);
 
   // Show nothing while checking authentication - no UI at all for anonymous users
   if (isLoading) {
