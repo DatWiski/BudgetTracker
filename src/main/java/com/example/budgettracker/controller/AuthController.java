@@ -57,8 +57,8 @@ public class AuthController {
 
             String token = authHeader.substring(7);
             
-            // Validate the current token (even if expired, we check if it's valid)
-            String googleSub = SecurityContextHolder.getContext().getAuthentication().getName();
+            // Validate the token and extract user info
+            String googleSub = jwtService.extractGoogleSub(token);
             
             // Get user and generate new token
             AppUser user = appUserService.findByGoogleSub(googleSub)

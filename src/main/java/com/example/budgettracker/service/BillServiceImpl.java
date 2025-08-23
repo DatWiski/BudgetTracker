@@ -22,7 +22,6 @@ public class BillServiceImpl implements BillService {
     private final BillRepository billRepository;
     private final CategoryService categoryService;
     private final SecurityUtils securityUtils;
-    private final PeriodCalculationService periodCalculationService;
 
     @Override
     @Transactional

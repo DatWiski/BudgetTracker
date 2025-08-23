@@ -22,7 +22,6 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     private final SubscriptionRepository subscriptionRepository;
     private final CategoryService categoryService;
     private final SecurityUtils securityUtils;
-    private final PeriodCalculationService periodCalculationService;
 
     @Override
     @Transactional
