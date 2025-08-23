@@ -17,17 +17,17 @@ BudgetTracker follows a modern full-stack architecture with clear separation bet
 │  └─────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────┘
                            │ REST API (JSON)
-                           │ CSRF-protected requests
+                           │ JWT Bearer token auth
                            ▼
 ┌─────────────────────────────────────────────────────────┐
 │                   Backend Layer                         │
 │  ┌─────────────────────────────────────────────────┐   │
 │  │           Spring Boot 3.5.3 API                │   │
 │  │  - REST Controllers with OpenAPI docs          │   │
-│  │  - Spring Security with OAuth2                 │   │
+│  │  - Spring Security with OAuth2 + JWT           │   │
 │  │  - Service layer with business logic           │   │
 │  │  - JPA repositories with custom queries        │   │
-│  │  - CSRF protection and security headers        │   │
+│  │  - JWT authentication with auto-refresh        │   │
 │  │  - Static resource serving for SPA             │   │
 │  └─────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────┘
@@ -50,17 +50,17 @@ BudgetTracker follows a modern full-stack architecture with clear separation bet
 
 ### Authentication Flow
 ```
-User Browser ──➤ Google OAuth2 ──➤ Spring Security ──➤ JWT Session
+User Browser ──➤ Google OAuth2 ──➤ Spring Security ──➤ JWT Token
      │                                      │
-     └──────── CSRF Token ──────────────────┘
+     └──────── Bearer Token ─────────────────┘
      │
      └──────── API Requests (Authenticated) ──➤ Controllers
 ```
 
 ### Security Layers
 1. **OAuth2 Authentication** - Google SSO integration
-2. **CSRF Protection** - Token-based request validation
-3. **Session Management** - Secure session handling
+2. **JWT Authentication** - Stateless token-based auth
+3. **Token Management** - Auto-refresh, persistent keys
 4. **Input Validation** - Server-side data validation
 5. **SQL Injection Prevention** - JPA parameterized queries
 
@@ -146,7 +146,8 @@ Single JAR Deployment:
 ```
 src/main/java/com/example/budgettracker/
 ├── config/              # Spring configuration
-│   ├── SecurityConfig   # OAuth2 + CSRF setup
+│   ├── SecurityConfig   # OAuth2 + JWT setup
+│   ├── JwtKeyConfig     # JWT key persistence
 │   └── WebConfig        # CORS and web settings
 ├── controller/          # REST API endpoints
 │   ├── AuthController   # Authentication
@@ -154,6 +155,7 @@ src/main/java/com/example/budgettracker/
 │   └── ApiController    # Generic API utils
 ├── service/             # Business logic layer
 │   ├── UserService      
+│   ├── JwtService       # JWT token operations
 │   ├── SubscriptionService
 │   └── CategoryService
 ├── repository/          # Data access layer
@@ -190,8 +192,8 @@ ui/src/
 ```
 Authentication:
 POST /login/oauth2/google     # OAuth2 login
-GET  /api/user               # Current user info
-POST /logout                 # Logout
+GET  /api/auth/status         # Auth status check
+POST /api/auth/refresh        # JWT token refresh
 
 Subscriptions:
 GET    /api/subscriptions              # List user subscriptions
@@ -202,9 +204,6 @@ DELETE /api/subscriptions/{id}         # Delete subscription
 
 Categories:
 GET /api/categories                    # List categories
-
-CSRF:
-GET /api/csrf-token                    # Get CSRF token
 ```
 
 ### Response Format

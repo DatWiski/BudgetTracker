@@ -1,11 +1,10 @@
 
 import { NavLink } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
-import { clearCsrfToken } from '../utils/csrf';
+import { useAuth } from '../hooks/useAuth';
 import Icon from './Icon';
 
 const Sidebar = () => {
-  const queryClient = useQueryClient();
+  const { logout } = useAuth();
   
   const navItems = [
     { path: '/', name: 'Dashboard', icon: 'dashboard' },
@@ -15,36 +14,8 @@ const Sidebar = () => {
     { path: '/settings', name: 'Settings', icon: 'settings' },
   ];
 
-  const handleLogout = async () => {
-    try {
-      await queryClient.invalidateQueries({ queryKey: ['auth-status'] });
-      
-      const csrfResponse = await fetch('/api/csrf-token', {
-        credentials: 'include'
-      });
-      
-      if (csrfResponse.ok) {
-        const csrfData = await csrfResponse.json();
-        const token = csrfData.token || csrfData.value;
-        const headerName = csrfData.headerName || 'X-CSRF-TOKEN';
-        
-        await fetch('/logout', {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            [headerName]: token
-          }
-        });
-      }
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      queryClient.clear();
-      clearCsrfToken();
-      await queryClient.invalidateQueries({ queryKey: ['auth-status'] });
-      window.location.href = '/login';
-    }
+  const handleLogout = () => {
+    logout();
   };
 
   return (

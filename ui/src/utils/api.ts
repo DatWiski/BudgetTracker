@@ -1,4 +1,4 @@
-import { getRequestHeaders, clearCsrfToken } from './csrf';
+import { tokenStorage } from './tokenStorage';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL as string | undefined;
 
@@ -26,18 +26,23 @@ export const apiRequest = async <T>(
   options: RequestInit = {}
 ): Promise<T> => {
   try {
-    let headers = options.headers || {};
+    let headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      ...options.headers
+    };
 
-    // Add CSRF token for non-GET requests
-    if (options.method && options.method !== 'GET') {
-      const csrfHeaders = await getRequestHeaders();
-      headers = { ...headers, ...csrfHeaders };
+    // Add JWT Authorization header
+    const token = tokenStorage.getToken();
+    if (token && !tokenStorage.isTokenExpired(token)) {
+      headers = {
+        ...headers,
+        'Authorization': `Bearer ${token}`
+      };
     }
 
     const response = await fetch(withBaseUrl(url), {
       ...options,
-      headers,
-      credentials: 'include'
+      headers
     });
 
     // Handle no-content responses (e.g., DELETE 204)
@@ -46,36 +51,12 @@ export const apiRequest = async <T>(
       return undefined;
     }
 
-    // Handle CSRF token expiration
-    if (response.status === 403) {
-      clearCsrfToken();
-      // Retry once with new token
-      const csrfHeaders = await getRequestHeaders();
-      const retryResponse = await fetch(withBaseUrl(url), {
-        ...options,
-        headers: { ...headers, ...csrfHeaders },
-        credentials: 'include'
-      });
-
-      if (retryResponse.status === 204) {
-        // @ts-expect-error allow void return for no-content endpoints
-        return undefined;
-      }
-
-      if (!retryResponse.ok) {
-        throw new ApiError(
-          retryResponse.status,
-          retryResponse.statusText,
-          `API request failed: ${retryResponse.statusText}`
-        );
-      }
-
-      return retryResponse.json();
-    }
-
     if (response.status === 401) {
-      // Unauthenticated: redirect to login
-      window.location.href = '/login';
+      // JWT token is invalid, clear it and redirect to login
+      tokenStorage.clear();
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login';
+      }
       throw new ApiError(401, 'Unauthorized', 'Authentication required');
     }
 

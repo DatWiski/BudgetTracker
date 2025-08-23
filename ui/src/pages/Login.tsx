@@ -1,7 +1,6 @@
 import Icon from '../components/Icon';
 
 const Login = () => {
-  
   // Check for OAuth error in URL
   const urlParams = new URLSearchParams(window.location.search);
   const hasOAuthError = urlParams.get('error') === 'oauth_failed';

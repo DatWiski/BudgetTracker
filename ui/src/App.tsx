@@ -9,6 +9,7 @@ import Income from './pages/Income';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
 import ErrorBoundary from './components/ErrorBoundary';
+import { AuthHandler } from './components/AuthHandler';
 import { useAuth } from './hooks/useAuth';
 import { useDashboard } from './hooks/useDashboard';
 
@@ -67,6 +68,7 @@ function App() {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <Router>
+          <AuthHandler />
           <AppContent />
         </Router>
       </QueryClientProvider>

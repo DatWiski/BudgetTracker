@@ -1,13 +1,15 @@
 package com.example.budgettracker.config;
 
 import com.example.budgettracker.service.GoogleOidcUserService;
+import com.example.budgettracker.security.JwtAuthenticationSuccessHandler;
+import com.example.budgettracker.security.JwtAuthenticationFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
@@ -26,35 +28,18 @@ public class SecurityConfig {
 
     @Value("${app.cors.allowed-origins}")
     private String allowedOrigins;
-    
-    @Value("${app.security.csrf.cookie-secure:false}")
-    private boolean csrfCookieSecure;
 
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, GoogleOidcUserService googleUserService) throws Exception {
-        CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
-        requestHandler.setCsrfRequestAttributeName("_csrf");
-
-        // Configure CSRF repository with hardened cookie attributes (HttpOnly)
-        CookieCsrfTokenRepository csrfRepository = new CookieCsrfTokenRepository();
-        csrfRepository.setCookieCustomizer(builder -> builder
-                .sameSite("Lax")
-                .secure(csrfCookieSecure)
-                .path("/")
-                .httpOnly(true)
-        );
-
+    public SecurityFilterChain filterChain(HttpSecurity http, GoogleOidcUserService googleUserService, 
+                                         JwtAuthenticationSuccessHandler jwtSuccessHandler,
+                                         JwtAuthenticationFilter jwtFilter) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(csrf -> csrf
-                        .csrfTokenRepository(csrfRepository)
-                        .csrfTokenRequestHandler(requestHandler)
-                        .ignoringRequestMatchers("/api/auth/status", "/api/csrf-token", "/swagger-ui/**", "/v3/api-docs/**")
-                )
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/status", "/api/csrf-token").permitAll()
-                        .requestMatchers("/login", "/oauth-complete", "/oauth2/**", "/static/**", "/*.js", "/*.css", "/*.ico", "/*.png", "/*.svg", "/assets/**").permitAll()
+                        .requestMatchers("/api/auth/status", "/api/auth/refresh").permitAll()
+                        .requestMatchers("/", "/login", "/oauth-complete", "/oauth2/**", "/static/**", "/*.js", "/*.css", "/*.ico", "/*.png", "/*.svg", "/assets/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/v3/api-docs").permitAll()
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().authenticated()
@@ -83,17 +68,14 @@ public class SecurityConfig {
                 )
                 .oauth2Login(o -> o
                         .loginPage("/login")
-                        .defaultSuccessUrl("/", true)
+                        .successHandler(jwtSuccessHandler)
                         .failureUrl("/login?error=oauth_failed")
                         .userInfoEndpoint(u -> u.oidcUserService(googleUserService))
                 )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .formLogin(form -> form.disable())
-                .logout(l -> l
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login")
-                        .invalidateHttpSession(true)
-                        .deleteCookies("JSESSIONID")
-                );
+                .logout(logout -> logout.disable());
 
         return http.build();
     }
@@ -111,13 +93,10 @@ public class SecurityConfig {
             "Authorization", 
             "Content-Type", 
             "Accept", 
-            "X-Requested-With", 
-            "X-CSRF-TOKEN",
-            "X-XSRF-TOKEN",
+            "X-Requested-With",
             "Cache-Control"
         ));
-        cfg.setExposedHeaders(List.of("X-CSRF-TOKEN"));
-        cfg.setAllowCredentials(true);
+        cfg.setAllowCredentials(false);
         cfg.setMaxAge(3600L); // Cache preflight responses for 1 hour
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
