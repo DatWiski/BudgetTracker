@@ -1,4 +1,3 @@
-const TOKEN_KEY = 'budget_tracker_token';
 const USER_KEY = 'budget_tracker_user';
 
 export interface UserInfo {
@@ -7,30 +6,50 @@ export interface UserInfo {
   name: string;
 }
 
+interface TokenRefreshResponse {
+  accessToken: string;
+  expiresIn: number;
+  user: UserInfo;
+}
+
+// In-memory storage for access token
+let accessToken: string | null = null;
+let tokenExpiryTime: number | null = null;
+let refreshPromise: Promise<{ token: string; user: UserInfo; expiresIn: number } | null> | null = null;
+
 export const tokenStorage = {
   getToken(): string | null {
-    try {
-      return localStorage.getItem(TOKEN_KEY);
-    } catch {
-      return null;
-    }
+    return accessToken;
   },
 
-  setToken(token: string): void {
-    try {
-      localStorage.setItem(TOKEN_KEY, token);
-    } catch {
-      // Ignore storage errors
-    }
+  setToken(token: string, expiresIn: number = 30 * 60): void {
+    accessToken = token;
+    tokenExpiryTime = Date.now() + (expiresIn * 1000); // Convert to milliseconds
   },
 
   removeToken(): void {
+    accessToken = null;
+    tokenExpiryTime = null;
     try {
-      localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(USER_KEY);
     } catch {
       // Ignore storage errors
     }
+  },
+
+  isTokenExpired(): boolean {
+    if (!accessToken || !tokenExpiryTime) {
+      return true;
+    }
+    return Date.now() >= tokenExpiryTime;
+  },
+
+  isTokenExpiringSoon(minutesBefore: number = 5): boolean {
+    if (!accessToken || !tokenExpiryTime) {
+      return true;
+    }
+    const expiresInMs = tokenExpiryTime - Date.now();
+    return expiresInMs < (minutesBefore * 60 * 1000);
   },
 
   getUserInfo(): UserInfo | null {
@@ -50,56 +69,62 @@ export const tokenStorage = {
     }
   },
 
-  isTokenExpired(token: string): boolean {
-    try {
-      // Decode JWT payload (base64 decode the middle part)
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const now = Math.floor(Date.now() / 1000);
-      return payload.exp < now;
-    } catch {
-      return true; // If we can't decode, assume expired
-    }
-  },
-
-  isTokenExpiringSoon(token: string, minutesBefore: number = 5): boolean {
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const now = Math.floor(Date.now() / 1000);
-      const expiresInSeconds = payload.exp - now;
-      return expiresInSeconds < (minutesBefore * 60);
-    } catch {
-      return true;
-    }
-  },
 
   clear(): void {
     this.removeToken();
   },
 
-  async refreshToken(): Promise<{ token: string; user: UserInfo } | null> {
-    try {
-      const currentToken = this.getToken();
-      if (!currentToken) return null;
+  async refreshToken(): Promise<{ token: string; user: UserInfo; expiresIn: number } | null> {
+    // Return existing refresh promise if already in progress
+    if (refreshPromise) {
+      return refreshPromise;
+    }
 
-      const response = await fetch('/api/auth/refresh', {
+    // Create new refresh promise
+    refreshPromise = (async () => {
+      try {
+        const response = await fetch('/api/auth/refresh', {
+          method: 'POST',
+          credentials: 'include', // Include cookies
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (response.ok) {
+          const data: TokenRefreshResponse = await response.json();
+          return {
+            token: data.accessToken,
+            user: data.user,
+            expiresIn: data.expiresIn
+          };
+        }
+        
+        return null;
+      } catch {
+        return null;
+      } finally {
+        // Clear the promise when done
+        refreshPromise = null;
+      }
+    })();
+
+    return refreshPromise;
+  },
+
+  async logout(): Promise<void> {
+    try {
+      await fetch('/api/auth/logout', {
         method: 'POST',
+        credentials: 'include',
         headers: {
-          'Authorization': `Bearer ${currentToken}`,
           'Content-Type': 'application/json',
         },
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        return {
-          token: data.token,
-          user: data.user
-        };
-      }
-      
-      return null;
     } catch {
-      return null;
+      // Ignore errors, still clear local state
+    } finally {
+      this.clear();
     }
   }
 };

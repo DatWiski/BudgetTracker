@@ -14,8 +14,8 @@ public class JwtService {
     private final JwtEncoder jwtEncoder;
     private final JwtDecoder jwtDecoder;
 
-    @Value("${app.jwt.expiration-hours:24}")
-    private int expirationHours;
+    @Value("${app.jwt.access-token.expiration-minutes:30}")
+    private int accessTokenExpirationMinutes;
 
     public JwtService(JwtEncoder jwtEncoder, JwtDecoder jwtDecoder) {
         this.jwtEncoder = jwtEncoder;
@@ -28,7 +28,7 @@ public class JwtService {
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("budget-tracker")
                 .issuedAt(now)
-                .expiresAt(now.plus(expirationHours, ChronoUnit.HOURS))
+                .expiresAt(now.plus(accessTokenExpirationMinutes, ChronoUnit.MINUTES))
                 .subject(user.getGoogleSub())
                 .claim("email", user.getEmail())
                 .claim("name", user.getFullName())
@@ -54,5 +54,9 @@ public class JwtService {
     public Long extractUserId(String token) {
         Jwt jwt = validateToken(token);
         return jwt.getClaim("userId");
+    }
+
+    public int getAccessTokenExpirationMinutes() {
+        return accessTokenExpirationMinutes;
     }
 }

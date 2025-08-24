@@ -1,5 +1,7 @@
 import { tokenStorage } from './tokenStorage';
 
+let isRefreshing = false;
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL as string | undefined;
 
 const withBaseUrl = (url: string): string => {
@@ -33,7 +35,7 @@ export const apiRequest = async <T>(
 
     // Add JWT Authorization header
     const token = tokenStorage.getToken();
-    if (token && !tokenStorage.isTokenExpired(token)) {
+    if (token && !tokenStorage.isTokenExpired()) {
       headers = {
         ...headers,
         'Authorization': `Bearer ${token}`
@@ -42,7 +44,8 @@ export const apiRequest = async <T>(
 
     const response = await fetch(withBaseUrl(url), {
       ...options,
-      headers
+      headers,
+      credentials: 'include' // Include cookies for refresh token
     });
 
     // Handle no-content responses (e.g., DELETE 204)
@@ -51,12 +54,48 @@ export const apiRequest = async <T>(
       return undefined;
     }
 
-    if (response.status === 401) {
-      // JWT token is invalid, clear it and redirect to login
-      tokenStorage.clear();
-      if (!window.location.pathname.includes('/login')) {
-        window.location.href = '/login';
+    if (response.status === 401 && !isRefreshing) {
+      // Try to refresh token before logging out
+      isRefreshing = true;
+      try {
+        const refreshResult = await tokenStorage.refreshToken();
+        if (refreshResult) {
+          // Token refreshed successfully, retry the original request
+          isRefreshing = false;
+          headers = {
+            ...headers,
+            'Authorization': `Bearer ${refreshResult.token}`
+          };
+          
+          // Retry the original request with new token
+          const retryResponse = await fetch(withBaseUrl(url), {
+            ...options,
+            headers,
+            credentials: 'include'
+          });
+          
+          if (retryResponse.ok) {
+            return retryResponse.status === 204 ? undefined : retryResponse.json();
+          }
+        }
+        
+        // Refresh failed, clear tokens and redirect
+        tokenStorage.clear();
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/login';
+        }
+        throw new ApiError(401, 'Unauthorized', 'Authentication required');
+      } catch (refreshError) {
+        tokenStorage.clear();
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/login';
+        }
+        throw new ApiError(401, 'Unauthorized', 'Authentication required');
+      } finally {
+        isRefreshing = false;
       }
+    } else if (response.status === 401) {
+      // Already refreshing or refresh failed, just throw error
       throw new ApiError(401, 'Unauthorized', 'Authentication required');
     }
 

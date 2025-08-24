@@ -18,12 +18,14 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Configuration
 @EnableWebSecurity
+@EnableScheduling
 public class SecurityConfig {
 
     @Value("${app.cors.allowed-origins}")
@@ -96,7 +98,7 @@ public class SecurityConfig {
             "X-Requested-With",
             "Cache-Control"
         ));
-        cfg.setAllowCredentials(false);
+        cfg.setAllowCredentials(true); // Enable credentials for cookies
         cfg.setMaxAge(3600L); // Cache preflight responses for 1 hour
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

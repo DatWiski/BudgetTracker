@@ -13,7 +13,8 @@ export const AuthHandler = () => {
     if (token && userStr) {
       try {
         const user = JSON.parse(decodeURIComponent(userStr));
-        login(token, user);
+        // Default to 30 minutes if no specific expiry provided
+        login(token, user, 30 * 60);
         // Clean up URL
         window.history.replaceState({}, document.title, '/');
       } catch (error) {
