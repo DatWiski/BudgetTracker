@@ -19,7 +19,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
@@ -38,7 +44,8 @@ public class BillController {
             @ApiResponse(responseCode = "401", description = "User not authenticated")
     })
     public ResponseEntity<BillResponse> addBill(
-            @RequestBody(description = "Bill details", required = true) @Valid @org.springframework.web.bind.annotation.RequestBody BillRequest billRequest,
+            @RequestBody(description = "Bill details", required = true)
+            @Valid @org.springframework.web.bind.annotation.RequestBody BillRequest billRequest,
             @Parameter(hidden = true) AppUser appUser) {
         Bill saved = billService.saveBillForUser(billRequest, appUser);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -55,7 +62,8 @@ public class BillController {
     })
     public ResponseEntity<BillResponse> updateBill(
             @Parameter(description = "Bill ID") @PathVariable Long id,
-            @RequestBody(description = "Updated bill details", required = true) @Valid @org.springframework.web.bind.annotation.RequestBody BillRequest billRequest,
+            @RequestBody(description = "Updated bill details", required = true)
+            @Valid @org.springframework.web.bind.annotation.RequestBody BillRequest billRequest,
             @Parameter(hidden = true) AppUser appUser) {
         Bill updated = billService.updateBillForUser(id, billRequest, appUser);
         return ResponseEntity.ok(BillResponse.fromEntity(updated, periodCalculationService));

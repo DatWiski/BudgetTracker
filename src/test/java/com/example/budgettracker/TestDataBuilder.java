@@ -12,7 +12,11 @@ import java.time.LocalDate;
 /**
  * Test data builder utility class for creating test objects
  */
-public class TestDataBuilder {
+public final class TestDataBuilder {
+    
+    private TestDataBuilder() {
+        // Private constructor to prevent instantiation
+    }
     
     public static AppUser createTestUser() {
         return createTestUser(1L, "test-sub", "Test User", "test@example.com");

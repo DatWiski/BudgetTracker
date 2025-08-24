@@ -19,7 +19,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
@@ -38,7 +44,8 @@ public class SubscriptionController {
             @ApiResponse(responseCode = "401", description = "User not authenticated")
     })
     public ResponseEntity<SubscriptionResponse> addSubscription(
-            @RequestBody(description = "Subscription details", required = true) @Valid @org.springframework.web.bind.annotation.RequestBody SubscriptionRequest subscriptionRequest,
+            @RequestBody(description = "Subscription details", required = true)
+            @Valid @org.springframework.web.bind.annotation.RequestBody SubscriptionRequest subscriptionRequest,
             @Parameter(hidden = true) AppUser appUser) {
         Subscription saved = subscriptionService.saveSubscriptionForUser(subscriptionRequest, appUser);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -55,7 +62,8 @@ public class SubscriptionController {
     })
     public ResponseEntity<SubscriptionResponse> updateSubscription(
             @Parameter(description = "Subscription ID") @PathVariable Long id,
-            @RequestBody(description = "Updated subscription details", required = true) @Valid @org.springframework.web.bind.annotation.RequestBody SubscriptionRequest subscriptionRequest,
+            @RequestBody(description = "Updated subscription details", required = true)
+            @Valid @org.springframework.web.bind.annotation.RequestBody SubscriptionRequest subscriptionRequest,
             @Parameter(hidden = true) AppUser appUser) {
         Subscription updated = subscriptionService.updateSubscriptionForUser(id, subscriptionRequest, appUser);
         return ResponseEntity.ok(SubscriptionResponse.fromEntity(updated, periodCalculationService));

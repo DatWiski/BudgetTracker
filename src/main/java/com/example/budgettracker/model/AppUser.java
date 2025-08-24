@@ -1,6 +1,13 @@
 package com.example.budgettracker.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -39,9 +46,9 @@ public class AppUser extends BaseEntity {
         this.currency = "USD"; // Default currency
     }
     
-    public AppUser updateFromGoogle(String name, String email, String pic) {
+    public AppUser updateFromGoogle(String name, String userEmail, String pic) {
         this.fullName = name;
-        this.email = email;
+        this.email = userEmail;
         this.pictureUrl = pic;
         return this;
     }

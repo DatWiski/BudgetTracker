@@ -130,8 +130,8 @@ public class RefreshTokenService {
     }
 
     private boolean isDifferentDevice(RefreshToken token, String userAgent, String ipAddress) {
-        return (token.getUserAgent() != null && !token.getUserAgent().equals(userAgent)) ||
-               (token.getIpAddress() != null && !token.getIpAddress().equals(ipAddress));
+        return (token.getUserAgent() != null && !token.getUserAgent().equals(userAgent))
+                || (token.getIpAddress() != null && !token.getIpAddress().equals(ipAddress));
     }
 
     @Scheduled(fixedRate = 3600000) // Run every hour
