@@ -75,7 +75,7 @@ export const apiRequest = async <T>(
           });
           
           if (retryResponse.ok) {
-            return retryResponse.status === 204 ? undefined : retryResponse.json();
+            return retryResponse.status === 204 ? undefined as T : retryResponse.json();
           }
         }
         
@@ -85,7 +85,7 @@ export const apiRequest = async <T>(
           window.location.href = '/login';
         }
         throw new ApiError(401, 'Unauthorized', 'Authentication required');
-      } catch (refreshError) {
+      } catch {
         tokenStorage.clear();
         if (!window.location.pathname.includes('/login')) {
           window.location.href = '/login';
