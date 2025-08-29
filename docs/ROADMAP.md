@@ -1,17 +1,20 @@
 # Roadmap
 
-## 🎯 Next Up
-- Update user info with each login (name, email, profile picture from Google)
+## 🎯 Project Status: ON ICE
+This project served as a great learning experience for Spring Boot + React development. 
+Moving on to explore other technologies and project ideas.
 
-## 🔒 Security Enhancements
-Fix JWT token exposure in OAuth redirect URLs (use 
-          + authorization code pattern)
-- Add request rate limiting on auth endpoints
-- Add structured security event logging
-- Add token refresh metrics/monitoring
+## ✅ What Was Accomplished
+- Full-stack app with Spring Boot 3.5.5 + React 19
+- Google OAuth2 authentication with JWT tokens
+- PostgreSQL database with Flyway migrations
+- Subscription and income tracking with recurring periods
+- Responsive UI with TailwindCSS
+- Production-ready build process (Maven + frontend-maven-plugin)
+- Security headers and CORS configuration
+- Input validation and sanitization
 
-## 📊 Future Features
-- User preferences and settings
-- Data export functionality
+## 📊 Partially Implemented Features
+- User preferences and settings (components created, not integrated)
+- Currency selection hooks
 - Subscription notifications
-- Budget goals and alerts

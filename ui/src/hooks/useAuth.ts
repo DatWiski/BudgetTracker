@@ -5,10 +5,18 @@ import { tokenStorage, type UserInfo } from '../utils/tokenStorage';
 
 export const useAuth = () => {
   const [localUser, setLocalUser] = useState<UserInfo | null>(() => tokenStorage.getUserInfo());
+  const [isInitializing, setIsInitializing] = useState(true);
   const queryClient = useQueryClient();
 
   const token = tokenStorage.getToken();
   const hasValidToken = Boolean(token && !tokenStorage.isTokenExpired());
+
+  console.log('🔓 useAuth: Current state', {
+    hasToken: !!token,
+    hasValidToken,
+    hasLocalUser: !!localUser,
+    isInitializing
+  });
 
   const { data: authStatus, isLoading, error } = useQuery<AuthStatus>({
     queryKey: ['auth-status'],
@@ -42,7 +50,9 @@ export const useAuth = () => {
     enabled: hasValidToken // Only run query if we have a valid token
   });
 
+  // Calculate authentication state
   const isAuthenticated = hasValidToken && (authStatus?.authenticated || false);
+  const finalIsLoading = isInitializing || (hasValidToken ? isLoading : false);
 
   const login = useCallback((token: string, user: UserInfo, expiresIn?: number) => {
     tokenStorage.setToken(token, expiresIn);
@@ -58,6 +68,56 @@ export const useAuth = () => {
     // Redirect to login
     window.location.href = '/login';
   }, [queryClient]);
+
+  // CRITICAL: Try to refresh token on page load (only once!)
+  useEffect(() => {
+    const attemptInitialRefresh = async () => {
+      console.log('🔓 useAuth: Starting initial refresh attempt on page load');
+      
+      // Get current values at execution time
+      const currentToken = tokenStorage.getToken();
+      const currentHasValidToken = Boolean(currentToken && !tokenStorage.isTokenExpired());
+      const currentUser = tokenStorage.getUserInfo();
+      
+      // If we already have a valid token, no need to refresh
+      if (currentHasValidToken) {
+        console.log('🔓 useAuth: Already have valid token, skipping initial refresh');
+        setIsInitializing(false);
+        return;
+      }
+
+      // If we have no user info at all, user probably needs to login fresh
+      if (!currentUser) {
+        console.log('🔓 useAuth: No user info, user needs fresh login');
+        setIsInitializing(false);
+        return;
+      }
+
+      try {
+        console.log('🔓 useAuth: Attempting refresh for existing user');
+        const refreshResult = await tokenStorage.refreshToken();
+        
+        if (refreshResult) {
+          console.log('✅ useAuth: Initial refresh successful');
+          tokenStorage.setToken(refreshResult.token, refreshResult.expiresIn);
+          setLocalUser(refreshResult.user);
+          queryClient.invalidateQueries({ queryKey: ['auth-status'] });
+        } else {
+          console.log('❌ useAuth: Initial refresh failed, user needs to login');
+          // Don't logout here - just let them see login page
+        }
+      } catch (error) {
+        console.log('❌ useAuth: Initial refresh error', error);
+        // Don't logout here - just let them see login page
+      } finally {
+        setIsInitializing(false);
+      }
+    };
+
+    // Only run once on mount - using ref values to avoid dependencies
+    attemptInitialRefresh();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Intentionally empty - run once on mount only
 
   // Auto-logout when token expires
   useEffect(() => {
@@ -84,10 +144,17 @@ export const useAuth = () => {
       }
     };
 
-    if (token && isAuthenticated) {
+    if (token && isAuthenticated && !isInitializing) {
       refreshTokenIfNeeded();
     }
-  }, [token, isAuthenticated, login, logout]);
+  }, [token, isAuthenticated, isInitializing, login, logout]);
+
+  console.log('🔓 useAuth: Final state', {
+    isAuthenticated,
+    finalIsLoading,
+    hasValidToken,
+    authStatusAuthenticated: authStatus?.authenticated
+  });
 
   return {
     isAuthenticated,
@@ -96,7 +163,7 @@ export const useAuth = () => {
     token,
     login,
     logout,
-    isLoading: hasValidToken ? isLoading : false,
+    isLoading: finalIsLoading,
     error: hasValidToken ? error : null
   };
 };

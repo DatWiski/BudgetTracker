@@ -3,7 +3,6 @@ package com.example.budgettracker.security;
 import com.example.budgettracker.dto.TokenPair;
 import com.example.budgettracker.model.AppUser;
 import com.example.budgettracker.service.AppUserService;
-import com.example.budgettracker.service.JwtService;
 import com.example.budgettracker.service.RefreshTokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
@@ -23,7 +22,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class JwtAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    private final JwtService jwtService;
     private final AppUserService appUserService;
     private final RefreshTokenService refreshTokenService;
     private final ObjectMapper objectMapper;
