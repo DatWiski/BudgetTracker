@@ -154,7 +154,12 @@ export const tokenStorage = {
           });
 
           if (response.ok) {
-            const data: TokenRefreshResponse = await response.json();
+            const result = await response.json();
+            console.log("🔒 tokenStorage.refreshToken: Raw response", result);
+            
+            // Handle wrapped API response format: { success: true, data: {...}, error: null, timestamp: "..." }
+            const data: TokenRefreshResponse = result.success && result.data ? result.data : result;
+            
             console.log("✅ tokenStorage.refreshToken: Success", {
               hasAccessToken: !!data.accessToken,
               hasUser: !!data.user,

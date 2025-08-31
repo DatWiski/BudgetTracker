@@ -10,15 +10,23 @@ export const AuthHandler = () => {
     const token = urlParams.get("token");
     const userStr = urlParams.get("user");
 
+    console.log("🔓 AuthHandler: Checking URL params", {
+      hasToken: !!token,
+      hasUser: !!userStr,
+      fullUrl: window.location.href
+    });
+
     if (token && userStr) {
       try {
         const user = JSON.parse(decodeURIComponent(userStr));
+        console.log("🔓 AuthHandler: Processing login", { token: token.substring(0, 20) + "...", user });
         // Default to 30 minutes if no specific expiry provided
         login(token, user, 30 * 60);
+        console.log("🔓 AuthHandler: Login completed, cleaning URL");
         // Clean up URL
         window.history.replaceState({}, document.title, "/");
       } catch (error) {
-        console.error("Error parsing OAuth callback data:", error);
+        console.error("❌ AuthHandler: Error parsing OAuth callback data:", error);
         // Clean up URL anyway
         window.history.replaceState({}, document.title, "/");
       }

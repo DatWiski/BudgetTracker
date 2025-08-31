@@ -65,7 +65,7 @@ public class JwtAuthenticationSuccessHandler extends SimpleUrlAuthenticationSucc
 
         String redirectUrl =
             String.format(
-                "/?token=%s&user=%s",
+                "http://localhost:5173/?token=%s&user=%s",
                 tokenPair.getAccessToken(), java.net.URLEncoder.encode(userJson, "UTF-8"));
 
         response.sendRedirect(redirectUrl);

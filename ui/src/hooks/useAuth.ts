@@ -30,21 +30,36 @@ export const useAuth = () => {
         throw new Error("No valid token");
       }
 
+      console.log("🔓 useAuth: Making auth status request with token:", currentToken.substring(0, 20) + "...");
+      
       const response = await fetch("/api/auth/status", {
         headers: {
           Authorization: `Bearer ${currentToken}`,
         },
       });
 
+      console.log("🔓 useAuth: Auth status response:", { status: response.status, ok: response.ok });
+
       if (!response.ok) {
         if (response.status === 401) {
           // Token is invalid, clear it
+          console.log("❌ useAuth: Token invalid, clearing");
           tokenStorage.clear();
           setLocalUser(null);
         }
-        throw new Error("Failed to check auth status");
+        throw new Error(`Failed to check auth status: ${response.status}`);
       }
-      return response.json();
+      
+      const result = await response.json();
+      console.log("✅ useAuth: Auth status result:", result);
+      
+      // Handle wrapped API response format: { success: true, data: {...}, error: null, timestamp: "..." }
+      if (result.success && result.data) {
+        return result.data;
+      }
+      
+      // Fallback to direct response format
+      return result;
     },
     retry: 1,
     staleTime: 1000 * 30, // 30 seconds

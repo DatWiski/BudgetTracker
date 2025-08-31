@@ -255,7 +255,9 @@
                 <version>2.43.0</version>
                 <configuration>
                     <java>
-                        <googleJavaFormat/>
+                        <googleJavaFormat>
+                            <version>1.17.0</version>
+                        </googleJavaFormat>
                         <removeUnusedImports/>
                         <includes>
                             <include>src/**/*.java</include>
