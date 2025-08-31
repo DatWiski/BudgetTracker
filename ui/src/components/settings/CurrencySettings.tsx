@@ -1,5 +1,5 @@
-import { useCurrency } from '../../hooks/useCurrency';
-import { SUPPORTED_CURRENCIES } from '../../constants/currencies';
+import { useCurrency } from "../../hooks/useCurrency";
+import { SUPPORTED_CURRENCIES } from "../../constants/currencies";
 
 export const CurrencySettings = () => {
   const { currency, updateCurrency, isUpdating } = useCurrency();
@@ -11,7 +11,7 @@ export const CurrencySettings = () => {
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <h3 className="text-lg font-medium text-gray-900 mb-4">Currency Settings</h3>
-      
+
       <div className="space-y-3">
         {SUPPORTED_CURRENCIES.map((curr) => (
           <label key={curr.code} className="flex items-center cursor-pointer">
@@ -33,12 +33,8 @@ export const CurrencySettings = () => {
           </label>
         ))}
       </div>
-      
-      {isUpdating && (
-        <div className="mt-3 text-sm text-gray-500">
-          Updating currency...
-        </div>
-      )}
+
+      {isUpdating && <div className="mt-3 text-sm text-gray-500">Updating currency...</div>}
     </div>
   );
 };

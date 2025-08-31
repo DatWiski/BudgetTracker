@@ -19,18 +19,21 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Tag(name = "Dashboard", description = "Dashboard analytics and financial overview")
 public class DashboardController {
-    
-    private final DashboardService dashboardService;
 
-    @GetMapping("/overview")
-    @Operation(summary = "Get financial overview", description = "Returns basic financial metrics: total income vs total expenses")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Overview retrieved successfully"),
-            @ApiResponse(responseCode = "401", description = "User not authenticated")
-    })
-    public ResponseEntity<DashboardOverviewResponse> getOverview(
-            @Parameter(hidden = true) AppUser appUser) {
-        DashboardOverviewResponse overview = dashboardService.getFinancialOverview(appUser);
-        return ResponseEntity.ok(overview);
-    }
+  private final DashboardService dashboardService;
+
+  @GetMapping("/overview")
+  @Operation(
+      summary = "Get financial overview",
+      description = "Returns basic financial metrics: total income vs total expenses")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "Overview retrieved successfully"),
+        @ApiResponse(responseCode = "401", description = "User not authenticated")
+      })
+  public ResponseEntity<DashboardOverviewResponse> getOverview(
+      @Parameter(hidden = true) AppUser appUser) {
+    DashboardOverviewResponse overview = dashboardService.getFinancialOverview(appUser);
+    return ResponseEntity.ok(overview);
+  }
 }

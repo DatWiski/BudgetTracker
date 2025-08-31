@@ -1,5 +1,5 @@
-import { formatCurrency } from '../../utils/currency';
-import type { DashboardOverview } from '../../types';
+import { formatCurrency } from "../../utils/currency";
+import type { DashboardOverview } from "../../types";
 
 interface IncomeExpenseChartProps {
   data: DashboardOverview;
@@ -17,11 +17,17 @@ const IncomeExpenseChart = ({ data }: IncomeExpenseChartProps) => {
         {/* Legend */}
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'var(--color-success)' }}></div>
+            <div
+              className="w-3 h-3 rounded-full"
+              style={{ backgroundColor: "var(--color-success)" }}
+            ></div>
             <span className="text-sm font-medium">INCOME</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'var(--color-error)' }}></div>
+            <div
+              className="w-3 h-3 rounded-full"
+              style={{ backgroundColor: "var(--color-error)" }}
+            ></div>
             <span className="text-sm font-medium">EXPENSES</span>
           </div>
         </div>
@@ -34,12 +40,15 @@ const IncomeExpenseChart = ({ data }: IncomeExpenseChartProps) => {
           <div className="mb-1">
             <span className="text-xs text-muted">Income</span>
           </div>
-          <div className="relative h-6 rounded overflow-hidden" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
-            <div 
+          <div
+            className="relative h-6 rounded overflow-hidden"
+            style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
+          >
+            <div
               className="h-full rounded flex items-center justify-end pr-2 transition-all duration-500 ease-out"
-              style={{ 
+              style={{
                 width: `${incomeWidth}%`,
-                backgroundColor: 'var(--color-success)'
+                backgroundColor: "var(--color-success)",
               }}
             >
               <span className="text-white font-bold text-xs">
@@ -54,12 +63,15 @@ const IncomeExpenseChart = ({ data }: IncomeExpenseChartProps) => {
           <div className="mb-1">
             <span className="text-xs text-muted">Expenses</span>
           </div>
-          <div className="relative h-6 rounded overflow-hidden" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
-            <div 
+          <div
+            className="relative h-6 rounded overflow-hidden"
+            style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
+          >
+            <div
               className="h-full rounded flex items-center justify-end pr-2 transition-all duration-500 ease-out"
-              style={{ 
+              style={{
                 width: `${expenseWidth}%`,
-                backgroundColor: 'var(--color-error)'
+                backgroundColor: "var(--color-error)",
               }}
             >
               <span className="text-white font-bold text-xs">
@@ -71,10 +83,12 @@ const IncomeExpenseChart = ({ data }: IncomeExpenseChartProps) => {
       </div>
 
       {/* Available Money */}
-      <div className="mt-3 pt-2 border-t" style={{ borderColor: 'var(--border-color)' }}>
+      <div className="mt-3 pt-2 border-t" style={{ borderColor: "var(--border-color)" }}>
         <div className="flex items-center justify-between">
           <span className="text-xs text-muted">Available</span>
-          <span className={`font-bold text-sm ${data.availableMoney >= 0 ? 'text-success' : 'text-error'}`}>
+          <span
+            className={`font-bold text-sm ${data.availableMoney >= 0 ? "text-success" : "text-error"}`}
+          >
             {formatCurrency(data.availableMoney)}
           </span>
         </div>

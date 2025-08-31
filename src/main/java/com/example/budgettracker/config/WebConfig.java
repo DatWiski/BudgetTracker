@@ -1,22 +1,21 @@
 package com.example.budgettracker.config;
 
 import com.example.budgettracker.resolver.UserArgumentResolver;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.NonNull;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.util.List;
-
 @Configuration
 @RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
 
-    private final UserArgumentResolver userArgumentResolver;
+  private final UserArgumentResolver userArgumentResolver;
 
-    @Override
-    public void addArgumentResolvers(@NonNull List<HandlerMethodArgumentResolver> resolvers) {
-        resolvers.add(userArgumentResolver);
-    }
+  @Override
+  public void addArgumentResolvers(@NonNull List<HandlerMethodArgumentResolver> resolvers) {
+    resolvers.add(userArgumentResolver);
+  }
 }

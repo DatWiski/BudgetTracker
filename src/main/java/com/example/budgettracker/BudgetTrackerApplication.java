@@ -6,12 +6,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public final class BudgetTrackerApplication {
 
-    private BudgetTrackerApplication() {
-        // Private constructor to prevent instantiation
-    }
+  private BudgetTrackerApplication() {
+    // Private constructor to prevent instantiation
+  }
 
-    public static void main(String[] args) {
-        SpringApplication.run(BudgetTrackerApplication.class, args);
-    }
-
+  public static void main(String[] args) {
+    SpringApplication.run(BudgetTrackerApplication.class, args);
+  }
 }

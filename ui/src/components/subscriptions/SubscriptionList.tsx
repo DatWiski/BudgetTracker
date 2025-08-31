@@ -1,37 +1,48 @@
-import React from 'react';
-import type { Subscription } from '../../types';
-import { formatCurrency } from '../../utils/currency';
-import { Edit3, X, CreditCard } from 'lucide-react';
-import Card from '../common/Card';
+import React from "react";
+import type { Subscription } from "../../types";
+import { formatCurrency } from "../../utils/currency";
+import { Edit3, X, CreditCard } from "lucide-react";
+import Card from "../common/Card";
 
 type Props = {
   subscriptions: Subscription[];
-  currency: 'USD' | 'EUR';
+  currency: "USD" | "EUR";
   onEdit: (s: Subscription) => void;
   onDelete: (id: number) => void;
   deletingId?: number | null;
 };
 
-const SubscriptionList: React.FC<Props> = ({ subscriptions, currency, onEdit, onDelete, deletingId }) => {
+const SubscriptionList: React.FC<Props> = ({
+  subscriptions,
+  currency,
+  onEdit,
+  onDelete,
+  deletingId,
+}) => {
   return (
     <div className="grid-gap">
       {subscriptions.map((subscription) => {
         // Use the calculated actual next billing date instead of the original one
         const actualBillingDate = new Date(subscription.actualNextBillingDate);
         const daysUntilBilling = Math.ceil(
-          (actualBillingDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+          (actualBillingDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24),
         );
 
-        const statusColor = daysUntilBilling <= 0 ? '#f87171' : 
-                           daysUntilBilling <= 2 ? '#f87171' : 
-                           daysUntilBilling <= 7 ? '#fbbf24' : 
-                           '#cbd5e1';
+        const statusColor =
+          daysUntilBilling <= 0
+            ? "#f87171"
+            : daysUntilBilling <= 2
+              ? "#f87171"
+              : daysUntilBilling <= 7
+                ? "#fbbf24"
+                : "#cbd5e1";
 
-        const statusText = daysUntilBilling > 0
-          ? `Due in ${daysUntilBilling} days`
-          : daysUntilBilling === 0
-          ? 'Due today'
-          : `Next billing: ${actualBillingDate.toLocaleDateString()}`;
+        const statusText =
+          daysUntilBilling > 0
+            ? `Due in ${daysUntilBilling} days`
+            : daysUntilBilling === 0
+              ? "Due today"
+              : `Next billing: ${actualBillingDate.toLocaleDateString()}`;
 
         const actions = [
           <button
@@ -50,17 +61,17 @@ const SubscriptionList: React.FC<Props> = ({ subscriptions, currency, onEdit, on
             title="Delete subscription"
           >
             <X size={18} />
-          </button>
+          </button>,
         ];
 
         return (
           <Card
             key={subscription.id}
             title={subscription.name}
-            subtitle={subscription.categoryName || 'Uncategorized'}
+            subtitle={subscription.categoryName || "Uncategorized"}
             status={{
               text: statusText,
-              color: statusColor
+              color: statusColor,
             }}
             icon={<CreditCard size={36} />}
             amount={formatCurrency(subscription.price, currency)}

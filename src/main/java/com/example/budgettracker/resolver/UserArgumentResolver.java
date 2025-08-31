@@ -20,27 +20,32 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public class UserArgumentResolver implements HandlerMethodArgumentResolver {
 
-    private final AppUserService appUserService;
+  private final AppUserService appUserService;
 
-    @Override
-    public boolean supportsParameter(@NonNull MethodParameter parameter) {
-        return parameter.getParameterType().equals(AppUser.class);
+  @Override
+  public boolean supportsParameter(@NonNull MethodParameter parameter) {
+    return parameter.getParameterType().equals(AppUser.class);
+  }
+
+  @Override
+  public Object resolveArgument(
+      @NonNull MethodParameter parameter,
+      @Nullable ModelAndViewContainer mavContainer,
+      @NonNull NativeWebRequest webRequest,
+      @Nullable WebDataBinderFactory binderFactory)
+      throws Exception {
+
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication == null || !authentication.isAuthenticated()) {
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
     }
 
-    @Override
-    public Object resolveArgument(@NonNull MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
-                                  @NonNull NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) throws Exception {
-        
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
-        }
-
-        String sub = authentication.getName();
-        if (sub == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication name is null");
-        }
-        return appUserService.findByGoogleSub(sub)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
+    String sub = authentication.getName();
+    if (sub == null) {
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication name is null");
     }
+    return appUserService
+        .findByGoogleSub(sub)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
+  }
 }

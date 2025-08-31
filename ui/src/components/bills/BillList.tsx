@@ -1,12 +1,12 @@
-import React from 'react';
-import type { Bill } from '../../types';
-import { formatCurrency } from '../../utils/currency';
-import { Edit3, X, Receipt } from 'lucide-react';
-import Card from '../common/Card';
+import React from "react";
+import type { Bill } from "../../types";
+import { formatCurrency } from "../../utils/currency";
+import { Edit3, X, Receipt } from "lucide-react";
+import Card from "../common/Card";
 
 type Props = {
   bills: Bill[];
-  currency: 'USD' | 'EUR';
+  currency: "USD" | "EUR";
   onEdit: (bill: Bill) => void;
   onDelete: (id: number) => void;
   deletingId?: number | null;
@@ -19,19 +19,24 @@ const BillList: React.FC<Props> = ({ bills, currency, onEdit, onDelete, deleting
         // Use the calculated actual due date instead of the original one
         const actualDueDate = new Date(bill.actualDueDate);
         const daysUntilDue = Math.ceil(
-          (actualDueDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+          (actualDueDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24),
         );
 
-        const statusColor = daysUntilDue <= 0 ? '#f87171' : 
-                           daysUntilDue <= 2 ? '#f87171' : 
-                           daysUntilDue <= 7 ? '#fbbf24' : 
-                           '#cbd5e1';
+        const statusColor =
+          daysUntilDue <= 0
+            ? "#f87171"
+            : daysUntilDue <= 2
+              ? "#f87171"
+              : daysUntilDue <= 7
+                ? "#fbbf24"
+                : "#cbd5e1";
 
-        const statusText = daysUntilDue > 0
-          ? `Due in ${daysUntilDue} days`
-          : daysUntilDue === 0
-          ? 'Due today'
-          : `Next due: ${actualDueDate.toLocaleDateString()}`;
+        const statusText =
+          daysUntilDue > 0
+            ? `Due in ${daysUntilDue} days`
+            : daysUntilDue === 0
+              ? "Due today"
+              : `Next due: ${actualDueDate.toLocaleDateString()}`;
 
         const actions = [
           <button
@@ -50,17 +55,17 @@ const BillList: React.FC<Props> = ({ bills, currency, onEdit, onDelete, deleting
             title="Delete bill"
           >
             <X size={18} />
-          </button>
+          </button>,
         ];
 
         return (
           <Card
             key={bill.id}
             title={bill.name}
-            subtitle={bill.categoryName || 'Uncategorized'}
+            subtitle={bill.categoryName || "Uncategorized"}
             status={{
               text: statusText,
-              color: statusColor
+              color: statusColor,
             }}
             icon={<Receipt size={36} />}
             amount={formatCurrency(bill.amount, currency)}

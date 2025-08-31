@@ -12,47 +12,47 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
 @Entity
-@Table(name = "subscription", indexes = {
-    @Index(name = "idx_subscription_user", columnList = "app_user_id"),
-    @Index(name = "idx_subscription_next_billing", columnList = "nextBillingDate"),
-    @Index(name = "idx_subscription_active", columnList = "is_active")
-})
+@Table(
+    name = "subscription",
+    indexes = {
+      @Index(name = "idx_subscription_user", columnList = "app_user_id"),
+      @Index(name = "idx_subscription_next_billing", columnList = "nextBillingDate"),
+      @Index(name = "idx_subscription_active", columnList = "is_active")
+    })
 @Getter
 @Setter
 @NoArgsConstructor
 public class Subscription extends BaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(nullable = false)
-    private String name;
+  @Column(nullable = false)
+  private String name;
 
-    @Column(precision = 10, scale = 2)
-    private BigDecimal price;
+  @Column(precision = 10, scale = 2)
+  private BigDecimal price;
 
-    @Enumerated(EnumType.STRING)
-    private Period period;
+  @Enumerated(EnumType.STRING)
+  private Period period;
 
-    private LocalDate nextBillingDate;
+  private LocalDate nextBillingDate;
 
-    @Column(name = "is_active")
-    private boolean active = true;
+  @Column(name = "is_active")
+  private boolean active = true;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id")
-    private Category category;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "category_id")
+  private Category category;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "app_user_id", nullable = false)
-    private AppUser appUser;
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "app_user_id", nullable = false)
+  private AppUser appUser;
 }
-

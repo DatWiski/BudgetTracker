@@ -7,42 +7,42 @@ BudgetTracker follows a modern full-stack architecture with clear separation bet
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                    Frontend Layer                       │
-│  ┌─────────────────────────────────────────────────┐   │
-│  │        React 19 + TypeScript SPA               │   │
-│  │  - Modern UI with React 19 concurrent features │   │
-│  │  - TailwindCSS + CSS custom properties        │   │
-│  │  - TanStack Query for server state            │   │
-│  │  - Vite build system with HMR                 │   │
-│  │  - OAuth2 client integration                  │   │
-│  └─────────────────────────────────────────────────┘   │
+│  ┌─────────────────────────────────────────────────┐    │
+│  │        React 19 + TypeScript SPA                │    │
+│  │  - Modern UI with React 19 concurrent features  │    │
+│  │  - TailwindCSS + CSS custom properties          │    │
+│  │  - TanStack Query for server state              │    │
+│  │  - Vite build system with HMR                   │    │
+│  │  - OAuth2 client integration                    │    │
+│  └─────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────┘
                            │ REST API (JSON)
                            │ JWT Bearer token auth
                            ▼
 ┌─────────────────────────────────────────────────────────┐
 │                   Backend Layer                         │
-│  ┌─────────────────────────────────────────────────┐   │
-│  │           Spring Boot 3.5.3 API                │   │
-│  │  - REST Controllers with OpenAPI docs          │   │
-│  │  - Spring Security with OAuth2 + JWT           │   │
-│  │  - Service layer with business logic           │   │
-│  │  - JPA repositories with custom queries        │   │
-│  │  - JWT authentication with auto-refresh        │   │
-│  │  - Static resource serving for SPA             │   │
-│  └─────────────────────────────────────────────────┘   │
+│  ┌─────────────────────────────────────────────────┐    │
+│  │           Spring Boot 3.5.3 API                 │    │
+│  │  - REST Controllers with OpenAPI docs           │    │
+│  │  - Spring Security with OAuth2 + JWT            │    │
+│  │  - Service layer with business logic            │    │
+│  │  - JPA repositories with custom queries         │    │
+│  │  - JWT authentication with auto-refresh         │    │
+│  │  - Static resource serving for SPA              │    │
+│  └─────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────┘
                            │ JPA/Hibernate
                            │ Connection pooling
                            ▼
 ┌─────────────────────────────────────────────────────────┐
 │                   Data Layer                            │
-│  ┌─────────────────────────────────────────────────┐   │
-│  │            PostgreSQL Database                  │   │
-│  │  - Relational data model                       │   │
-│  │  - Flyway database migrations                  │   │
-│  │  - Optimized indexes and constraints           │   │
-│  │  - ACID compliance for financial data          │   │
-│  └─────────────────────────────────────────────────┘   │
+│  ┌─────────────────────────────────────────────────┐    │
+│  │            PostgreSQL Database                  │    │
+│  │  - Relational data model                        │    │
+│  │  - Flyway database migrations                   │    │
+│  │  - Optimized indexes and constraints            │    │
+│  │  - ACID compliance for financial data           │    │
+│  └─────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -73,27 +73,27 @@ User Browser ──➤ Google OAuth2 ──➤ Spring Security ──➤ JWT Tok
 ├─────────────┤    ├──────────────────┤    ├─────────────────┤
 │ id (PK)     │◄──┤│ id (PK)          │    │ id (PK)         │
 │ email       │   ││ user_id (FK)     │──┤►│ name            │
-│ name        │   ││ category_id (FK) │   │ │ color           │
-│ currency    │   ││ name             │   │ │ icon            │
-│ created_at  │   ││ price            │   │ └─────────────────┘
-└─────────────┘   ││ billing_period   │   │
-                  ││ status           │   │
-                  ││ next_bill_date   │   │
-                  ││ created_at       │   │
-                  └──────────────────┘   │
+│ name        │   ││ category_id (FK) │  │ │ color           │
+│ currency    │   ││ name             │  │ │ icon            │
+│ created_at  │   ││ price            │  │ └─────────────────┘
+└─────────────┘   ││ billing_period      │
+                  ││ status           │  │
+                  ││ next_bill_date   │  │
+                  ││ created_at       │  │
+                   └──────────────────┘  │
                                          │
 ┌─────────────────┐    ┌─────────────────┐
 │     Income      │    │      Bills      │
 ├─────────────────┤    ├─────────────────┤
 │ id (PK)         │    │ id (PK)         │
 │ user_id (FK)    │──┤ │ user_id (FK)    │
-│ category_id (FK)│   │ │ name            │
-│ amount          │   │ │ amount          │
-│ description     │   │ │ due_date        │
-│ date            │   │ │ is_recurring    │
-│ created_at      │   │ │ status          │
-└─────────────────┘   │ │ created_at      │
-                      │ └─────────────────┘
+│ category_id (FK)│  │ │ name            │
+│ amount          │  │ │ amount          │
+│ description     │  │ │ due_date        │
+│ date               │ │ is_recurring    │
+│ created_at     │   │ │ status          │
+└────────────────┘   │ │ created_at      │
+                     │ └─────────────────┘
                       └──┤
                          │
                     ┌─────────────────┐

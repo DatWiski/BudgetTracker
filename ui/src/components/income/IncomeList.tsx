@@ -1,25 +1,31 @@
-import React from 'react';
-import { formatCurrency } from '../../utils/currency';
-import type { Income } from '../../types';
-import { Edit3, X, TrendingUp } from 'lucide-react';
-import Card from '../common/Card';
+import React from "react";
+import { formatCurrency } from "../../utils/currency";
+import type { Income } from "../../types";
+import { Edit3, X, TrendingUp } from "lucide-react";
+import Card from "../common/Card";
 
 interface IncomeListProps {
   income: Income[];
-  currency: 'USD' | 'EUR';
+  currency: "USD" | "EUR";
   onEdit: (income: Income) => void;
   onDelete: (id: number) => void;
   deletingId?: number | null;
 }
 
-const IncomeList: React.FC<IncomeListProps> = ({ income, currency, onEdit, onDelete, deletingId }) => {
+const IncomeList: React.FC<IncomeListProps> = ({
+  income,
+  currency,
+  onEdit,
+  onDelete,
+  deletingId,
+}) => {
   const formatNextPayment = (nextPaymentDate: string) => {
     const paymentDate = new Date(nextPaymentDate);
     const now = new Date();
     const diffInDays = Math.ceil((paymentDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    
+
     const formattedDate = paymentDate.toLocaleDateString();
-    
+
     if (diffInDays === 0) return `Next payment: ${formattedDate} (today)`;
     if (diffInDays === 1) return `Next payment: ${formattedDate} (tomorrow)`;
     if (diffInDays > 1) return `Next payment: ${formattedDate} (${diffInDays} days)`;
@@ -29,10 +35,10 @@ const IncomeList: React.FC<IncomeListProps> = ({ income, currency, onEdit, onDel
   return (
     <div className="grid-gap">
       {income.map((entry) => {
-        const statusText = entry.nextPaymentDate 
+        const statusText = entry.nextPaymentDate
           ? formatNextPayment(entry.nextPaymentDate)
           : `Received ${new Date(entry.incomeDate).toLocaleDateString()}`;
-        const statusColor = '#cbd5e1'; // Light gray (same as subscriptions 7+ days)
+        const statusColor = "#cbd5e1"; // Light gray (same as subscriptions 7+ days)
 
         const actions = [
           <button
@@ -51,11 +57,11 @@ const IncomeList: React.FC<IncomeListProps> = ({ income, currency, onEdit, onDel
             title="Delete income"
           >
             <X size={18} />
-          </button>
+          </button>,
         ];
 
         // Build subtitle with category and description
-        let subtitle = entry.categoryName || 'Uncategorized';
+        let subtitle = entry.categoryName || "Uncategorized";
         if (entry.description) {
           subtitle += ` • ${entry.description}`;
         }
@@ -67,7 +73,7 @@ const IncomeList: React.FC<IncomeListProps> = ({ income, currency, onEdit, onDel
             subtitle={subtitle}
             status={{
               text: statusText,
-              color: statusColor
+              color: statusColor,
             }}
             icon={<TrendingUp size={36} />}
             amount={formatCurrency(entry.amount, currency)}

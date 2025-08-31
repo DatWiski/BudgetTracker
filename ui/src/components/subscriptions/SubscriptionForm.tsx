@@ -1,15 +1,15 @@
-import React from 'react';
-import type { Category, SubscriptionRequest, Period } from '../../types';
-import { FormWrapper } from '../common/FormWrapper';
-import { 
-  FormField, 
-  TextInput, 
-  NumberInput, 
-  DateInput, 
-  SelectInput, 
+import React from "react";
+import type { Category, SubscriptionRequest, Period } from "../../types";
+import { FormWrapper } from "../common/FormWrapper";
+import {
+  FormField,
+  TextInput,
+  NumberInput,
+  DateInput,
+  SelectInput,
   Checkbox,
-  type SelectOption 
-} from '../common/FormField';
+  type SelectOption,
+} from "../common/FormField";
 
 export type SubscriptionFormValues = {
   name: string;
@@ -21,7 +21,7 @@ export type SubscriptionFormValues = {
 };
 
 type Props = {
-  mode: 'create' | 'edit';
+  mode: "create" | "edit";
   values: SubscriptionFormValues;
   onChange: (values: SubscriptionFormValues) => void;
   categories: Category[];
@@ -53,7 +53,7 @@ const SubscriptionForm: React.FC<Props> = ({
       categoryId: values.categoryId ? parseInt(values.categoryId) : undefined,
       active: values.active,
     };
-    if (mode === 'edit' && editingId != null) {
+    if (mode === "edit" && editingId != null) {
       onSubmit({ ...payload, id: editingId });
     } else {
       onSubmit(payload);
@@ -61,17 +61,17 @@ const SubscriptionForm: React.FC<Props> = ({
   };
 
   // Convert categories to SelectOption format
-  const categoryOptions: SelectOption[] = categories.map(c => ({
+  const categoryOptions: SelectOption[] = categories.map((c) => ({
     value: c.id.toString(),
-    label: c.name
+    label: c.name,
   }));
 
   const periodOptions: SelectOption[] = [
-    { value: 'DAILY', label: 'Daily' },
-    { value: 'WEEKLY', label: 'Weekly' },
-    { value: 'MONTHLY', label: 'Monthly' },
-    { value: 'QUARTERLY', label: 'Quarterly' },
-    { value: 'YEARLY', label: 'Yearly' }
+    { value: "DAILY", label: "Daily" },
+    { value: "WEEKLY", label: "Weekly" },
+    { value: "MONTHLY", label: "Monthly" },
+    { value: "QUARTERLY", label: "Quarterly" },
+    { value: "YEARLY", label: "Yearly" },
   ];
 
   return (
@@ -143,5 +143,3 @@ const SubscriptionForm: React.FC<Props> = ({
 };
 
 export default SubscriptionForm;
-
-

@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import type { Category, IncomeRequest, Period } from '../../types';
-import { FormWrapper } from '../common/FormWrapper';
-import { 
-  FormField, 
-  TextInput, 
-  NumberInput, 
-  DateInput, 
-  SelectInput, 
+import React, { useState, useEffect } from "react";
+import type { Category, IncomeRequest, Period } from "../../types";
+import { FormWrapper } from "../common/FormWrapper";
+import {
+  FormField,
+  TextInput,
+  NumberInput,
+  DateInput,
+  SelectInput,
   TextareaInput,
-  type SelectOption 
-} from '../common/FormField';
+  type SelectOption,
+} from "../common/FormField";
 
 export interface IncomeFormValues {
   name: string;
@@ -21,7 +21,7 @@ export interface IncomeFormValues {
 }
 
 type Props = {
-  mode: 'create' | 'edit';
+  mode: "create" | "edit";
   values: IncomeFormValues;
   onChange: (values: IncomeFormValues) => void;
   categories: Category[];
@@ -47,20 +47,20 @@ const IncomeForm: React.FC<Props> = ({
     const newErrors: Record<string, string> = {};
 
     if (!values.name.trim()) {
-      newErrors.name = 'Income name is required';
+      newErrors.name = "Income name is required";
     }
 
     if (!values.amount.trim()) {
-      newErrors.amount = 'Amount is required';
+      newErrors.amount = "Amount is required";
     } else {
       const amount = parseFloat(values.amount);
       if (isNaN(amount) || amount <= 0) {
-        newErrors.amount = 'Amount must be a positive number';
+        newErrors.amount = "Amount must be a positive number";
       }
     }
 
     if (!values.incomeDate) {
-      newErrors.incomeDate = 'Income date is required';
+      newErrors.incomeDate = "Income date is required";
     }
 
     setErrors(newErrors);
@@ -69,7 +69,7 @@ const IncomeForm: React.FC<Props> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -78,11 +78,11 @@ const IncomeForm: React.FC<Props> = ({
       name: values.name.trim(),
       amount: parseFloat(values.amount),
       incomeDate: values.incomeDate,
-      period: (values.period || 'ONE_TIME') as Period,
+      period: (values.period || "ONE_TIME") as Period,
       description: values.description?.trim() || undefined,
       categoryId: values.categoryId ? parseInt(values.categoryId) : undefined,
     };
-    if (mode === 'edit' && editingId != null) {
+    if (mode === "edit" && editingId != null) {
       onSubmit({ ...payload, id: editingId });
     } else {
       onSubmit(payload);
@@ -95,18 +95,18 @@ const IncomeForm: React.FC<Props> = ({
   }, [values]);
 
   // Convert categories to SelectOption format
-  const categoryOptions: SelectOption[] = categories.map(c => ({
+  const categoryOptions: SelectOption[] = categories.map((c) => ({
     value: c.id.toString(),
-    label: c.name
+    label: c.name,
   }));
 
   const periodOptions: SelectOption[] = [
-    { value: 'ONE_TIME', label: 'One-time' },
-    { value: 'DAILY', label: 'Daily' },
-    { value: 'WEEKLY', label: 'Weekly' },
-    { value: 'MONTHLY', label: 'Monthly' },
-    { value: 'QUARTERLY', label: 'Quarterly' },
-    { value: 'YEARLY', label: 'Yearly' }
+    { value: "ONE_TIME", label: "One-time" },
+    { value: "DAILY", label: "Daily" },
+    { value: "WEEKLY", label: "Weekly" },
+    { value: "MONTHLY", label: "Monthly" },
+    { value: "QUARTERLY", label: "Quarterly" },
+    { value: "YEARLY", label: "Yearly" },
   ];
 
   return (
@@ -152,7 +152,7 @@ const IncomeForm: React.FC<Props> = ({
 
       <FormField label="Frequency" error={errors.period} required width="sm">
         <SelectInput
-          value={values.period || 'ONE_TIME'}
+          value={values.period || "ONE_TIME"}
           onChange={(value) => onChange({ ...values, period: value })}
           options={periodOptions}
           required
@@ -162,7 +162,7 @@ const IncomeForm: React.FC<Props> = ({
       <FormField label="Description" error={errors.description} width="lg">
         <TextareaInput
           id="description"
-          value={values.description || ''}
+          value={values.description || ""}
           onChange={(value) => onChange({ ...values, description: value })}
           placeholder="Additional details about this income..."
           rows={3}
@@ -171,7 +171,7 @@ const IncomeForm: React.FC<Props> = ({
 
       <FormField label="Category" error={errors.categoryId} width="sm">
         <SelectInput
-          value={values.categoryId || ''}
+          value={values.categoryId || ""}
           onChange={(value) => onChange({ ...values, categoryId: value })}
           options={categoryOptions}
           placeholder="Select Category"

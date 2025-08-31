@@ -1,17 +1,16 @@
-
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import Sidebar from './components/Sidebar';
-import Dashboard from './pages/Dashboard';
-import Subscriptions from './pages/Subscriptions';
-import Bills from './pages/Bills';
-import Income from './pages/Income';
-import Settings from './pages/Settings';
-import Login from './pages/Login';
-import ErrorBoundary from './components/ErrorBoundary';
-import { AuthHandler } from './components/AuthHandler';
-import { useAuth } from './hooks/useAuth';
-import { useDashboard } from './hooks/useDashboard';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import Sidebar from "./components/Sidebar";
+import Dashboard from "./pages/Dashboard";
+import Subscriptions from "./pages/Subscriptions";
+import Bills from "./pages/Bills";
+import Income from "./pages/Income";
+import Settings from "./pages/Settings";
+import Login from "./pages/Login";
+import ErrorBoundary from "./components/ErrorBoundary";
+import { AuthHandler } from "./components/AuthHandler";
+import { useAuth } from "./hooks/useAuth";
+import { useDashboard } from "./hooks/useDashboard";
 
 // Create a client for TanStack Query
 const queryClient = new QueryClient({
@@ -23,11 +22,10 @@ const queryClient = new QueryClient({
   },
 });
 
-
 // Main application component with authentication guard
 function AppContent() {
   const { isAuthenticated, isLoading } = useAuth();
-  
+
   // Always call useDashboard but only when authenticated
   const { data: dashboardData, isLoading: isDashboardLoading } = useDashboard(isAuthenticated);
 
@@ -46,16 +44,25 @@ function AppContent() {
     <div className="app-layout">
       <Sidebar />
       <main className="main-content">
-        
         <ErrorBoundary>
           <Routes>
-            <Route path="/" element={<Dashboard dashboardData={dashboardData} isDashboardLoading={isDashboardLoading} />} />
+            <Route
+              path="/"
+              element={
+                <Dashboard dashboardData={dashboardData} isDashboardLoading={isDashboardLoading} />
+              }
+            />
             <Route path="/subscriptions" element={<Subscriptions />} />
             <Route path="/bills" element={<Bills />} />
             <Route path="/income" element={<Income />} />
             <Route path="/settings" element={<Settings />} />
             {/* Catch all route for authenticated users */}
-            <Route path="/*" element={<Dashboard dashboardData={dashboardData} isDashboardLoading={isDashboardLoading} />} />
+            <Route
+              path="/*"
+              element={
+                <Dashboard dashboardData={dashboardData} isDashboardLoading={isDashboardLoading} />
+              }
+            />
           </Routes>
         </ErrorBoundary>
       </main>

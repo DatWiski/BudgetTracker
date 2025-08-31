@@ -4,37 +4,34 @@
  * Calculates the previous billing date based on the next billing date and billing period
  * Handles month/year boundaries properly
  */
-import type { Period } from '../types';
+import type { Period } from "../types";
 
-export const calculatePreviousBillingDate = (
-  nextBillingDate: string,
-  period: Period
-): Date => {
+export const calculatePreviousBillingDate = (nextBillingDate: string, period: Period): Date => {
   const nextDate = new Date(nextBillingDate);
   const prevDate = new Date(nextDate);
 
   switch (period) {
-    case 'DAILY':
+    case "DAILY":
       prevDate.setDate(prevDate.getDate() - 1);
       break;
-    case 'WEEKLY':
+    case "WEEKLY":
       prevDate.setDate(prevDate.getDate() - 7);
       break;
-    case 'MONTHLY':
+    case "MONTHLY":
       prevDate.setMonth(prevDate.getMonth() - 1);
       // Handle month with different number of days
       if (prevDate.getMonth() !== nextDate.getMonth() - 1 && nextDate.getMonth() !== 0) {
         prevDate.setDate(0); // Set to last day of previous month
       }
       break;
-    case 'QUARTERLY':
+    case "QUARTERLY":
       prevDate.setMonth(prevDate.getMonth() - 3);
       // Handle month with different number of days
       if (prevDate.getMonth() !== nextDate.getMonth() - 3) {
         prevDate.setDate(0); // Set to last day of previous month
       }
       break;
-    case 'YEARLY':
+    case "YEARLY":
       prevDate.setFullYear(prevDate.getFullYear() - 1);
       // Handle leap year edge case for Feb 29
       if (nextDate.getMonth() === 1 && nextDate.getDate() === 29) {
@@ -60,12 +57,12 @@ export const daysBetweenDates = (date1: Date, date2: Date): number => {
  * Formats relative time (e.g., "2 days ago", "1 week ago")
  */
 export const formatRelativeTime = (days: number): string => {
-  if (days === 0) return 'Today';
-  if (days === 1) return '1 day ago';
+  if (days === 0) return "Today";
+  if (days === 1) return "1 day ago";
   if (days < 7) return `${days} days ago`;
-  if (days < 14) return '1 week ago';
+  if (days < 14) return "1 week ago";
   if (days < 30) return `${Math.floor(days / 7)} weeks ago`;
-  if (days < 60) return '1 month ago';
+  if (days < 60) return "1 month ago";
   return `${Math.floor(days / 30)} months ago`;
 };
 
@@ -73,7 +70,7 @@ export const formatRelativeTime = (days: number): string => {
  * Checks if a year is a leap year
  */
 const isLeapYear = (year: number): boolean => {
-  return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+  return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
 };
 
 /**

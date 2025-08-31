@@ -1,7 +1,7 @@
-import { formatCurrency } from '../utils/currency';
-import Icon from '../components/Icon';
-import HeaderFinancialBar from '../components/HeaderFinancialBar';
-import type { DashboardOverview } from '../types';
+import { formatCurrency } from "../utils/currency";
+import Icon from "../components/Icon";
+import HeaderFinancialBar from "../components/HeaderFinancialBar";
+import type { DashboardOverview } from "../types";
 
 interface DashboardProps {
   dashboardData?: DashboardOverview;
@@ -47,14 +47,10 @@ const Dashboard = ({ dashboardData, isDashboardLoading }: DashboardProps) => {
   return (
     <div className="page-container">
       <div className="mb-10">
-        <h1 className="heading-1">
-          Dashboard
-        </h1>
-        <p className="text-muted">
-          Your financial overview for this month
-        </p>
+        <h1 className="heading-1">Dashboard</h1>
+        <p className="text-muted">Your financial overview for this month</p>
       </div>
-      
+
       {/* Financial Overview - Better Design */}
       <div className="mb-4">
         <HeaderFinancialBar data={overview} />
@@ -87,7 +83,9 @@ const Dashboard = ({ dashboardData, isDashboardLoading }: DashboardProps) => {
             <h3 className="text-muted">Available</h3>
             <Icon name="wallet" size={20} color="var(--color-primary)" />
           </div>
-          <p className={`text-2xl font-semibold ${overview.availableMoney >= 0 ? 'text-success' : 'text-error'}`}>
+          <p
+            className={`text-2xl font-semibold ${overview.availableMoney >= 0 ? "text-success" : "text-error"}`}
+          >
             {formatCurrency(overview.availableMoney)}
           </p>
         </div>
@@ -100,12 +98,8 @@ const Dashboard = ({ dashboardData, isDashboardLoading }: DashboardProps) => {
             <h3 className="text-muted">Subscriptions</h3>
             <Icon name="subscription" size={20} color="var(--color-accent)" />
           </div>
-          <p className="text-xl font-semibold">
-            {formatCurrency(overview.subscriptionExpenses)}
-          </p>
-          <p className="text-small text-muted">
-            {overview.activeSubscriptions} services
-          </p>
+          <p className="text-xl font-semibold">{formatCurrency(overview.subscriptionExpenses)}</p>
+          <p className="text-small text-muted">{overview.activeSubscriptions} services</p>
         </div>
 
         <div className="glass-card">
@@ -113,12 +107,8 @@ const Dashboard = ({ dashboardData, isDashboardLoading }: DashboardProps) => {
             <h3 className="text-muted">Bills</h3>
             <Icon name="bill" size={20} color="var(--color-warning)" />
           </div>
-          <p className="text-xl font-semibold">
-            {formatCurrency(overview.billExpenses)}
-          </p>
-          <p className="text-small text-muted">
-            {overview.activeBills} bills
-          </p>
+          <p className="text-xl font-semibold">{formatCurrency(overview.billExpenses)}</p>
+          <p className="text-small text-muted">{overview.activeBills} bills</p>
         </div>
 
         <div className="glass-card">
@@ -126,12 +116,12 @@ const Dashboard = ({ dashboardData, isDashboardLoading }: DashboardProps) => {
             <h3 className="text-muted">Savings Rate</h3>
             <Icon name="savings" size={20} color="var(--color-success)" />
           </div>
-          <p className={`text-xl font-semibold ${overview.savingsRate >= 20 ? 'text-success' : overview.savingsRate >= 10 ? 'text-warning' : 'text-error'}`}>
+          <p
+            className={`text-xl font-semibold ${overview.savingsRate >= 20 ? "text-success" : overview.savingsRate >= 10 ? "text-warning" : "text-error"}`}
+          >
             {overview.savingsRate.toFixed(1)}%
           </p>
-          <p className="text-small text-muted">
-            of income saved
-          </p>
+          <p className="text-small text-muted">of income saved</p>
         </div>
 
         <div className="glass-card">
@@ -140,14 +130,14 @@ const Dashboard = ({ dashboardData, isDashboardLoading }: DashboardProps) => {
             <Icon name="budget" size={20} color="var(--color-primary)" />
           </div>
           <p className="text-xl font-semibold">
-            {overview.totalExpenses > 0 ? Math.round((overview.totalExpenses / overview.totalIncome) * 100) : 0}%
+            {overview.totalExpenses > 0
+              ? Math.round((overview.totalExpenses / overview.totalIncome) * 100)
+              : 0}
+            %
           </p>
-          <p className="text-small text-muted">
-            of income used
-          </p>
+          <p className="text-small text-muted">of income used</p>
         </div>
       </div>
-
     </div>
   );
 };

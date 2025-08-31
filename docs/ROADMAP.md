@@ -1,8 +1,8 @@
 # Roadmap
 
-## 🎯 Project Status: ON ICE
-This project served as a great learning experience for Spring Boot + React development. 
-Moving on to explore other technologies and project ideas.
+## 🎯 Project Status: PAUSED
+Taking a break from this project to explore other ideas and technologies. 
+Will return to continue development later.
 
 ## ✅ What Was Accomplished
 - Full-stack app with Spring Boot 3.5.5 + React 19

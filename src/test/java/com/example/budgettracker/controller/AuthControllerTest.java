@@ -1,5 +1,8 @@
 package com.example.budgettracker.controller;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import com.example.budgettracker.config.TestSecurityConfig;
 import com.example.budgettracker.service.AppUserService;
 import org.junit.jupiter.api.Test;
@@ -12,40 +15,34 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 @WebMvcTest(AuthController.class)
 @Import(TestSecurityConfig.class)
-@TestPropertySource(properties = {
-    "GOOGLE_CLIENT_ID=test-client-id", 
-    "GOOGLE_CLIENT_SECRET=test-client-secret"
-})
+@TestPropertySource(
+    properties = {"GOOGLE_CLIENT_ID=test-client-id", "GOOGLE_CLIENT_SECRET=test-client-secret"})
 class AuthControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+  @Autowired private MockMvc mockMvc;
 
-    @MockBean
-    private ClientRegistrationRepository clientRegistrationRepository;
-    
-    @MockBean
-    private AppUserService appUserService;
+  @MockBean private ClientRegistrationRepository clientRegistrationRepository;
 
-    @Test
-    @WithMockUser(username = "test@example.com")
-    void testAuthStatusWhenAuthenticated() throws Exception {
-        mockMvc.perform(get("/api/auth/status"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.authenticated").value(true))
-                .andExpect(jsonPath("$.username").value("test@example.com"));
-    }
+  @MockBean private AppUserService appUserService;
 
-    @Test
-    void testAuthStatusWhenNotAuthenticated() throws Exception {
-        mockMvc.perform(get("/api/auth/status"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.authenticated").value(false))
-                .andExpect(jsonPath("$.username").doesNotExist());
-    }
+  @Test
+  @WithMockUser(username = "test@example.com")
+  void testAuthStatusWhenAuthenticated() throws Exception {
+    mockMvc
+        .perform(get("/api/auth/status"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.authenticated").value(true))
+        .andExpect(jsonPath("$.username").value("test@example.com"));
+  }
+
+  @Test
+  void testAuthStatusWhenNotAuthenticated() throws Exception {
+    mockMvc
+        .perform(get("/api/auth/status"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.authenticated").value(false))
+        .andExpect(jsonPath("$.username").doesNotExist());
+  }
 }

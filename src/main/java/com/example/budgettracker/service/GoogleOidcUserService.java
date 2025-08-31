@@ -10,23 +10,22 @@ import org.springframework.stereotype.Service;
 @Service
 public class GoogleOidcUserService implements OAuth2UserService<OidcUserRequest, OidcUser> {
 
-    private final AppUserService appUserService;
-    private final OidcUserService delegate = new OidcUserService();
+  private final AppUserService appUserService;
+  private final OidcUserService delegate = new OidcUserService();
 
-    public GoogleOidcUserService(AppUserService appUserService) {
-        this.appUserService = appUserService;
+  public GoogleOidcUserService(AppUserService appUserService) {
+    this.appUserService = appUserService;
+  }
+
+  @Override
+  public OidcUser loadUser(OidcUserRequest req) {
+    OidcUser googleUser = delegate.loadUser(req);
+
+    try {
+      appUserService.processUserLogin(googleUser);
+    } catch (Exception ex) {
+      throw new OAuth2AuthenticationException("Failed to save or update user in the database");
     }
-
-
-    @Override
-    public OidcUser loadUser(OidcUserRequest req) {
-        OidcUser googleUser = delegate.loadUser(req);
-
-        try {
-            appUserService.processUserLogin(googleUser);
-        } catch (Exception ex) {
-            throw new OAuth2AuthenticationException("Failed to save or update user in the database");
-        }
-        return googleUser;
-    }
+    return googleUser;
+  }
 }

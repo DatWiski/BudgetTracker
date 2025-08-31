@@ -1,14 +1,12 @@
-
-
-import { useState } from 'react';
-import { formatCurrency } from '../utils/currency';
-import { Loading, ErrorDisplay } from '../components/ApiStatus';
-import type { Category, Income, IncomeRequest } from '../types';
-import { useIncomeData } from '../hooks/useIncomeData';
-import IncomeForm, { type IncomeFormValues } from '../components/income/IncomeForm';
-import IncomeList from '../components/income/IncomeList';
-import { useCreateIncome, useUpdateIncome, useDeleteIncome } from '../hooks/useIncome';
-import { Plus } from 'lucide-react';
+import { useState } from "react";
+import { formatCurrency } from "../utils/currency";
+import { Loading, ErrorDisplay } from "../components/ApiStatus";
+import type { Category, Income, IncomeRequest } from "../types";
+import { useIncomeData } from "../hooks/useIncomeData";
+import IncomeForm, { type IncomeFormValues } from "../components/income/IncomeForm";
+import IncomeList from "../components/income/IncomeList";
+import { useCreateIncome, useUpdateIncome, useDeleteIncome } from "../hooks/useIncome";
+import { Plus } from "lucide-react";
 
 interface IncomeFormData {
   name: string;
@@ -22,18 +20,19 @@ interface IncomeFormData {
 const IncomePage = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingIncome, setEditingIncome] = useState<Income | null>(null);
-  const [sortBy, setSortBy] = useState<'name' | 'amount' | 'incomeDate'>('incomeDate');
-  const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<"name" | "amount" | "incomeDate">("incomeDate");
+  const [filterCategory, setFilterCategory] = useState<string>("all");
   const [formData, setFormData] = useState<IncomeFormData>({
-    name: '',
-    amount: '',
-    incomeDate: new Date().toISOString().split('T')[0], // Today's date
-    period: 'ONE_TIME',
-    description: '',
-    categoryId: ''
+    name: "",
+    amount: "",
+    incomeDate: new Date().toISOString().split("T")[0], // Today's date
+    period: "ONE_TIME",
+    description: "",
+    categoryId: "",
   });
 
-  const { safeIncome, safeCategories, currency, totalMonthlyIncome, isLoading, error, refetchAll } = useIncomeData();
+  const { safeIncome, safeCategories, currency, totalMonthlyIncome, isLoading, error, refetchAll } =
+    useIncomeData();
 
   // Mutations
   const createMutation = useCreateIncome();
@@ -42,12 +41,12 @@ const IncomePage = () => {
 
   const resetForm = () => {
     setFormData({
-      name: '',
-      amount: '',
-      incomeDate: new Date().toISOString().split('T')[0],
-      period: 'ONE_TIME',
-      description: '',
-      categoryId: ''
+      name: "",
+      amount: "",
+      incomeDate: new Date().toISOString().split("T")[0],
+      period: "ONE_TIME",
+      description: "",
+      categoryId: "",
     });
     createMutation.reset();
     updateMutation.reset();
@@ -59,15 +58,15 @@ const IncomePage = () => {
       name: income.name,
       amount: income.amount.toString(),
       incomeDate: income.incomeDate,
-      period: income.period || 'ONE_TIME',
-      description: income.description || '',
-      categoryId: income.categoryId?.toString() || ''
+      period: income.period || "ONE_TIME",
+      description: income.description || "",
+      categoryId: income.categoryId?.toString() || "",
     });
     setShowForm(true);
   };
 
   const handleDelete = (id: number) => {
-    if (window.confirm('Are you sure you want to delete this income entry?')) {
+    if (window.confirm("Are you sure you want to delete this income entry?")) {
       deleteMutation.mutate(id);
     }
   };
@@ -75,18 +74,18 @@ const IncomePage = () => {
   // Filter and sort income
   const filteredAndSortedIncome = safeIncome
     .filter((income: Income) => {
-      if (filterCategory !== 'all' && income.categoryId !== parseInt(filterCategory)) {
+      if (filterCategory !== "all" && income.categoryId !== parseInt(filterCategory)) {
         return false;
       }
       return true;
     })
     .sort((a: Income, b: Income) => {
       switch (sortBy) {
-        case 'amount':
+        case "amount":
           return b.amount - a.amount;
-        case 'name':
+        case "name":
           return a.name.localeCompare(b.name);
-        case 'incomeDate':
+        case "incomeDate":
         default:
           return new Date(b.incomeDate).getTime() - new Date(a.incomeDate).getTime();
       }
@@ -95,10 +94,7 @@ const IncomePage = () => {
   if (isLoading) {
     return (
       <div className="p-8 text-white min-h-screen">
-        <Loading 
-          message={"Loading income data..."}
-          size="lg" 
-        />
+        <Loading message={"Loading income data..."} size="lg" />
       </div>
     );
   }
@@ -109,7 +105,7 @@ const IncomePage = () => {
         <h1 className="text-4xl font-extrabold bg-gradient-to-r from-green-500 to-blue-500 bg-clip-text text-transparent mb-8">
           Income
         </h1>
-        
+
         <ErrorDisplay error={error as Error} onRetry={refetchAll} title="Unable to load data" />
       </div>
     );
@@ -120,11 +116,10 @@ const IncomePage = () => {
       {/* Header */}
       <div className="flex-between mb-8">
         <div>
-          <h1 className="heading-2 text-gradient">
-            Income
-          </h1>
+          <h1 className="heading-2 text-gradient">Income</h1>
           <p className="text-muted">
-            Track your income sources and financial growth • {formatCurrency(totalMonthlyIncome, currency)}/month this month
+            Track your income sources and financial growth •{" "}
+            {formatCurrency(totalMonthlyIncome, currency)}/month this month
           </p>
         </div>
         <button
@@ -146,11 +141,11 @@ const IncomePage = () => {
           <div className="flex-wrap">
             <div className="flex items-center gap-2">
               <label className="form-label">Sort by:</label>
-              <select 
-                value={sortBy} 
-                onChange={(e) => setSortBy(e.target.value as 'name' | 'amount' | 'incomeDate')}
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as "name" | "amount" | "incomeDate")}
                 className="form-select"
-                style={{ width: '10rem' }}
+                style={{ width: "10rem" }}
               >
                 <option value="incomeDate">Date</option>
                 <option value="name">Name</option>
@@ -160,15 +155,17 @@ const IncomePage = () => {
 
             <div className="flex items-center gap-2">
               <label className="form-label">Category:</label>
-              <select 
-                value={filterCategory} 
+              <select
+                value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
                 className="form-select"
-                style={{ width: '12rem' }}
+                style={{ width: "12rem" }}
               >
                 <option value="all">All Categories</option>
                 {safeCategories.map((category: Category) => (
-                  <option key={category.id} value={category.id.toString()}>{category.name}</option>
+                  <option key={category.id} value={category.id.toString()}>
+                    {category.name}
+                  </option>
                 ))}
               </select>
             </div>
@@ -181,11 +178,11 @@ const IncomePage = () => {
         <div className="modal-overlay" onClick={() => setShowForm(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h2 className="modal-title">
-              {editingIncome ? 'Edit Income Entry' : 'Add New Income Entry'}
+              {editingIncome ? "Edit Income Entry" : "Add New Income Entry"}
             </h2>
-            
+
             <IncomeForm
-              mode={editingIncome ? 'edit' : 'create'}
+              mode={editingIncome ? "edit" : "create"}
               values={formData as IncomeFormValues}
               onChange={(v) => setFormData(v)}
               categories={safeCategories as Category[]}
@@ -196,20 +193,20 @@ const IncomePage = () => {
                 resetForm();
               }}
               onSubmit={(payload) => {
-                if ('id' in payload) {
+                if ("id" in payload) {
                   updateMutation.mutate(payload as { id: number } & IncomeRequest, {
                     onSuccess: () => {
                       setShowForm(false);
                       setEditingIncome(null);
                       resetForm();
-                    }
+                    },
                   });
                 } else {
                   createMutation.mutate(payload as IncomeRequest, {
                     onSuccess: () => {
                       setShowForm(false);
                       resetForm();
-                    }
+                    },
                   });
                 }
               }}

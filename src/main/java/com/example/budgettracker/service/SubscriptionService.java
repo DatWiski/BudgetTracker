@@ -8,19 +8,16 @@ import org.springframework.data.domain.Pageable;
 
 public interface SubscriptionService {
 
-    Subscription saveSubscriptionForUser(SubscriptionRequest subscriptionRequest, AppUser user);
+  Subscription saveSubscriptionForUser(SubscriptionRequest subscriptionRequest, AppUser user);
 
-    Subscription updateSubscriptionForUser(Long subscriptionId, SubscriptionRequest subscriptionRequest, AppUser user);
+  Subscription updateSubscriptionForUser(
+      Long subscriptionId, SubscriptionRequest subscriptionRequest, AppUser user);
 
-    void deleteSubscriptionForUser(Long subscriptionId, AppUser user);
+  void deleteSubscriptionForUser(Long subscriptionId, AppUser user);
 
-    /**
-     * Returns all subscriptions that belong to the given user.
-     */
-    java.util.List<Subscription> getSubscriptionsForUser(AppUser user);
-    
-    /**
-     * Returns paginated subscriptions that belong to the given user.
-     */
-    Page<Subscription> getSubscriptionsForUser(AppUser user, Pageable pageable);
+  /** Returns all subscriptions that belong to the given user. */
+  java.util.List<Subscription> getSubscriptionsForUser(AppUser user);
+
+  /** Returns paginated subscriptions that belong to the given user. */
+  Page<Subscription> getSubscriptionsForUser(AppUser user, Pageable pageable);
 }

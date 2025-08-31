@@ -1,7 +1,7 @@
 package com.example.budgettracker.model;
 
 public enum CategoryType {
-    SUBSCRIPTION,
-    INCOME,
-    BILL
+  SUBSCRIPTION,
+  INCOME,
+  BILL
 }

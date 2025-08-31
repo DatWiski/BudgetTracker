@@ -1,7 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
-import { apiRequest } from '../utils/api';
-import { convertToMonthly } from '../utils/currency';
-import type { Bill, Category, PaginatedResponse, UserCurrencyResponse } from '../types';
+import { useQuery } from "@tanstack/react-query";
+import { apiRequest } from "../utils/api";
+import { convertToMonthly } from "../utils/currency";
+import type { Bill, Category, PaginatedResponse, UserCurrencyResponse } from "../types";
 
 export const useBillsData = () => {
   const {
@@ -10,8 +10,8 @@ export const useBillsData = () => {
     error: billsError,
     refetch: refetchBills,
   } = useQuery<PaginatedResponse<Bill>>({
-    queryKey: ['bills'],
-    queryFn: () => apiRequest<PaginatedResponse<Bill>>('/api/bills'),
+    queryKey: ["bills"],
+    queryFn: () => apiRequest<PaginatedResponse<Bill>>("/api/bills"),
   });
 
   const {
@@ -20,18 +20,16 @@ export const useBillsData = () => {
     error: categoriesError,
     refetch: refetchCategories,
   } = useQuery<Category[]>({
-    queryKey: ['bill-categories'],
-    queryFn: () => apiRequest<Category[]>('/api/categories?type=bill'),
+    queryKey: ["bill-categories"],
+    queryFn: () => apiRequest<Category[]>("/api/categories?type=bill"),
   });
 
   const { data: currencyResp } = useQuery<UserCurrencyResponse>({
-    queryKey: ['user-currency'],
-    queryFn: () => apiRequest<UserCurrencyResponse>('/api/user/currency'),
+    queryKey: ["user-currency"],
+    queryFn: () => apiRequest<UserCurrencyResponse>("/api/user/currency"),
   });
 
-  const safeBills = Array.isArray(billsPage?.content)
-    ? billsPage!.content
-    : [];
+  const safeBills = Array.isArray(billsPage?.content) ? billsPage!.content : [];
   const safeCategories = Array.isArray(categories) ? categories! : [];
 
   const totalMonthlySpend = safeBills
@@ -46,7 +44,7 @@ export const useBillsData = () => {
     refetchCategories();
   };
 
-  const currency = currencyResp?.currency ?? 'USD';
+  const currency = currencyResp?.currency ?? "USD";
 
   return {
     // raw

@@ -1,4 +1,4 @@
-export type Period = 'ONE_TIME' | 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY';
+export type Period = "ONE_TIME" | "DAILY" | "WEEKLY" | "MONTHLY" | "QUARTERLY" | "YEARLY";
 
 export interface Subscription {
   id: number;
@@ -94,7 +94,7 @@ export interface RecentActivity extends Subscription {
 }
 
 export interface UserCurrencyResponse {
-  currency: 'USD' | 'EUR';
+  currency: "USD" | "EUR";
 }
 
 export interface Income {

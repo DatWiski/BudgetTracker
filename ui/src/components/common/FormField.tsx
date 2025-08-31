@@ -1,4 +1,4 @@
-import React, { type ReactNode } from 'react';
+import React, { type ReactNode } from "react";
 
 // Base form field wrapper
 export interface FormFieldProps {
@@ -6,7 +6,7 @@ export interface FormFieldProps {
   error?: string;
   required?: boolean;
   children: ReactNode;
-  width?: 'sm' | 'md' | 'lg' | 'full';
+  width?: "sm" | "md" | "lg" | "full";
 }
 
 export const FormField: React.FC<FormFieldProps> = ({
@@ -14,13 +14,13 @@ export const FormField: React.FC<FormFieldProps> = ({
   error,
   required,
   children,
-  width = 'md'
+  width = "md",
 }) => {
   const widthClasses = {
-    sm: '175px',
-    md: '250px', 
-    lg: '350px',
-    full: '100%'
+    sm: "175px",
+    md: "250px",
+    lg: "350px",
+    full: "100%",
   };
 
   return (
@@ -42,7 +42,7 @@ export interface TextInputProps {
   onChange: (value: string) => void;
   placeholder?: string;
   required?: boolean;
-  type?: 'text' | 'email' | 'password';
+  type?: "text" | "email" | "password";
   maxLength?: number;
 }
 
@@ -52,8 +52,8 @@ export const TextInput: React.FC<TextInputProps> = ({
   onChange,
   placeholder,
   required,
-  type = 'text',
-  maxLength
+  type = "text",
+  maxLength,
 }) => {
   return (
     <input
@@ -66,16 +66,16 @@ export const TextInput: React.FC<TextInputProps> = ({
       maxLength={maxLength}
       className="w-full text-white text-base outline-none rounded-lg focus:border-violet-400 focus:ring-2 focus:ring-violet-400/20 transition-all duration-200"
       style={{
-        background: 'rgba(51, 65, 85, 0.8)',
-        border: '1px solid rgba(100, 116, 139, 0.4)',
-        padding: '12px 16px',
-        color: '#ffffff'
+        background: "rgba(51, 65, 85, 0.8)",
+        border: "1px solid rgba(100, 116, 139, 0.4)",
+        padding: "12px 16px",
+        color: "#ffffff",
       }}
     />
   );
 };
 
-// Number input component  
+// Number input component
 export interface NumberInputProps {
   id?: string;
   value: string;
@@ -93,9 +93,9 @@ export const NumberInput: React.FC<NumberInputProps> = ({
   onChange,
   placeholder,
   required,
-  step = '0.01',
+  step = "0.01",
   min,
-  max
+  max,
 }) => {
   return (
     <input
@@ -110,10 +110,10 @@ export const NumberInput: React.FC<NumberInputProps> = ({
       placeholder={placeholder}
       className="w-full text-white text-base outline-none rounded-lg focus:border-violet-400 focus:ring-2 focus:ring-violet-400/20 transition-all duration-200"
       style={{
-        background: 'rgba(51, 65, 85, 0.8)',
-        border: '1px solid rgba(100, 116, 139, 0.4)',
-        padding: '12px 16px',
-        color: '#ffffff'
+        background: "rgba(51, 65, 85, 0.8)",
+        border: "1px solid rgba(100, 116, 139, 0.4)",
+        padding: "12px 16px",
+        color: "#ffffff",
       }}
     />
   );
@@ -135,7 +135,7 @@ export const DateInput: React.FC<DateInputProps> = ({
   onChange,
   required,
   min,
-  max
+  max,
 }) => {
   return (
     <input
@@ -148,10 +148,10 @@ export const DateInput: React.FC<DateInputProps> = ({
       max={max}
       className="w-full text-white text-base outline-none rounded-lg focus:border-violet-400 focus:ring-2 focus:ring-violet-400/20 transition-all duration-200"
       style={{
-        background: 'rgba(51, 65, 85, 0.8)',
-        border: '1px solid rgba(100, 116, 139, 0.4)',
-        padding: '12px 16px',
-        color: '#ffffff'
+        background: "rgba(51, 65, 85, 0.8)",
+        border: "1px solid rgba(100, 116, 139, 0.4)",
+        padding: "12px 16px",
+        color: "#ffffff",
       }}
     />
   );
@@ -178,7 +178,7 @@ export const SelectInput: React.FC<SelectInputProps> = ({
   onChange,
   options,
   placeholder,
-  required
+  required,
 }) => {
   return (
     <select
@@ -188,10 +188,10 @@ export const SelectInput: React.FC<SelectInputProps> = ({
       required={required}
       className="w-full text-white text-base outline-none rounded-lg focus:border-violet-400 focus:ring-2 focus:ring-violet-400/20 transition-all duration-200 cursor-pointer"
       style={{
-        background: 'rgba(51, 65, 85, 0.8)',
-        border: '1px solid rgba(100, 116, 139, 0.4)',
-        padding: '12px 16px',
-        color: '#ffffff'
+        background: "rgba(51, 65, 85, 0.8)",
+        border: "1px solid rgba(100, 116, 139, 0.4)",
+        padding: "12px 16px",
+        color: "#ffffff",
       }}
     >
       {placeholder && <option value="">{placeholder}</option>}
@@ -222,7 +222,7 @@ export const TextareaInput: React.FC<TextareaInputProps> = ({
   placeholder,
   required,
   rows = 3,
-  maxLength
+  maxLength,
 }) => {
   return (
     <textarea
@@ -235,11 +235,11 @@ export const TextareaInput: React.FC<TextareaInputProps> = ({
       maxLength={maxLength}
       className="w-full text-white text-base outline-none rounded-lg focus:border-violet-400 focus:ring-2 focus:ring-violet-400/20 transition-all duration-200 resize-vertical"
       style={{
-        background: 'rgba(51, 65, 85, 0.8)',
-        border: '1px solid rgba(100, 116, 139, 0.4)',
-        padding: '12px 16px',
-        color: '#ffffff',
-        minHeight: '80px'
+        background: "rgba(51, 65, 85, 0.8)",
+        border: "1px solid rgba(100, 116, 139, 0.4)",
+        padding: "12px 16px",
+        color: "#ffffff",
+        minHeight: "80px",
       }}
     />
   );
@@ -253,12 +253,7 @@ export interface CheckboxProps {
   label: string;
 }
 
-export const Checkbox: React.FC<CheckboxProps> = ({
-  id,
-  checked,
-  onChange,
-  label
-}) => {
+export const Checkbox: React.FC<CheckboxProps> = ({ id, checked, onChange, label }) => {
   return (
     <div className="flex items-center gap-3">
       <input
@@ -267,7 +262,7 @@ export const Checkbox: React.FC<CheckboxProps> = ({
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
         className="w-5 h-5 cursor-pointer rounded"
-        style={{ accentColor: 'var(--color-primary)' }}
+        style={{ accentColor: "var(--color-primary)" }}
       />
       <label htmlFor={id} className="text-white cursor-pointer text-base font-medium">
         {label}

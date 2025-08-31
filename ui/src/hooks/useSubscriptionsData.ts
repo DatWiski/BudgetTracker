@@ -1,7 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
-import { apiRequest } from '../utils/api';
-import { convertToMonthly } from '../utils/currency';
-import type { Category, PaginatedResponse, Subscription, UserCurrencyResponse } from '../types';
+import { useQuery } from "@tanstack/react-query";
+import { apiRequest } from "../utils/api";
+import { convertToMonthly } from "../utils/currency";
+import type { Category, PaginatedResponse, Subscription, UserCurrencyResponse } from "../types";
 
 export const useSubscriptionsData = () => {
   const {
@@ -10,8 +10,8 @@ export const useSubscriptionsData = () => {
     error: subscriptionsError,
     refetch: refetchSubscriptions,
   } = useQuery<PaginatedResponse<Subscription>>({
-    queryKey: ['subscriptions'],
-    queryFn: () => apiRequest<PaginatedResponse<Subscription>>('/api/subscriptions'),
+    queryKey: ["subscriptions"],
+    queryFn: () => apiRequest<PaginatedResponse<Subscription>>("/api/subscriptions"),
   });
 
   const {
@@ -20,13 +20,13 @@ export const useSubscriptionsData = () => {
     error: categoriesError,
     refetch: refetchCategories,
   } = useQuery<Category[]>({
-    queryKey: ['categories'],
-    queryFn: () => apiRequest<Category[]>('/api/categories'),
+    queryKey: ["categories"],
+    queryFn: () => apiRequest<Category[]>("/api/categories"),
   });
 
   const { data: currencyResp } = useQuery<UserCurrencyResponse>({
-    queryKey: ['user-currency'],
-    queryFn: () => apiRequest<UserCurrencyResponse>('/api/user/currency'),
+    queryKey: ["user-currency"],
+    queryFn: () => apiRequest<UserCurrencyResponse>("/api/user/currency"),
   });
 
   const safeSubscriptions = Array.isArray(subscriptionsPage?.content)
@@ -46,7 +46,7 @@ export const useSubscriptionsData = () => {
     refetchCategories();
   };
 
-  const currency = currencyResp?.currency ?? 'USD';
+  const currency = currencyResp?.currency ?? "USD";
 
   return {
     // raw
@@ -66,5 +66,3 @@ export const useSubscriptionsData = () => {
     refetchCategories,
   };
 };
-
-

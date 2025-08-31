@@ -10,12 +10,14 @@ export const roundToCurrency = (amount: number): number => {
 /**
  * Formats a number as currency with proper rounding
  */
-export const formatCurrency = (amount: number, currencyCode: 'USD' | 'EUR' = 'USD'): string => {
+export const formatCurrency = (amount: number, currencyCode: "USD" | "EUR" = "USD"): string => {
   try {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency: currencyCode }).format(roundToCurrency(amount));
+    return new Intl.NumberFormat(undefined, { style: "currency", currency: currencyCode }).format(
+      roundToCurrency(amount),
+    );
   } catch {
     // Fallback
-    const symbol = currencyCode === 'EUR' ? '€' : '$';
+    const symbol = currencyCode === "EUR" ? "€" : "$";
     return `${symbol}${roundToCurrency(amount).toFixed(2)}`;
   }
 };
@@ -23,25 +25,22 @@ export const formatCurrency = (amount: number, currencyCode: 'USD' | 'EUR' = 'US
 /**
  * Converts subscription price to monthly amount based on billing period
  */
-import type { Period } from '../types';
+import type { Period } from "../types";
 
-export const convertToMonthly = (
-  price: number,
-  period: Period
-): number => {
+export const convertToMonthly = (price: number, period: Period): number => {
   switch (period) {
-    case 'DAILY':
+    case "DAILY":
       // Approximate monthly from daily: 365 days / 12 months
       return roundToCurrency(price * (365 / 12));
-    case 'QUARTERLY':
+    case "QUARTERLY":
       return roundToCurrency(price / 3);
-    case 'YEARLY':
+    case "YEARLY":
       return roundToCurrency(price / 12);
-    case 'WEEKLY':
+    case "WEEKLY":
       return roundToCurrency(price * (52 / 12)); // More precise than 4.33
-    case 'MONTHLY':
+    case "MONTHLY":
       return price;
-    case 'ONE_TIME':
+    case "ONE_TIME":
     default:
       return 0; // One-time payments don't contribute to monthly recurring
   }

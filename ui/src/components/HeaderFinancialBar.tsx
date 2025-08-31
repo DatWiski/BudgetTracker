@@ -1,5 +1,5 @@
-import { formatCurrency } from '../utils/currency';
-import type { DashboardOverview } from '../types';
+import { formatCurrency } from "../utils/currency";
+import type { DashboardOverview } from "../types";
 
 interface HeaderFinancialBarProps {
   data: DashboardOverview;
@@ -19,25 +19,34 @@ const HeaderFinancialBar = ({ data }: HeaderFinancialBarProps) => {
             <h3 className="text-base font-semibold">Financial Overview</h3>
             <div className="flex items-center gap-4 text-xs">
               <div className="flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--color-success)' }}></div>
+                <div
+                  className="w-2 h-2 rounded-full"
+                  style={{ backgroundColor: "var(--color-success)" }}
+                ></div>
                 <span>Income</span>
               </div>
               <div className="flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--color-error)' }}></div>
+                <div
+                  className="w-2 h-2 rounded-full"
+                  style={{ backgroundColor: "var(--color-error)" }}
+                ></div>
                 <span>Expenses</span>
               </div>
             </div>
           </div>
-          
+
           {/* Horizontal Bars */}
           <div className="space-y-1">
             {/* Income Bar */}
-            <div className="relative h-4 rounded overflow-hidden" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
-              <div 
+            <div
+              className="relative h-4 rounded overflow-hidden"
+              style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
+            >
+              <div
                 className="h-full rounded flex items-center justify-end pr-2 transition-all duration-500 ease-out"
-                style={{ 
+                style={{
                   width: `${incomeWidth}%`,
-                  backgroundColor: 'var(--color-success)'
+                  backgroundColor: "var(--color-success)",
                 }}
               >
                 <span className="text-white font-bold text-xs">
@@ -47,12 +56,15 @@ const HeaderFinancialBar = ({ data }: HeaderFinancialBarProps) => {
             </div>
 
             {/* Expenses Bar */}
-            <div className="relative h-4 rounded overflow-hidden" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
-              <div 
+            <div
+              className="relative h-4 rounded overflow-hidden"
+              style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
+            >
+              <div
                 className="h-full rounded flex items-center justify-end pr-2 transition-all duration-500 ease-out"
-                style={{ 
+                style={{
                   width: `${expenseWidth}%`,
-                  backgroundColor: 'var(--color-error)'
+                  backgroundColor: "var(--color-error)",
                 }}
               >
                 <span className="text-white font-bold text-xs">
@@ -66,12 +78,12 @@ const HeaderFinancialBar = ({ data }: HeaderFinancialBarProps) => {
         {/* Right: Available Money */}
         <div className="text-right">
           <div className="text-xs text-muted mb-1">Available</div>
-          <div className={`text-lg font-bold ${data.availableMoney >= 0 ? 'text-success' : 'text-error'}`}>
+          <div
+            className={`text-lg font-bold ${data.availableMoney >= 0 ? "text-success" : "text-error"}`}
+          >
             {formatCurrency(data.availableMoney)}
           </div>
-          <div className="text-xs text-muted">
-            {data.savingsRate.toFixed(1)}% saved
-          </div>
+          <div className="text-xs text-muted">{data.savingsRate.toFixed(1)}% saved</div>
         </div>
       </div>
     </div>
