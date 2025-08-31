@@ -72,7 +72,25 @@ export const apiRequest = async <T>(url: string, options: RequestInit = {}): Pro
           });
 
           if (retryResponse.ok) {
-            return retryResponse.status === 204 ? (undefined as T) : retryResponse.json();
+            if (retryResponse.status === 204) {
+              return undefined as T;
+            }
+            
+            const retryJsonData = await retryResponse.json();
+            
+            // Check if retry response is wrapped in ApiResponse envelope
+            if (retryJsonData && typeof retryJsonData === 'object' && 
+                'success' in retryJsonData && 'data' in retryJsonData && 'timestamp' in retryJsonData) {
+              // Handle envelope format
+              if (retryJsonData.success) {
+                return retryJsonData.data;
+              } else if (retryJsonData.error) {
+                throw new ApiError(retryResponse.status, retryResponse.statusText, retryJsonData.error.message || 'API Error');
+              }
+            }
+            
+            // Return original JSON for legacy responses
+            return retryJsonData;
           }
         }
 
@@ -109,7 +127,21 @@ export const apiRequest = async <T>(url: string, options: RequestInit = {}): Pro
       throw new ApiError(response.status, response.statusText, errorMessage);
     }
 
-    return response.json();
+    const jsonData = await response.json();
+    
+    // Check if response is wrapped in ApiResponse envelope
+    if (jsonData && typeof jsonData === 'object' && 
+        'success' in jsonData && 'data' in jsonData && 'timestamp' in jsonData) {
+      // Handle envelope format
+      if (jsonData.success) {
+        return jsonData.data;
+      } else if (jsonData.error) {
+        throw new ApiError(response.status, response.statusText, jsonData.error.message || 'API Error');
+      }
+    }
+    
+    // Return original JSON for legacy responses
+    return jsonData;
   } catch (error) {
     if (error instanceof ApiError) {
       throw error;

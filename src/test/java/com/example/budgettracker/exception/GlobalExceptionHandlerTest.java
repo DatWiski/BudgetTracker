@@ -2,7 +2,7 @@ package com.example.budgettracker.exception;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.example.budgettracker.dto.ErrorResponse;
+import com.example.budgettracker.api.ApiResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -22,15 +22,17 @@ class GlobalExceptionHandlerTest {
   void testHandleSubscriptionNotFound() {
     SubscriptionNotFoundException exception = new SubscriptionNotFoundException(123L);
 
-    ResponseEntity<ErrorResponse> response =
+    ResponseEntity<ApiResponse<Void>> response =
         globalExceptionHandler.handleSubscriptionNotFound(exception);
 
     assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-    ErrorResponse body = response.getBody();
+    ApiResponse<Void> body = response.getBody();
     assertNotNull(body);
-    assertEquals(404, body.getStatus());
-    assertEquals("Subscription not found", body.getError());
-    assertTrue(body.getMessage().contains("123"));
+    assertFalse(body.success());
+    assertNull(body.data());
+    assertNotNull(body.error());
+    assertEquals("NOT_FOUND", body.error().code());
+    assertTrue(body.error().message().contains("123"));
   }
 
   @Test
@@ -38,44 +40,51 @@ class GlobalExceptionHandlerTest {
     UnauthorizedAccessException exception =
         new UnauthorizedAccessException("Subscription 123", 456L);
 
-    ResponseEntity<ErrorResponse> response =
+    ResponseEntity<ApiResponse<Void>> response =
         globalExceptionHandler.handleUnauthorizedAccess(exception);
 
     assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
-    ErrorResponse body = response.getBody();
+    ApiResponse<Void> body = response.getBody();
     assertNotNull(body);
-    assertEquals(403, body.getStatus());
-    assertEquals("Access denied", body.getError());
-    assertTrue(body.getMessage().contains("Subscription 123"));
-    assertTrue(body.getMessage().contains("456"));
+    assertFalse(body.success());
+    assertNull(body.data());
+    assertNotNull(body.error());
+    assertEquals("FORBIDDEN", body.error().code());
+    assertTrue(body.error().message().contains("Subscription 123"));
+    assertTrue(body.error().message().contains("456"));
   }
 
   @Test
   void testHandleAccessDenied() {
     AccessDeniedException exception = new AccessDeniedException("Access denied");
 
-    ResponseEntity<ErrorResponse> response = globalExceptionHandler.handleAccessDenied(exception);
+    ResponseEntity<ApiResponse<Void>> response =
+        globalExceptionHandler.handleAccessDenied(exception);
 
     assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
-    ErrorResponse body = response.getBody();
+    ApiResponse<Void> body = response.getBody();
     assertNotNull(body);
-    assertEquals(403, body.getStatus());
-    assertEquals("Access denied", body.getError());
-    assertEquals("You don't have permission to access this resource", body.getMessage());
+    assertFalse(body.success());
+    assertNull(body.data());
+    assertNotNull(body.error());
+    assertEquals("FORBIDDEN", body.error().code());
+    assertEquals("You don't have permission to access this resource", body.error().message());
   }
 
   @Test
   void testHandleGenericException() {
     RuntimeException exception = new RuntimeException("Something went wrong");
 
-    ResponseEntity<ErrorResponse> response =
+    ResponseEntity<ApiResponse<Void>> response =
         globalExceptionHandler.handleGenericException(exception);
 
     assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-    ErrorResponse body = response.getBody();
+    ApiResponse<Void> body = response.getBody();
     assertNotNull(body);
-    assertEquals(500, body.getStatus());
-    assertEquals("Internal server error", body.getError());
-    assertEquals("An unexpected error occurred. Please try again later.", body.getMessage());
+    assertFalse(body.success());
+    assertNull(body.data());
+    assertNotNull(body.error());
+    assertEquals("INTERNAL_ERROR", body.error().code());
+    assertEquals("An unexpected error occurred. Please try again later.", body.error().message());
   }
 }

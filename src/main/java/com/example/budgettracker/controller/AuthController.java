@@ -45,7 +45,7 @@ public class AuthController {
   private static final String REFRESH_TOKEN_COOKIE = "refresh_token";
   private static final int REFRESH_TOKEN_COOKIE_MAX_AGE = 30 * 24 * 60 * 60; // 30 days in seconds
 
-  @GetMapping("/status")
+  @GetMapping({"/status", "/v0/status"})
   public ResponseEntity<Map<String, Object>> getAuthStatus() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     Map<String, Object> response = new HashMap<>();

@@ -24,18 +24,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/subscriptions")
 @RequiredArgsConstructor
 @Tag(name = "Subscriptions", description = "Subscription management operations")
 public class SubscriptionController {
   private final SubscriptionService subscriptionService;
   private final PeriodCalculationService periodCalculationService;
 
-  @PostMapping
+  @PostMapping({"/api/subscriptions", "/api/v0/subscriptions"})
   @Operation(
       summary = "Create a new subscription",
       description = "Creates a new subscription for the authenticated user")
@@ -96,7 +94,7 @@ public class SubscriptionController {
     return ResponseEntity.noContent().build();
   }
 
-  @GetMapping
+  @GetMapping({"/api/subscriptions", "/api/v0/subscriptions"})
   @Operation(
       summary = "List subscriptions",
       description = "Retrieves a paginated list of subscriptions for the authenticated user")

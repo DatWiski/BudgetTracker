@@ -13,19 +13,17 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/categories")
 @RequiredArgsConstructor
 @Tag(name = "Categories", description = "Category management operations")
 public class CategoryController {
 
   private final CategoryService categoryService;
 
-  @GetMapping
+  @GetMapping({"/api/categories", "/api/v0/categories"})
   @Operation(
       summary = "Get categories",
       description = "Retrieves categories for the authenticated user, optionally filtered by type")
