@@ -23,7 +23,7 @@ public class CategoryController {
 
   private final CategoryService categoryService;
 
-  @GetMapping({"/api/categories", "/api/v0/categories"})
+  @GetMapping("/api/categories")
   @Operation(
       summary = "Get categories",
       description = "Retrieves categories for the authenticated user, optionally filtered by type")

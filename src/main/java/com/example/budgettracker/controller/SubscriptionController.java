@@ -33,7 +33,7 @@ public class SubscriptionController {
   private final SubscriptionService subscriptionService;
   private final PeriodCalculationService periodCalculationService;
 
-  @PostMapping({"/api/subscriptions", "/api/v0/subscriptions"})
+  @PostMapping("/api/subscriptions")
   @Operation(
       summary = "Create a new subscription",
       description = "Creates a new subscription for the authenticated user")
@@ -54,7 +54,7 @@ public class SubscriptionController {
         .body(SubscriptionResponse.fromEntity(saved, periodCalculationService));
   }
 
-  @PutMapping("/{id}")
+  @PutMapping("/api/subscriptions/{id}")
   @Operation(
       summary = "Update a subscription",
       description = "Updates an existing subscription for the authenticated user")
@@ -77,7 +77,7 @@ public class SubscriptionController {
     return ResponseEntity.ok(SubscriptionResponse.fromEntity(updated, periodCalculationService));
   }
 
-  @DeleteMapping("/{id}")
+  @DeleteMapping("/api/subscriptions/{id}")
   @Operation(
       summary = "Delete a subscription",
       description = "Deletes a subscription for the authenticated user")
@@ -94,7 +94,7 @@ public class SubscriptionController {
     return ResponseEntity.noContent().build();
   }
 
-  @GetMapping({"/api/subscriptions", "/api/v0/subscriptions"})
+  @GetMapping("/api/subscriptions")
   @Operation(
       summary = "List subscriptions",
       description = "Retrieves a paginated list of subscriptions for the authenticated user")
