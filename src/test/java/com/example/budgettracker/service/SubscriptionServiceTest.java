@@ -1,13 +1,14 @@
 package com.example.budgettracker.service;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.example.budgettracker.TestDataBuilder;
 import com.example.budgettracker.dto.SubscriptionRequest;
 import com.example.budgettracker.exception.SubscriptionNotFoundException;
-import com.example.budgettracker.exception.UnauthorizedAccessException;
 import com.example.budgettracker.model.AppUser;
 import com.example.budgettracker.model.Category;
 import com.example.budgettracker.model.Period;
@@ -15,254 +16,232 @@ import com.example.budgettracker.model.Subscription;
 import com.example.budgettracker.repository.SubscriptionRepository;
 import com.example.budgettracker.util.SecurityUtils;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("SubscriptionService Tests")
 class SubscriptionServiceTest {
 
   @Mock private SubscriptionRepository subscriptionRepository;
-
   @Mock private CategoryService categoryService;
-
   @Mock private SecurityUtils securityUtils;
-
-  @Mock private PeriodCalculationService periodCalculationService;
 
   @InjectMocks private SubscriptionServiceImpl subscriptionService;
 
   private AppUser testUser;
   private Category testCategory;
-  private SubscriptionRequest validRequest;
+  private Subscription testSubscription;
+  private SubscriptionRequest testRequest;
 
   @BeforeEach
   void setUp() {
     testUser = TestDataBuilder.createTestUser();
-    testCategory = TestDataBuilder.createTestCategory(1L, "Entertainment", testUser);
-    validRequest = TestDataBuilder.createValidSubscriptionRequest();
+    testCategory = TestDataBuilder.createTestCategory();
+    testSubscription = TestDataBuilder.createTestSubscription();
+    testRequest = TestDataBuilder.createValidSubscriptionRequest();
   }
 
-  @Test
-  void saveSubscriptionForUser_WithExistingCategory_ShouldSaveSuccessfully() {
-    // Arrange
-    when(categoryService.findByIdAndUser(1L, testUser)).thenReturn(testCategory);
+  @Nested
+  @DisplayName("Save Subscription Tests")
+  class SaveSubscriptionTests {
 
-    Subscription savedSubscription =
-        TestDataBuilder.createTestSubscription(
-            1L, "Netflix", new BigDecimal("15.99"), Period.MONTHLY, testUser, testCategory);
+    @Test
+    @DisplayName("Should save subscription with specified category")
+    void shouldSaveSubscriptionWithSpecifiedCategory() {
+      when(categoryService.findByIdAndUser(testRequest.getCategoryId(), testUser))
+          .thenReturn(testCategory);
+      when(subscriptionRepository.save(any(Subscription.class)))
+          .thenAnswer(invocation -> invocation.getArgument(0));
 
-    when(subscriptionRepository.save(any(Subscription.class))).thenReturn(savedSubscription);
+      Subscription result = subscriptionService.saveSubscriptionForUser(testRequest, testUser);
 
-    // Act
-    Subscription result = subscriptionService.saveSubscriptionForUser(validRequest, testUser);
+      assertThat(result).isNotNull();
+      assertThat(result.getName()).isEqualTo(testRequest.getName());
+      assertThat(result.getPrice()).isEqualTo(testRequest.getPrice());
+      assertThat(result.getPeriod()).isEqualTo(testRequest.getPeriod());
+      assertThat(result.getNextBillingDate()).isEqualTo(testRequest.getNextBillingDate());
+      assertThat(result.isActive()).isEqualTo(testRequest.isActive());
+      assertThat(result.getAppUser()).isEqualTo(testUser);
+      assertThat(result.getCategory()).isEqualTo(testCategory);
 
-    // Assert
-    assertNotNull(result);
-    assertEquals("Netflix", result.getName());
-    assertEquals(new BigDecimal("15.99"), result.getPrice());
-    assertEquals(Period.MONTHLY, result.getPeriod());
-    assertEquals(testUser, result.getAppUser());
-    assertEquals(testCategory, result.getCategory());
+      verify(categoryService).findByIdAndUser(testRequest.getCategoryId(), testUser);
+      verify(subscriptionRepository).save(any(Subscription.class));
+    }
 
-    verify(categoryService).findByIdAndUser(1L, testUser);
-    verify(subscriptionRepository).save(any(Subscription.class));
+    @Test
+    @DisplayName("Should save subscription with default category when no category specified")
+    void shouldSaveSubscriptionWithDefaultCategory() {
+      testRequest.setCategoryId(null);
+      Category defaultCategory = TestDataBuilder.createTestCategory(2L, "Subscriptions", testUser);
+
+      when(categoryService.findOrCreateCategory("Subscriptions", testUser))
+          .thenReturn(defaultCategory);
+      when(subscriptionRepository.save(any(Subscription.class)))
+          .thenAnswer(invocation -> invocation.getArgument(0));
+
+      Subscription result = subscriptionService.saveSubscriptionForUser(testRequest, testUser);
+
+      assertThat(result).isNotNull();
+      assertThat(result.getCategory()).isEqualTo(defaultCategory);
+      verify(categoryService).findOrCreateCategory("Subscriptions", testUser);
+      verify(subscriptionRepository).save(any(Subscription.class));
+    }
   }
 
-  @Test
-  void saveSubscriptionForUser_WithNewCategory_ShouldCreateCategoryAndSave() {
-    // Arrange
-    Category newCategory = new Category("Music", testUser);
-    newCategory.setId(2L);
+  @Nested
+  @DisplayName("Update Subscription Tests")
+  class UpdateSubscriptionTests {
 
-    when(categoryService.findByIdAndUser(2L, testUser)).thenReturn(newCategory);
+    @Test
+    @DisplayName("Should update subscription successfully")
+    void shouldUpdateSubscriptionSuccessfully() {
+      Long subscriptionId = 1L;
+      SubscriptionRequest updateRequest =
+          TestDataBuilder.createSubscriptionRequest(
+              "Disney+", new BigDecimal("8.99"), Period.MONTHLY, LocalDate.now().plusMonths(1), 1L);
 
-    validRequest.setCategoryId(2L);
+      when(subscriptionRepository.findById(subscriptionId))
+          .thenReturn(Optional.of(testSubscription));
+      when(categoryService.findByIdAndUser(updateRequest.getCategoryId(), testUser))
+          .thenReturn(testCategory);
+      when(subscriptionRepository.save(any(Subscription.class))).thenReturn(testSubscription);
 
-    Subscription savedSubscription = new Subscription();
-    savedSubscription.setId(1L);
-    savedSubscription.setName("Netflix");
-    savedSubscription.setCategory(newCategory);
+      Subscription result =
+          subscriptionService.updateSubscriptionForUser(subscriptionId, updateRequest, testUser);
 
-    when(subscriptionRepository.save(any(Subscription.class))).thenReturn(savedSubscription);
+      assertThat(result).isNotNull();
+      verify(securityUtils)
+          .validateResourceOwnership(
+              testSubscription.getAppUser(), testUser, "subscription", subscriptionId);
+      verify(subscriptionRepository).save(testSubscription);
+    }
 
-    // Act
-    Subscription result = subscriptionService.saveSubscriptionForUser(validRequest, testUser);
+    @Test
+    @DisplayName("Should update subscription with default category when no category specified")
+    void shouldUpdateSubscriptionWithDefaultCategory() {
+      Long subscriptionId = 1L;
+      testRequest.setCategoryId(null);
+      Category defaultCategory = TestDataBuilder.createTestCategory(2L, "Subscriptions", testUser);
 
-    // Assert
-    assertNotNull(result);
-    assertEquals(newCategory, result.getCategory());
+      when(subscriptionRepository.findById(subscriptionId))
+          .thenReturn(Optional.of(testSubscription));
+      when(categoryService.findOrCreateCategory("Subscriptions", testUser))
+          .thenReturn(defaultCategory);
+      when(subscriptionRepository.save(any(Subscription.class))).thenReturn(testSubscription);
 
-    verify(categoryService).findByIdAndUser(2L, testUser);
-    verify(subscriptionRepository).save(any(Subscription.class));
+      Subscription result =
+          subscriptionService.updateSubscriptionForUser(subscriptionId, testRequest, testUser);
+
+      assertThat(result).isNotNull();
+      verify(categoryService).findOrCreateCategory("Subscriptions", testUser);
+    }
+
+    @Test
+    @DisplayName("Should throw exception when subscription not found")
+    void shouldThrowExceptionWhenSubscriptionNotFound() {
+      Long subscriptionId = 999L;
+
+      when(subscriptionRepository.findById(subscriptionId)).thenReturn(Optional.empty());
+
+      assertThatThrownBy(
+              () ->
+                  subscriptionService.updateSubscriptionForUser(
+                      subscriptionId, testRequest, testUser))
+          .isInstanceOf(SubscriptionNotFoundException.class)
+          .hasMessage("Subscription not found with id: " + subscriptionId);
+    }
   }
 
-  @Test
-  void saveSubscriptionForUser_WithoutCategory_ShouldSaveWithDefaultCategory() {
-    // Arrange
-    validRequest.setCategoryId(null);
+  @Nested
+  @DisplayName("Delete Subscription Tests")
+  class DeleteSubscriptionTests {
 
-    Category defaultCategory = new Category("Subscriptions", testUser);
-    defaultCategory.setId(1L);
+    @Test
+    @DisplayName("Should delete subscription successfully")
+    void shouldDeleteSubscriptionSuccessfully() {
+      Long subscriptionId = 1L;
 
-    when(categoryService.findOrCreateCategory("Subscriptions", testUser))
-        .thenReturn(defaultCategory);
+      when(subscriptionRepository.findById(subscriptionId))
+          .thenReturn(Optional.of(testSubscription));
 
-    Subscription savedSubscription = new Subscription();
-    savedSubscription.setId(1L);
-    savedSubscription.setName("Netflix");
-    savedSubscription.setCategory(defaultCategory);
+      subscriptionService.deleteSubscriptionForUser(subscriptionId, testUser);
 
-    when(subscriptionRepository.save(any(Subscription.class))).thenReturn(savedSubscription);
+      verify(securityUtils)
+          .validateResourceOwnership(
+              testSubscription.getAppUser(), testUser, "subscription", subscriptionId);
+      verify(subscriptionRepository).delete(testSubscription);
+    }
 
-    // Act
-    Subscription result = subscriptionService.saveSubscriptionForUser(validRequest, testUser);
+    @Test
+    @DisplayName("Should throw exception when subscription not found for deletion")
+    void shouldThrowExceptionWhenSubscriptionNotFoundForDeletion() {
+      Long subscriptionId = 999L;
 
-    // Assert
-    assertNotNull(result);
-    assertNotNull(result.getCategory());
-    assertEquals("Subscriptions", result.getCategory().getName());
+      when(subscriptionRepository.findById(subscriptionId)).thenReturn(Optional.empty());
 
-    verify(categoryService).findOrCreateCategory("Subscriptions", testUser);
-    verify(subscriptionRepository).save(any(Subscription.class));
+      assertThatThrownBy(
+              () -> subscriptionService.deleteSubscriptionForUser(subscriptionId, testUser))
+          .isInstanceOf(SubscriptionNotFoundException.class)
+          .hasMessage("Subscription not found with id: " + subscriptionId);
+    }
   }
 
-  @Test
-  void updateSubscriptionForUser_WithValidData_ShouldUpdateSuccessfully() {
-    // Arrange
-    Subscription existingSubscription = new Subscription();
-    existingSubscription.setId(1L);
-    existingSubscription.setName("Old Name");
-    existingSubscription.setAppUser(testUser);
+  @Nested
+  @DisplayName("Get Subscriptions Tests")
+  class GetSubscriptionsTests {
 
-    when(subscriptionRepository.findById(1L)).thenReturn(Optional.of(existingSubscription));
+    @Test
+    @DisplayName("Should get all subscriptions for user")
+    void shouldGetAllSubscriptionsForUser() {
+      List<Subscription> subscriptions = List.of(testSubscription);
 
-    when(categoryService.findByIdAndUser(1L, testUser)).thenReturn(testCategory);
+      when(subscriptionRepository.findByAppUser(testUser)).thenReturn(subscriptions);
 
-    validRequest.setName("Updated Name");
-    validRequest.setCategoryId(1L);
+      List<Subscription> result = subscriptionService.getSubscriptionsForUser(testUser);
 
-    when(subscriptionRepository.save(any(Subscription.class))).thenReturn(existingSubscription);
+      assertThat(result).hasSize(1);
+      assertThat(result).contains(testSubscription);
+      verify(subscriptionRepository).findByAppUser(testUser);
+    }
 
-    // Act
-    Subscription result = subscriptionService.updateSubscriptionForUser(1L, validRequest, testUser);
+    @Test
+    @DisplayName("Should get paginated subscriptions for user")
+    void shouldGetPaginatedSubscriptionsForUser() {
+      Pageable pageable = PageRequest.of(0, 10);
+      Page<Subscription> subscriptionPage = new PageImpl<>(List.of(testSubscription));
 
-    // Assert
-    assertNotNull(result);
-    assertEquals("Updated Name", existingSubscription.getName());
-    assertEquals(new BigDecimal("15.99"), existingSubscription.getPrice());
+      when(subscriptionRepository.findByAppUser(testUser, pageable)).thenReturn(subscriptionPage);
 
-    verify(subscriptionRepository).findById(1L);
-    verify(subscriptionRepository).save(existingSubscription);
-  }
+      Page<Subscription> result = subscriptionService.getSubscriptionsForUser(testUser, pageable);
 
-  @Test
-  void updateSubscriptionForUser_WithNonExistentSubscription_ShouldThrowException() {
-    // Arrange
-    when(subscriptionRepository.findById(999L)).thenReturn(Optional.empty());
+      assertThat(result.getContent()).hasSize(1);
+      assertThat(result.getContent()).contains(testSubscription);
+      verify(subscriptionRepository).findByAppUser(testUser, pageable);
+    }
 
-    // Act & Assert
-    assertThrows(
-        SubscriptionNotFoundException.class,
-        () -> {
-          subscriptionService.updateSubscriptionForUser(999L, validRequest, testUser);
-        });
+    @Test
+    @DisplayName("Should return empty list when user has no subscriptions")
+    void shouldReturnEmptyListWhenUserHasNoSubscriptions() {
+      when(subscriptionRepository.findByAppUser(testUser)).thenReturn(List.of());
 
-    verify(subscriptionRepository).findById(999L);
-    verify(subscriptionRepository, never()).save(any(Subscription.class));
-  }
+      List<Subscription> result = subscriptionService.getSubscriptionsForUser(testUser);
 
-  @Test
-  void updateSubscriptionForUser_WithUnauthorizedUser_ShouldThrowException() {
-    // Arrange
-    AppUser otherUser =
-        TestDataBuilder.createTestUser(2L, "other-sub", "Other User", "other@example.com");
-
-    Subscription existingSubscription = new Subscription();
-    existingSubscription.setId(1L);
-    existingSubscription.setAppUser(otherUser);
-
-    when(subscriptionRepository.findById(1L)).thenReturn(Optional.of(existingSubscription));
-
-    doThrow(new UnauthorizedAccessException("subscription 1", testUser.getId()))
-        .when(securityUtils)
-        .validateResourceOwnership(otherUser, testUser, "subscription", 1L);
-
-    // Act & Assert
-    assertThrows(
-        UnauthorizedAccessException.class,
-        () -> {
-          subscriptionService.updateSubscriptionForUser(1L, validRequest, testUser);
-        });
-
-    verify(subscriptionRepository).findById(1L);
-    verify(subscriptionRepository, never()).save(any(Subscription.class));
-  }
-
-  @Test
-  void deleteSubscriptionForUser_WithValidData_ShouldDeleteSuccessfully() {
-    // Arrange
-    Subscription existingSubscription = new Subscription();
-    existingSubscription.setId(1L);
-    existingSubscription.setAppUser(testUser);
-
-    testUser.getSubscriptions().add(existingSubscription);
-
-    when(subscriptionRepository.findById(1L)).thenReturn(Optional.of(existingSubscription));
-
-    // Act
-    subscriptionService.deleteSubscriptionForUser(1L, testUser);
-
-    // Assert
-    verify(subscriptionRepository).findById(1L);
-    verify(subscriptionRepository).delete(existingSubscription);
-    assertFalse(testUser.getSubscriptions().contains(existingSubscription));
-  }
-
-  @Test
-  void deleteSubscriptionForUser_WithNonExistentSubscription_ShouldThrowException() {
-    // Arrange
-    when(subscriptionRepository.findById(999L)).thenReturn(Optional.empty());
-
-    // Act & Assert
-    assertThrows(
-        SubscriptionNotFoundException.class,
-        () -> {
-          subscriptionService.deleteSubscriptionForUser(999L, testUser);
-        });
-
-    verify(subscriptionRepository).findById(999L);
-    verify(subscriptionRepository, never()).delete(any(Subscription.class));
-  }
-
-  @Test
-  void deleteSubscriptionForUser_WithUnauthorizedUser_ShouldThrowException() {
-    // Arrange
-    AppUser otherUser =
-        TestDataBuilder.createTestUser(2L, "other-sub", "Other User", "other@example.com");
-
-    Subscription existingSubscription = new Subscription();
-    existingSubscription.setId(1L);
-    existingSubscription.setAppUser(otherUser);
-
-    when(subscriptionRepository.findById(1L)).thenReturn(Optional.of(existingSubscription));
-
-    doThrow(new UnauthorizedAccessException("subscription 1", testUser.getId()))
-        .when(securityUtils)
-        .validateResourceOwnership(otherUser, testUser, "subscription", 1L);
-
-    // Act & Assert
-    assertThrows(
-        UnauthorizedAccessException.class,
-        () -> {
-          subscriptionService.deleteSubscriptionForUser(1L, testUser);
-        });
-
-    verify(subscriptionRepository).findById(1L);
-    verify(subscriptionRepository, never()).delete(any(Subscription.class));
+      assertThat(result).isEmpty();
+      verify(subscriptionRepository).findByAppUser(testUser);
+    }
   }
 }
