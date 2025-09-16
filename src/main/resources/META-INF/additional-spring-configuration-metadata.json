@@ -1,0 +1,34 @@
+{
+  "properties": [
+    {
+      "name": "app.jwt.access-token.expiration-minutes",
+      "type": "java.lang.Integer",
+      "description": "JWT access token expiration time in minutes"
+    },
+    {
+      "name": "app.refresh-token.expiration-days",
+      "type": "java.lang.Integer",
+      "description": "Refresh token expiration time in days"
+    },
+    {
+      "name": "app.refresh-token.max-per-user",
+      "type": "java.lang.Integer",
+      "description": "Maximum number of refresh tokens per user"
+    },
+    {
+      "name": "app.security.cookie.secure",
+      "type": "java.lang.Boolean",
+      "description": "Whether cookies should be marked as secure"
+    },
+    {
+      "name": "app.security.cookie.same-site",
+      "type": "java.lang.String",
+      "description": "SameSite attribute for cookies (Strict, Lax, None)"
+    },
+    {
+      "name": "app.cors.allowed-origins",
+      "type": "java.lang.String",
+      "description": "Comma-separated list of allowed CORS origins"
+    }
+  ]
+}
