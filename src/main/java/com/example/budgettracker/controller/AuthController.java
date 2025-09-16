@@ -1,6 +1,10 @@
 package com.example.budgettracker.controller;
 
+import com.example.budgettracker.dto.AuthStatusResponse;
+import com.example.budgettracker.dto.ErrorResponse;
+import com.example.budgettracker.dto.LogoutResponse;
 import com.example.budgettracker.dto.TokenPair;
+import com.example.budgettracker.dto.TokenRefreshResponse;
 import com.example.budgettracker.model.AppUser;
 import com.example.budgettracker.service.AppUserService;
 import com.example.budgettracker.service.JwtService;
@@ -8,8 +12,7 @@ import com.example.budgettracker.service.RefreshTokenService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.HashMap;
-import java.util.Map;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,22 +49,21 @@ public class AuthController {
   private static final int REFRESH_TOKEN_COOKIE_MAX_AGE = 30 * 24 * 60 * 60; // 30 days in seconds
 
   @GetMapping({"/status", "/v0/status"})
-  public ResponseEntity<Map<String, Object>> getAuthStatus() {
+  public ResponseEntity<AuthStatusResponse> getAuthStatus() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    Map<String, Object> response = new HashMap<>();
 
+    AuthStatusResponse response;
     if (authentication != null
         && authentication.isAuthenticated()
         && !authentication.getName().equals(ANONYMOUS_USER)) {
-      response.put("authenticated", true);
-      response.put("username", authentication.getName());
+      response = new AuthStatusResponse(true, authentication.getName());
     } else {
-      response.put("authenticated", false);
+      response = new AuthStatusResponse(false, null);
     }
 
     // Only add debug info in dev profile
     if ("dev".equalsIgnoreCase(activeProfile)) {
-      response.put("env", "dev");
+      response.setEnv("dev");
     }
 
     return ResponseEntity.ok(response);
@@ -74,7 +76,10 @@ public class AuthController {
       HttpServletResponse response) {
 
     if (refreshToken == null || refreshToken.trim().isEmpty()) {
-      return ResponseEntity.badRequest().body(Map.of("error", "No refresh token provided"));
+      return ResponseEntity.badRequest()
+          .body(
+              new ErrorResponse(
+                  400, "Bad Request", "No refresh token provided", LocalDateTime.now()));
     }
 
     try {
@@ -86,7 +91,10 @@ public class AuthController {
 
       if (tokenPairOpt.isEmpty()) {
         clearRefreshTokenCookie(response);
-        return ResponseEntity.status(401).body(Map.of("error", "Invalid or expired refresh token"));
+        return ResponseEntity.status(401)
+            .body(
+                new ErrorResponse(
+                    401, "Unauthorized", "Invalid or expired refresh token", LocalDateTime.now()));
       }
 
       TokenPair tokenPair = tokenPairOpt.get();
@@ -101,24 +109,23 @@ public class AuthController {
               .findByGoogleSub(googleSub)
               .orElseThrow(() -> new RuntimeException("User not found"));
 
+      TokenRefreshResponse.UserInfo userInfo =
+          new TokenRefreshResponse.UserInfo(user.getId(), user.getEmail(), user.getFullName());
+
       return ResponseEntity.ok(
-          Map.of(
-              "accessToken", tokenPair.getAccessToken(),
-              "expiresIn", tokenPair.getAccessTokenExpiresIn(),
-              "user",
-                  Map.of(
-                      "id", user.getId(),
-                      "email", user.getEmail(),
-                      "name", user.getFullName())));
+          new TokenRefreshResponse(
+              tokenPair.getAccessToken(), tokenPair.getAccessTokenExpiresIn(), userInfo));
 
     } catch (Exception e) {
       clearRefreshTokenCookie(response);
-      return ResponseEntity.status(401).body(Map.of("error", "Token refresh failed"));
+      return ResponseEntity.status(401)
+          .body(
+              new ErrorResponse(401, "Unauthorized", "Token refresh failed", LocalDateTime.now()));
     }
   }
 
   @PostMapping("/logout")
-  public ResponseEntity<?> logout(
+  public ResponseEntity<LogoutResponse> logout(
       @CookieValue(value = REFRESH_TOKEN_COOKIE, required = false) String refreshToken,
       HttpServletResponse response) {
 
@@ -128,7 +135,7 @@ public class AuthController {
 
     clearRefreshTokenCookie(response);
 
-    return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
+    return ResponseEntity.ok(new LogoutResponse("Logged out successfully"));
   }
 
   private void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {

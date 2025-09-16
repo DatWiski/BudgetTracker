@@ -1,6 +1,8 @@
 package com.example.budgettracker.exception;
 
-import com.example.budgettracker.api.ApiResponse;
+import com.example.budgettracker.dto.ErrorResponse;
+import com.example.budgettracker.dto.ValidationErrorResponse;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -14,50 +16,49 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
 
-@RestControllerAdvice
+@RestControllerAdvice(basePackages = "com.example.budgettracker.controller")
 public class GlobalExceptionHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
   @ExceptionHandler(SubscriptionNotFoundException.class)
-  public ResponseEntity<ApiResponse<Void>> handleSubscriptionNotFound(
+  public ResponseEntity<ErrorResponse> handleSubscriptionNotFound(
       SubscriptionNotFoundException ex) {
     LOGGER.warn("Subscription not found: {}", ex.getMessage());
     return ResponseEntity.status(HttpStatus.NOT_FOUND)
-        .body(ApiResponse.fail("NOT_FOUND", ex.getMessage()));
+        .body(new ErrorResponse(404, "Not Found", ex.getMessage(), LocalDateTime.now()));
   }
 
   @ExceptionHandler(BillNotFoundException.class)
-  public ResponseEntity<ApiResponse<Void>> handleBillNotFound(BillNotFoundException ex) {
+  public ResponseEntity<ErrorResponse> handleBillNotFound(BillNotFoundException ex) {
     LOGGER.warn("Bill not found: {}", ex.getMessage());
     return ResponseEntity.status(HttpStatus.NOT_FOUND)
-        .body(ApiResponse.fail("NOT_FOUND", ex.getMessage()));
+        .body(new ErrorResponse(404, "Not Found", ex.getMessage(), LocalDateTime.now()));
   }
 
   @ExceptionHandler(UnauthorizedAccessException.class)
-  public ResponseEntity<ApiResponse<Void>> handleUnauthorizedAccess(
-      UnauthorizedAccessException ex) {
+  public ResponseEntity<ErrorResponse> handleUnauthorizedAccess(UnauthorizedAccessException ex) {
     LOGGER.warn("Unauthorized access attempt: {}", ex.getMessage());
     return ResponseEntity.status(HttpStatus.FORBIDDEN)
-        .body(ApiResponse.fail("FORBIDDEN", ex.getMessage()));
+        .body(new ErrorResponse(403, "Forbidden", ex.getMessage(), LocalDateTime.now()));
   }
 
   @ExceptionHandler(CategoryNotFoundException.class)
-  public ResponseEntity<ApiResponse<Void>> handleCategoryNotFound(CategoryNotFoundException ex) {
+  public ResponseEntity<ErrorResponse> handleCategoryNotFound(CategoryNotFoundException ex) {
     LOGGER.warn("Category not found: {}", ex.getMessage());
     return ResponseEntity.status(HttpStatus.NOT_FOUND)
-        .body(ApiResponse.fail("NOT_FOUND", ex.getMessage()));
+        .body(new ErrorResponse(404, "Not Found", ex.getMessage(), LocalDateTime.now()));
   }
 
   @ExceptionHandler(CategoryLockedException.class)
-  public ResponseEntity<ApiResponse<Void>> handleCategoryLocked(CategoryLockedException ex) {
+  public ResponseEntity<ErrorResponse> handleCategoryLocked(CategoryLockedException ex) {
     LOGGER.warn("Category locked: {}", ex.getMessage());
     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-        .body(ApiResponse.fail("BAD_REQUEST", ex.getMessage()));
+        .body(new ErrorResponse(400, "Bad Request", ex.getMessage(), LocalDateTime.now()));
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<ApiResponse<Map<String, String>>> handleValidationErrors(
+  public ResponseEntity<ValidationErrorResponse> handleValidationErrors(
       MethodArgumentNotValidException ex) {
     LOGGER.warn("Validation failed: {}", ex.getMessage());
 
@@ -72,31 +73,43 @@ public class GlobalExceptionHandler {
             });
 
     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-        .body(ApiResponse.fail("BAD_REQUEST", "Validation failed"));
+        .body(new ValidationErrorResponse(400, "Validation failed", errors, LocalDateTime.now()));
   }
 
   @ExceptionHandler(ResponseStatusException.class)
-  public ResponseEntity<ApiResponse<Void>> handleResponseStatusException(
-      ResponseStatusException ex) {
+  public ResponseEntity<ErrorResponse> handleResponseStatusException(ResponseStatusException ex) {
     LOGGER.warn("Response status exception: {}", ex.getMessage());
-    String code = ex.getStatusCode().toString().replace(" ", "_").toUpperCase();
+    String error = ex.getStatusCode().toString();
     return ResponseEntity.status(ex.getStatusCode())
-        .body(ApiResponse.fail(code, ex.getReason() != null ? ex.getReason() : ex.getMessage()));
+        .body(
+            new ErrorResponse(
+                ex.getStatusCode().value(),
+                error,
+                ex.getReason() != null ? ex.getReason() : ex.getMessage(),
+                LocalDateTime.now()));
   }
 
   @ExceptionHandler(AccessDeniedException.class)
-  public ResponseEntity<ApiResponse<Void>> handleAccessDenied(AccessDeniedException ex) {
+  public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex) {
     LOGGER.warn("Access denied: {}", ex.getMessage());
     return ResponseEntity.status(HttpStatus.FORBIDDEN)
-        .body(ApiResponse.fail("FORBIDDEN", "You don't have permission to access this resource"));
+        .body(
+            new ErrorResponse(
+                403,
+                "Forbidden",
+                "You don't have permission to access this resource",
+                LocalDateTime.now()));
   }
 
   @ExceptionHandler(Exception.class)
-  public ResponseEntity<ApiResponse<Void>> handleGenericException(Exception ex) {
+  public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
     LOGGER.error("Unexpected error occurred", ex);
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
         .body(
-            ApiResponse.fail(
-                "INTERNAL_ERROR", "An unexpected error occurred. Please try again later."));
+            new ErrorResponse(
+                500,
+                "Internal Server Error",
+                "An unexpected error occurred. Please try again later.",
+                LocalDateTime.now()));
   }
 }
