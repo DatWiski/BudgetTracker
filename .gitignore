@@ -47,3 +47,6 @@ CLAUDE.md
 app.log
 spring.log
 cookies.txt
+
+### Security ###
+jwt-key.json
