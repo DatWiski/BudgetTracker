@@ -46,11 +46,9 @@ class SubscriptionControllerTest {
   @MockitoBean
   private com.example.budgettracker.service.PeriodCalculationService periodCalculationService;
 
-  @MockitoBean
-  private com.example.budgettracker.service.RefreshTokenService refreshTokenService;
+  @MockitoBean private com.example.budgettracker.service.RefreshTokenService refreshTokenService;
 
-  @MockitoBean
-  private com.example.budgettracker.service.JwtService jwtService;
+  @MockitoBean private com.example.budgettracker.service.JwtService jwtService;
 
   private Jwt mockJwt;
   private AppUser mockAppUser;
