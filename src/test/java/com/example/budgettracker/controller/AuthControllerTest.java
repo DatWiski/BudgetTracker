@@ -27,6 +27,10 @@ class AuthControllerTest {
 
   @MockitoBean private AppUserService appUserService;
 
+  @MockitoBean private com.example.budgettracker.service.RefreshTokenService refreshTokenService;
+
+  @MockitoBean private com.example.budgettracker.service.JwtService jwtService;
+
   @Test
   @WithMockUser(username = "test@example.com")
   void testAuthStatusWhenAuthenticated() throws Exception {

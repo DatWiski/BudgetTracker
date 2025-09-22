@@ -186,7 +186,7 @@ public class SubscriptionIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateRequest)))
         .andExpect(status().isForbidden())
-        .andExpect(jsonPath("$.error").value("Access denied"));
+        .andExpect(jsonPath("$.error").value("Forbidden"));
   }
 
   @Test
@@ -224,6 +224,6 @@ public class SubscriptionIntegrationTest {
             post("/api/subscriptions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isForbidden()); // Should be 403 due to CSRF protection
+        .andExpect(status().isUnauthorized()); // 401 - No JWT token provided
   }
 }
