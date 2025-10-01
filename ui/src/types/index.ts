@@ -149,3 +149,26 @@ export interface DashboardOverview {
   activeSubscriptions: number;
   activeBills: number;
 }
+
+export interface FinancialTimeSeries {
+  dataPoints: TimeSeriesDataPoint[];
+}
+
+export interface TimeSeriesDataPoint {
+  date: string;
+  income: number;
+  expenses: number;
+  net: number;
+}
+
+export interface CategoryBreakdown {
+  expenses: CategoryExpense[];
+  totalExpenses: number;
+}
+
+export interface CategoryExpense {
+  categoryName: string;
+  amount: number;
+  percentage: number;
+  itemCount: number;
+}

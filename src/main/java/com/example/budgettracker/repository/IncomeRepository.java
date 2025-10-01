@@ -18,6 +18,8 @@ public interface IncomeRepository extends JpaRepository<Income, Long> {
 
   Page<Income> findByAppUserOrderByIncomeDateDesc(AppUser appUser, Pageable pageable);
 
+  List<Income> findByAppUser(AppUser appUser);
+
   List<Income> findByAppUserAndIncomeDateBetweenOrderByIncomeDateDesc(
       AppUser appUser, LocalDate startDate, LocalDate endDate);
 

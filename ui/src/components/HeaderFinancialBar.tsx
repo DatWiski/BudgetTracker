@@ -10,13 +10,19 @@ const HeaderFinancialBar = ({ data }: HeaderFinancialBarProps) => {
   const incomeWidth = (data.totalIncome / maxValue) * 100;
   const expenseWidth = (data.totalExpenses / maxValue) * 100;
 
+  // Get current month name
+  const currentMonth = new Date().toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric"
+  });
+
   return (
     <div className="glass-card mb-6">
       <div className="flex items-center justify-between">
         {/* Left: Chart */}
         <div className="flex-1 mr-8">
           <div className="flex items-center gap-4 mb-2">
-            <h3 className="text-base font-semibold">Financial Overview</h3>
+            <h3 className="text-base font-semibold">{currentMonth}</h3>
             <div className="flex items-center gap-4 text-xs">
               <div className="flex items-center gap-1">
                 <div

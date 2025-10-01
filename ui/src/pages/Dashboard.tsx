@@ -1,6 +1,10 @@
+import { useState } from "react";
 import { formatCurrency } from "../utils/currency";
 import Icon from "../components/Icon";
 import HeaderFinancialBar from "../components/HeaderFinancialBar";
+import FinancialChart from "../components/FinancialChart";
+import CategoryBreakdownChart from "../components/CategoryBreakdownChart";
+import { useFinancialTimeSeries, useCategoryBreakdown } from "../hooks/useDashboard";
 import type { DashboardOverview } from "../types";
 
 interface DashboardProps {
@@ -12,6 +16,17 @@ const Dashboard = ({ dashboardData, isDashboardLoading }: DashboardProps) => {
   const data = dashboardData;
   const isLoading = isDashboardLoading;
   const error = null; // Error handling from parent level
+
+  const [selectedMonths, setSelectedMonths] = useState(6);
+
+  // Fetch time-series data for the chart
+  const { data: timeSeriesData, isLoading: isTimeSeriesLoading } = useFinancialTimeSeries(
+    selectedMonths,
+    true
+  );
+
+  // Fetch category breakdown data
+  const { data: categoryData, isLoading: isCategoryLoading } = useCategoryBreakdown(true);
 
   if (isLoading) {
     return (
@@ -46,96 +61,79 @@ const Dashboard = ({ dashboardData, isDashboardLoading }: DashboardProps) => {
 
   return (
     <div className="page-container">
-      <div className="mb-10">
+      <div className="mb-8">
         <h1 className="heading-1">Dashboard</h1>
-        <p className="text-muted">Your financial overview for this month</p>
       </div>
 
-      {/* Financial Overview - Better Design */}
-      <div className="mb-4">
+      {/* Financial Overview Bar */}
+      <div className="mb-6">
         <HeaderFinancialBar data={overview} />
       </div>
 
-      {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-        <div className="glass-card">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-muted">Total Income</h3>
-            <Icon name="income" size={20} color="var(--color-success)" />
-          </div>
-          <p className="text-2xl font-semibold text-success">
-            {formatCurrency(overview.totalIncome)}
-          </p>
+      {/* Charts Grid - 70/30 split */}
+      <div className="grid grid-cols-1 lg:grid-cols-10 gap-6 mb-6">
+        {/* Financial Chart - Takes 7 columns (70%) */}
+        <div className="lg:col-span-7">
+          {!isTimeSeriesLoading && timeSeriesData && (
+            <FinancialChart data={timeSeriesData} onMonthsChange={setSelectedMonths} />
+          )}
         </div>
 
-        <div className="glass-card">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-muted">Total Expenses</h3>
-            <Icon name="expense" size={20} color="var(--color-error)" />
-          </div>
-          <p className="text-2xl font-semibold text-error">
-            {formatCurrency(overview.totalExpenses)}
-          </p>
-        </div>
-
-        <div className="glass-card">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-muted">Available</h3>
-            <Icon name="wallet" size={20} color="var(--color-primary)" />
-          </div>
-          <p
-            className={`text-2xl font-semibold ${overview.availableMoney >= 0 ? "text-success" : "text-error"}`}
-          >
-            {formatCurrency(overview.availableMoney)}
-          </p>
+        {/* Category Breakdown - Takes 3 columns (30%) */}
+        <div className="lg:col-span-3">
+          {!isCategoryLoading && categoryData && <CategoryBreakdownChart data={categoryData} />}
         </div>
       </div>
 
-      {/* Breakdown Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="glass-card">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-muted">Subscriptions</h3>
-            <Icon name="subscription" size={20} color="var(--color-accent)" />
+      {/* Key Metrics - Simplified to 3 cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        {/* Total Income */}
+        <div className="glass-card p-6">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-medium text-muted">Total Income</h3>
+            <Icon name="income" size={20} color="var(--color-success)" />
           </div>
-          <p className="text-xl font-semibold">{formatCurrency(overview.subscriptionExpenses)}</p>
-          <p className="text-small text-muted">{overview.activeSubscriptions} services</p>
+          <p className="text-3xl font-bold text-success mb-1">
+            {formatCurrency(overview.totalIncome)}
+          </p>
+          <p className="text-xs text-muted">
+            {overview.activeSubscriptions + overview.activeBills} income sources
+          </p>
         </div>
 
-        <div className="glass-card">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-muted">Bills</h3>
-            <Icon name="bill" size={20} color="var(--color-warning)" />
+        {/* Total Expenses */}
+        <div className="glass-card p-6">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-medium text-muted">Total Expenses</h3>
+            <Icon name="expense" size={20} color="var(--color-error)" />
           </div>
-          <p className="text-xl font-semibold">{formatCurrency(overview.billExpenses)}</p>
-          <p className="text-small text-muted">{overview.activeBills} bills</p>
+          <p className="text-3xl font-bold text-error mb-1">
+            {formatCurrency(overview.totalExpenses)}
+          </p>
+          <p className="text-xs text-muted">
+            {overview.activeSubscriptions} subscriptions, {overview.activeBills} bills
+          </p>
         </div>
 
-        <div className="glass-card">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-muted">Savings Rate</h3>
+        {/* Available / Savings */}
+        <div className="glass-card p-6">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-medium text-muted">Available / Savings</h3>
             <Icon name="savings" size={20} color="var(--color-success)" />
           </div>
           <p
-            className={`text-xl font-semibold ${overview.savingsRate >= 20 ? "text-success" : overview.savingsRate >= 10 ? "text-warning" : "text-error"}`}
+            className={`text-3xl font-bold mb-1 ${overview.availableMoney >= 0 ? "text-success" : "text-error"}`}
           >
-            {overview.savingsRate.toFixed(1)}%
+            {formatCurrency(overview.availableMoney)}
           </p>
-          <p className="text-small text-muted">of income saved</p>
-        </div>
-
-        <div className="glass-card">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-muted">Monthly Budget</h3>
-            <Icon name="budget" size={20} color="var(--color-primary)" />
-          </div>
-          <p className="text-xl font-semibold">
-            {overview.totalExpenses > 0
-              ? Math.round((overview.totalExpenses / overview.totalIncome) * 100)
-              : 0}
-            %
+          <p className="text-xs text-muted">
+            <span
+              className={`font-semibold ${overview.savingsRate >= 20 ? "text-success" : overview.savingsRate >= 10 ? "text-warning" : "text-error"}`}
+            >
+              {overview.savingsRate.toFixed(1)}%
+            </span>{" "}
+            savings rate
           </p>
-          <p className="text-small text-muted">of income used</p>
         </div>
       </div>
     </div>

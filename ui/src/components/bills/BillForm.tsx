@@ -67,6 +67,7 @@ const BillForm: React.FC<Props> = ({
   }));
 
   const periodOptions: SelectOption[] = [
+    { value: "ONE_TIME", label: "One-time" },
     { value: "DAILY", label: "Daily" },
     { value: "WEEKLY", label: "Weekly" },
     { value: "MONTHLY", label: "Monthly" },
